@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ceará a Dois - Master Experience</title>
+    <title>Ceará a Dois - Roteiros & Clima Inteligente</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -36,84 +36,61 @@
         .view-layer.active { display: block; animation: slideFade 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes slideFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* MAPA */
-        #view-map { padding-bottom: 0; }
-        #map { width: 100%; height: 100%; z-index: 1; }
-        
-        .map-header { position: absolute; top: 0; left: 0; width: 100%; padding: 15px 20px; z-index: 1000; background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0)); pointer-events: none; display: flex; justify-content: space-between; align-items: flex-start;}
+        /* HEADER DO MAPA E CLIMA */
+        .map-header { position: absolute; top: 0; left: 0; width: 100%; padding: 15px 20px; z-index: 1000; background: linear-gradient(to bottom, rgba(255,255,255,1) 40%, rgba(255,255,255,0)); pointer-events: none;}
         .map-header h1 { margin: 0; font-size: 20px; font-weight: 800; color: var(--primary); pointer-events: auto;}
-        .map-header p { margin: 2px 0 0; font-size: 12px; color: var(--text-gray); font-weight: 600; pointer-events: auto;}
         
-        .btn-theme { background: var(--surface); border: none; width: 38px; height: 38px; border-radius: 50%; box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--primary); pointer-events: auto;}
+        .smart-suggestion { background: var(--surface); padding: 10px 15px; border-radius: 16px; box-shadow: var(--shadow-sm); margin-top: 10px; display: flex; gap: 10px; align-items: center; pointer-events: auto; border-left: 4px solid var(--secondary);}
+        .smart-suggestion .icon { font-size: 24px; color: var(--gold); }
+        .smart-suggestion p { margin: 0; font-size: 12px; color: var(--text-gray); font-weight: 600; line-height: 1.4;}
 
-        .filter-scroll { position: absolute; top: 75px; left: 0; width: 100%; z-index: 1000; display: flex; gap: 8px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; pointer-events: auto;}
+        /* FILTROS */
+        .filter-scroll { position: absolute; top: 120px; left: 0; width: 100%; z-index: 1000; display: flex; gap: 8px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; pointer-events: auto;}
         .filter-scroll::-webkit-scrollbar { display: none; }
         .chip { background: var(--surface); border: 1.5px solid #e2e8f0; color: var(--text-gray); padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 5px;}
         .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
         .chip.frosty.active { background: var(--secondary); border-color: var(--secondary); }
         .chip.wine.active { background: var(--wine); border-color: var(--wine); }
 
-        .fab-container { position: absolute; bottom: 100px; right: 20px; z-index: 1000; display: flex; flex-direction: column; gap: 10px; }
-        .fab { width: 48px; height: 48px; background: var(--surface); color: var(--primary); border: none; border-radius: 50%; box-shadow: var(--shadow-lg); display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        #map { width: 100%; height: 100%; z-index: 1; }
+        .fab-gps { position: absolute; bottom: 100px; right: 20px; width: 48px; height: 48px; background: var(--surface); color: var(--primary); border: none; border-radius: 50%; box-shadow: var(--shadow-lg); display: flex; justify-content: center; align-items: center; z-index: 1000; cursor: pointer; }
 
-        /* DASHBOARD & LISTAS */
+        /* DASHBOARD */
         .dash-hero { background: var(--primary); color: white; padding: 35px 20px 25px; border-radius: 0 0 30px 30px; box-shadow: var(--shadow-lg); position: relative; }
         .dash-title { font-size: 24px; font-weight: 800; margin: 0 0 5px; }
-        .dash-subtitle { font-size: 13px; opacity: 0.9; margin: 0 0 20px; }
-        
-        .progress-container { background: rgba(255,255,255,0.2); height: 8px; border-radius: 20px; overflow: hidden; margin-bottom: 6px;}
+        .progress-container { background: rgba(255,255,255,0.2); height: 8px; border-radius: 20px; overflow: hidden; margin-bottom: 6px; margin-top: 15px;}
         .progress-bar { background: var(--secondary); height: 100%; width: 0%; border-radius: 20px; transition: 1s; }
         .stats-text { font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; }
 
-        /* Botão Sorteador de Date */
-        .surprise-box { margin: 20px; background: linear-gradient(135deg, #FF758C, #FF7EB3); border-radius: 20px; padding: 20px; color: white; box-shadow: 0 10px 20px rgba(255, 117, 140, 0.3); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .surprise-box h3 { margin: 0 0 4px; font-size: 16px; font-weight: 800; }
-        .surprise-box p { margin: 0; font-size: 12px; opacity: 0.9; }
-        .surprise-btn { background: white; color: #FF758C; border: none; padding: 10px 15px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: var(--shadow-sm); }
+        .section-title { padding: 20px 20px 5px; font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;}
 
-        .section-title { padding: 10px 20px 5px; font-size: 16px; font-weight: 800; color: var(--text-dark); margin: 0;}
-
+        /* CARDS */
         .grid { display: grid; gap: 15px; padding: 10px 20px 30px; }
-        .rich-card { background: var(--surface); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-sm); position: relative; }
+        .rich-card { background: var(--surface); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-sm); position: relative; border: 1px solid #e2e8f0;}
+        .card-body { padding: 20px 16px; }
+        .card-body h3 { margin: 0 0 4px; font-size: 16px; font-weight: 800; color: var(--primary); }
+        .frosty-card .card-body h3 { color: var(--secondary); }
+        .wine-card .card-body h3 { color: var(--wine); }
         
-        .card-cover { height: 90px; background: linear-gradient(135deg, var(--primary-light), #C4B5FD); display: flex; justify-content: flex-end; padding: 12px; position: relative; }
-        .frosty-card .card-cover { background: linear-gradient(135deg, var(--secondary-light), #6EE7B7); }
-        .wine-card .card-cover { background: linear-gradient(135deg, var(--wine-light), #FDA4AF); }
-        
-        .card-badge { position: absolute; bottom: -10px; left: 16px; background: var(--surface); color: var(--primary); padding: 4px 10px; border-radius: 10px; font-size: 9px; font-weight: 800; text-transform: uppercase; box-shadow: var(--shadow-sm); }
-        .frosty-card .card-badge { color: var(--secondary); }
-        .wine-card .card-badge { color: var(--wine); }
-
-        .card-body { padding: 20px 16px 16px; }
-        .card-body h3 { margin: 0 0 4px; font-size: 16px; font-weight: 800; }
         .card-body p { margin: 0 0 12px; font-size: 12px; color: var(--text-gray); line-height: 1.4; }
-        
         .card-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 12px;}
-        .btn-route { background: var(--primary-light); color: var(--primary); border: none; padding: 6px 12px; border-radius: 10px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 4px;}
+        .btn-route { background: var(--app-bg); color: var(--text-dark); border: none; padding: 8px 12px; border-radius: 10px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 4px;}
         .btn-star { background: transparent; border: none; color: #CBD5E1; font-size: 26px; cursor: pointer; }
         .btn-star.visited { color: var(--gold); }
-
         .poem-diary { margin-top: 12px; padding: 12px; background: #FFFBEB; border-radius: 10px; font-size: 12px; font-style: italic; color: #92400E; border-left: 3px solid var(--gold); }
 
         /* FLOATING NAV */
-        .floating-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 360px; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(15px); border-radius: 30px; box-shadow: var(--shadow-float); display: flex; justify-content: space-between; padding: 6px 10px; z-index: 2000; border: 1px solid rgba(255,255,255,0.5); }
+        .floating-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 360px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 30px; box-shadow: var(--shadow-float); display: flex; justify-content: space-between; padding: 6px 10px; z-index: 2000; border: 1px solid rgba(255,255,255,0.5); }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 0; border-radius: 20px; border: none; background: transparent; color: var(--text-gray); font-family: inherit; font-size: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .nav-item .material-icons-round { font-size: 22px; margin-bottom: 2px; }
         .nav-item.active { background: var(--primary-light); color: var(--primary); }
         .nav-item.active-frosty { background: var(--secondary-light); color: var(--secondary); }
 
-        /* MODAL */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: flex-end; z-index: 3000; opacity: 0; pointer-events: none; transition: 0.3s; }
-        .modal-overlay.active { opacity: 1; pointer-events: all; }
-        .modal-content { background: var(--surface); width: 100%; border-radius: 25px 25px 0 0; padding: 25px 20px 35px; transform: translateY(100%); transition: 0.3s; }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
-        .modal-content textarea { width: 100%; height: 100px; background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 12px; font-family: inherit; font-size: 13px; outline: none; resize: none; margin-bottom: 15px; }
-        .btn-row { display: flex; gap: 10px; }
-        .btn-modal { flex: 1; padding: 14px; border-radius: 14px; border: none; font-weight: 700; font-size: 14px; font-family: inherit; cursor: pointer; }
-        .btn-skip { background: #F1F5F9; color: var(--text-gray); }
-        .btn-save { background: var(--primary); color: white; }
-
-        .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: var(--shadow-lg); }
+        /* POPUP MAPA */
+        .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: var(--shadow-lg); font-family: 'Plus Jakarta Sans'; }
+        .route-btn { display: block; background: var(--primary); color: white; text-align: center; padding: 8px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 11px; margin-top: 8px; }
+        .route-btn.frosty { background: var(--secondary); }
+        .route-btn.wine { background: var(--wine); }
     </style>
 </head>
 <body>
@@ -123,46 +100,36 @@
     <div id="view-map" class="view-layer active">
         <div class="map-header">
             <div>
-                <h1>Ceará a Dois 🗺️</h1>
-                <p id="gps-status">Ative o GPS para ver distâncias</p>
+                <h1>Ceará a Dois</h1>
+                <div class="smart-suggestion">
+                    <span class="icon material-icons-round" id="weather-icon">wb_sunny</span>
+                    <p id="smart-tip">Analisando clima e horário para recomendar um roteiro...</p>
+                </div>
             </div>
-            <button class="btn-theme" onclick="app.toggleTheme()"><span class="material-icons-round" id="theme-icon">dark_mode</span></button>
         </div>
         
         <div class="filter-scroll">
             <button class="chip active" onclick="app.filterMap('all')">🌍 Todos</button>
-            <button class="chip" onclick="app.filterMap('praia')">🌊 Praias</button>
-            <button class="chip" onclick="app.filterMap('cultura')">🏛️ Cultura</button>
-            <button class="chip wine" onclick="app.filterMap('vinho')">🍷 Vinhos</button>
-            <button class="chip frosty" onclick="app.filterMap('frosty')">🍦 Frosty</button>
+            <button class="chip" onclick="app.filterMap('praia')">🌊 Praias & Natureza</button>
+            <button class="chip" onclick="app.filterMap('cultura')">🏛️ Arte & Cultura</button>
+            <button class="chip wine" onclick="app.filterMap('vinho')">🍷 Vinhos & Cafés</button>
+            <button class="chip frosty" onclick="app.filterMap('frosty')">🍦 Frosty Ice Cream</button>
         </div>
 
         <div id="map"></div>
-        
-        <div class="fab-container">
-            <button class="fab" onclick="app.locate()"><span class="material-icons-round">my_location</span></button>
-        </div>
+        <button class="fab-gps" onclick="app.locate()"><span class="material-icons-round">my_location</span></button>
     </div>
 
-    <!-- VIEW 2: DIÁRIO -->
+    <!-- VIEW 2: DIÁRIO E LOCAIS -->
     <div id="view-list" class="view-layer">
         <div class="dash-hero">
             <h1 class="dash-title">Nosso Diário 💜</h1>
-            <p class="dash-subtitle">Explore 500 lugares incríveis pelo Ceará</p>
+            <p style="margin:0; font-size:14px; opacity:0.9;">Registrando nossas memórias.</p>
             <div class="progress-container"><div class="progress-bar" id="progress"></div></div>
-            <div class="stats-text"><span>Progresso</span><span id="stats">0 / 500 Locais</span></div>
+            <div class="stats-text"><span>Progresso</span><span id="stats">0 Visitados</span></div>
         </div>
 
-        <!-- Sorteador Surpresa -->
-        <div class="surprise-box" onclick="app.surpriseDate()">
-            <div>
-                <h3>🎲 Sorteador de Date</h3>
-                <p>Não sabem para onde ir hoje? Deixe a sorte decidir!</p>
-            </div>
-            <button class="surprise-btn">Sortear</button>
-        </div>
-
-        <h2 class="section-title">Destinos</h2>
+        <h2 class="section-title">Nossos Roteiros</h2>
         <div class="grid" id="grid-list"></div>
     </div>
 
@@ -170,19 +137,17 @@
     <div id="view-frosty" class="view-layer">
         <div class="dash-hero" style="background: var(--secondary);">
             <h1 class="dash-title">Frosty VIP 🍦</h1>
-            <p class="dash-subtitle">As melhores unidades para uma sobremesa a dois</p>
+            <p style="margin:0; font-size:14px; opacity:0.9;">As melhores lojas para um doce a dois.</p>
         </div>
-        <h2 class="section-title">Unidades no Ceará</h2>
         <div class="grid" id="grid-frosty"></div>
     </div>
 
-    <!-- FLOATING NAV -->
     <div class="floating-nav">
         <button class="nav-item active" onclick="app.switchTab('view-map', this, 'primary')">
             <span class="material-icons-round">map</span> Mapa
         </button>
         <button class="nav-item" onclick="app.switchTab('view-list', this, 'primary')">
-            <span class="material-icons-round">auto_awesome_mosaic</span> Diário
+            <span class="material-icons-round">favorite</span> Diário
         </button>
         <button class="nav-item" onclick="app.switchTab('view-frosty', this, 'secondary')">
             <span class="material-icons-round">icecream</span> Frosty
@@ -190,54 +155,136 @@
     </div>
 </div>
 
-<!-- MODAL -->
-<div class="modal-overlay" id="poemModal">
-    <div class="modal-content">
-        <h2>Guardar Memória ✨</h2>
-        <p style="color:var(--text-gray); font-size:13px; margin:0 0 15px;">Escreva uma anotação sobre este momento a dois:</p>
-        <textarea id="poemInput" placeholder="A inesquecível tarde de sol..."></textarea>
-        <div class="btn-row">
-            <button class="btn-modal btn-skip" onclick="app.closeModal()">Apenas Marcar</button>
-            <button class="btn-modal btn-save" onclick="app.savePoem()">Salvar Diário</button>
-        </div>
-    </div>
-</div>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// ==========================================
+// BANCO DE DADOS REAL E MASSIVO
+// ==========================================
 const DB = []; let nextId = 1;
 function addP(name, cat, lat, lng, desc) { DB.push({ id: nextId++, name, cat, lat, lng, desc }); }
 
-const frostys = [ [-3.7250, -38.4975], [-3.7360, -38.5000], [-3.7385, -38.5375], [-3.8290, -38.4950], [-3.7750, -38.5620], [-3.7251, -38.5201], [-3.7431, -38.4751], [-3.8897, -38.4502] ];
-frostys.forEach((c, i) => { addP(`Frosty Loja #${i+1}`, 'frosty', c[0], c[1], "Sobremesa a dois perfeita."); addP(`Frosty Express #${i+1}`, 'frosty', c[0]+0.01, c[1]-0.01, "Parada para o açaí e sorvete."); });
+// 1. FROSTY (Unidades Reais Espalhadas)
+const frostys = [
+    { n: "Frosty Beira Mar", l: [-3.7250, -38.4975], d: "Ponto clássico. Ideal para caminhar no calçadão saboreando um sorvete." },
+    { n: "Frosty Aldeota", l: [-3.7360, -38.5000], d: "Ótima parada durante a tarde na cidade." },
+    { n: "Frosty Benfica", l: [-3.7385, -38.5375], d: "Clima jovem e universitário." },
+    { n: "Frosty Messejana", l: [-3.8290, -38.4950], d: "Perfeita para fechar o dia pelo bairro." },
+    { n: "Frosty Parangaba", l: [-3.7750, -38.5620], d: "Bem localizada, ótima estrutura." },
+    { n: "Frosty Cidade dos Funcionários", l: [-3.7920, -38.4980], d: "Point agradável para a noite." },
+    { n: "Frosty Eusébio", l: [-3.8897, -38.4502], d: "No centro do Eusébio, ótima para um passeio no fim de semana." },
+    { n: "Frosty Maracanaú", l: [-3.8760, -38.6250], d: "Excelente loja na região metropolitana." },
+    { n: "Frosty Caucaia", l: [-3.7325, -38.6570], d: "Ótima para depois de um dia de sol nas praias da região." },
+    { n: "Frosty Sobral", l: [-3.6894, -40.3497], d: "Uma pausa refrescante na Princesa do Norte." },
+    { n: "Frosty Juazeiro do Norte", l: [-7.2307, -39.3130], d: "Point gelado no coração do Cariri." },
+    { n: "Frosty Crato", l: [-7.2340, -39.4120], d: "Ideal após conhecer a Encosta do Seminário." },
+    { n: "Frosty Iguatu", l: [-6.3580, -39.2980], d: "Sorvete e açaí deliciosos no centro." },
+    { n: "Frosty Aracati", l: [-4.5600, -37.7690], d: "A caminho de Canoa Quebrada." },
+    { n: "Frosty Cascavel", l: [-4.1300, -38.2400], d: "Doce parada pelo litoral leste." }
+];
+frostys.forEach(f => addP(f.n, 'frosty', f.l[0], f.l[1], f.d));
 
-const vinhos = [{n: "Santa Clara Eco Café", l: [-3.7315, -38.5020]}, {n: "Grand Cru Vinhos", l: [-3.7380, -38.4950]}, {n: "Brava Wine", l: [-3.7405, -38.4900]}];
-vinhos.forEach(v => addP(v.n, 'vinho', v.l[0], v.l[1], "Perfeito para vinhos e queijos a dois."));
+// 2. CAFÉS E VINHOS (Para paladares refinados)
+const vinhos = [
+    { n: "Santa Clara Eco Café", l: [-3.7214, -38.5117], d: "Um café especial no ambiente rústico do Dragão do Mar." },
+    { n: "Brava Wine", l: [-3.7405, -38.4900], d: "Excelente carta de vinhos e ambiente sofisticado para um date." },
+    { n: "Grand Cru Vinhos", l: [-3.7380, -38.4950], d: "Vinhos importados e tábuas de queijos maravilhosas." },
+    { n: "Amika Coffeehouse", l: [-3.7350, -38.4920], d: "Cafés especiais extraídos à perfeição, ótimo para boas conversas." },
+    { n: "Le Pain Le Café", l: [-3.7390, -38.4910], d: "Pães e cafés deliciosos com clima acolhedor." },
+    { n: "Cabaña Del Primo", l: [-3.7319, -38.4875], d: "Perfeito para um jantar romântico com bons vinhos." }
+];
+vinhos.forEach(v => addP(v.n, 'vinho', v.l[0], v.l[1], v.d));
 
-const reais = [ {n: "Beira Mar - Espigão", l: [-3.7255, -38.4950], c:"cultura"}, {n: "Parque do Cocó", l: [-3.7483, -38.4844], c:"cultura"}, {n: "Dragão do Mar", l: [-3.7214, -38.5117], c:"cultura"}, {n: "Duna do Pôr do Sol - Jeri", l: [-2.7975, -40.5141], c:"praia"} ];
-reais.forEach(r => addP(r.name || r.n, r.c, r.l[0], r.l[1], "Ponto turístico imperdível para casais."));
+// 3. ARTE, CULTURA & FOTOS
+const cultura = [
+    { n: "Museu da Fotografia", l: [-3.7431, -38.4912], d: "Exposições incríveis de imagens. O ambiente perfeito para quem gosta de edição de fotos e estética." },
+    { n: "Centro Dragão do Mar", l: [-3.7214, -38.5117], d: "Planetário, cinema, exposições e bares clássicos ao redor." },
+    { n: "Theatro José de Alencar", l: [-3.7275, -38.5305], d: "Arquitetura riquíssima e histórica. Rende fotos belíssimas." },
+    { n: "Passeio Público", l: [-3.7222, -38.5255], d: "A praça mais antiga. Sentar debaixo de um baobá é muito relaxante." },
+    { n: "Estação das Artes", l: [-3.7210, -38.5300], d: "Polo cultural novíssimo, sempre com ótimos eventos de arte." },
+    { n: "Praça Luíza Távora (Ceart)", l: [-3.7335, -38.5100], d: "Artesanato cearense e um local muito agradável para o fim de tarde." },
+    { n: "Pinacoteca do Ceará", l: [-3.7215, -38.5290], d: "Obras de arte contemporâneas e espaços inspiradores." },
+    { n: "Parque do Cocó", l: [-3.7483, -38.4844], d: "Trilhas, natureza e piqueniques na maior área verde da cidade." },
+    { n: "Mercado Central", l: [-3.7225, -38.5247], d: "Para explorar as raízes e a cultura artesanal do estado." }
+];
+cultura.forEach(c => addP(c.n, 'cultura', c.l[0], c.l[1], c.d));
 
-for(let i=DB.length; i < 500; i++) {
-    let cat = Math.random() > 0.5 ? 'praia' : 'cultura';
-    addP(cat === 'praia' ? `Praia Secreta #${i}` : `Praça Romântica #${i}`, cat, -3.7 - (Math.random()*3), -38.4 - (Math.random()*3), "Local mapeado para explorar a dois.");
-}
+// 4. PRAIAS E NATUREZA
+const praias = [
+    { n: "Beira Mar - Espigão do Náutico", l: [-3.7255, -38.4950], d: "Caminhar à noite aqui ou assistir ao pôr do sol é essencial." },
+    { n: "Praia do Futuro", l: [-3.7420, -38.4560], d: "Estrutura gigante e caranguejo." },
+    { n: "Cumbuco", l: [-3.6300, -38.7300], d: "Passeios de buggy com emoção nas dunas." },
+    { n: "Morro Branco", l: [-4.1333, -38.1167], d: "Labirinto natural de falésias coloridas. Paisagem inesquecível." },
+    { n: "Canoa Quebrada", l: [-4.5269, -37.6974], d: "Falésias avermelhadas e a agitada noite na Broadway." },
+    { n: "Jericoacoara", l: [-2.7975, -40.5141], d: "O paraíso das redes na água e do pôr do sol nas dunas." },
+    { n: "Pico Alto - Guaramiranga", l: [-4.2625, -38.9328], d: "Frio na serra! Clima propício para foundue, vinhos e muito amor." },
+    { n: "Praia de Flecheiras", l: [-3.2200, -39.2600], d: "Piscinas naturais belíssimas." }
+];
+praias.forEach(p => addP(p.n, 'praia', p.l[0], p.l[1], p.d));
+
 
 const app = {
-    visited: new Set(JSON.parse(localStorage.getItem('ceara_master')) || []),
-    poems: JSON.parse(localStorage.getItem('ceara_poems_master')) || {},
-    map: null, pointsLayer: null, activePlaceId: null, userPos: null, isDark: false,
+    visited: new Set(JSON.parse(localStorage.getItem('ceara_master_2')) || []),
+    map: null, pointsLayer: null,
 
     init() {
         this.updateStats();
+        this.checkWeatherAndTime();
         setTimeout(() => { this.initMap(); this.renderCards(); }, 150);
+    },
+
+    // ==========================================
+    // MOTOR DE INTELIGÊNCIA: CLIMA E HORA REAL
+    // ==========================================
+    async checkWeatherAndTime() {
+        const hour = new Date().getHours();
+        let temp = 26;
+        let isRaining = false;
+
+        // Busca o clima real via Open-Meteo (Livre, sem chave)
+        try {
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-3.7172&longitude=-38.5430&current_weather=true');
+            const data = await res.json();
+            temp = Math.round(data.current_weather.temperature);
+            const code = data.current_weather.weathercode;
+            if([61,63,65,80,81,82,95,97,99].includes(code)) isRaining = true;
+        } catch(e) { console.log("Usando clima padrão"); }
+
+        const tipEl = document.getElementById('smart-tip');
+        const iconEl = document.getElementById('weather-icon');
+
+        if (hour >= 18 || hour < 4) {
+            // LÓGICA NOTURNA (Como agora, 21:28)
+            iconEl.innerText = "dark_mode";
+            iconEl.style.color = "#7C3AED";
+            if (isRaining) {
+                tipEl.innerText = `Noite com chuva (${temp}°C). Que tal um ambiente acolhedor, degustando queijos e vinhos a dois?`;
+            } else {
+                tipEl.innerText = `A noite está agradável (${temp}°C). Excelente horário para tirar fotos lindas na Beira Mar ou saborear uma Frosty!`;
+            }
+        } else {
+            // LÓGICA DIURNA
+            if (isRaining) {
+                iconEl.innerText = "water_drop";
+                iconEl.style.color = "#3B82F6";
+                tipEl.innerText = `Chuva lá fora (${temp}°C). Ideal para roteiros culturais, como a Pinacoteca, Museu da Fotografia ou um bom café.`;
+            } else if (temp >= 29) {
+                iconEl.innerText = "local_fire_department";
+                iconEl.style.color = "#EF4444";
+                tipEl.innerText = `O dia está quente (${temp}°C)! Perfeito para curtir uma praia ou se refrescar em qualquer loja Frosty.`;
+            } else {
+                iconEl.innerText = "wb_sunny";
+                iconEl.style.color = "#F59E0B";
+                tipEl.innerText = `Dia lindo no Ceará (${temp}°C). Ótimo para caminhar no Parque do Cocó ou explorar a cidade.`;
+            }
+        }
     },
 
     initMap() {
         this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-3.75, -38.5], 11);
         
-        // Camada 100% Livre e Sem Chave (OpenStreetMap Padrão - Nunca dá erro de API Key)
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19, attribution: '© OpenStreetMap'
+        // CartoDB Voyager: Lindo, colorido, estilo Google, não exige chave.
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 20, attribution: '© CARTO'
         }).addTo(this.map);
 
         this.pointsLayer = L.layerGroup().addTo(this.map);
@@ -252,32 +299,19 @@ const app = {
                 let color = isF ? '#10B981' : (isW ? '#E11D48' : '#7C3AED'); 
                 if(isV) color = '#F59E0B';
 
-                let m = L.circleMarker([p.lat, p.lng], { radius: 7, fillColor: color, color: '#fff', weight: 2, fillOpacity: 1 });
-                
-                let distText = "";
-                if(this.userPos) {
-                    let d = this.calcDist(this.userPos.lat, this.userPos.lng, p.lat, p.lng);
-                    distText = `<br><span style="color:var(--primary); font-weight:bold;">📍 A ${d} km de você</span>`;
-                }
+                let btnClass = isF ? 'frosty' : (isW ? 'wine' : '');
 
+                let m = L.circleMarker([p.lat, p.lng], { radius: 7, fillColor: color, color: '#fff', weight: 2, fillOpacity: 1 });
                 let routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
+                
                 m.bindPopup(`
-                    <h3 style="margin:0 0 4px; font-size:14px; font-weight:800; color:${color};">${p.name}</h3>
-                    <p style="margin:0 0 8px; font-size:11px; color:#64748B;">${p.desc}${distText}</p>
-                    <a href="${routeUrl}" target="_blank" style="display:block; background:${color}; color:#fff; text-align:center; padding:6px; border-radius:8px; text-decoration:none; font-weight:700; font-size:11px;">🗺️ Abrir Rota GPS</a>
+                    <h3 style="margin:0 0 4px; font-size:15px; font-weight:800; color:${color};">${p.name}</h3>
+                    <p style="margin:0 0 10px; font-size:12px; color:#64748B;">${p.desc}</p>
+                    <a href="${routeUrl}" target="_blank" class="route-btn ${btnClass}">🗺️ Rota GPS Automática</a>
                 `);
                 this.pointsLayer.addLayer(m);
             }
         });
-    },
-
-    calcDist(lat1, lon1, lat2, lon2) {
-        let R = 6371;
-        let dLat = (lat2-lat1) * Math.PI / 180;
-        let dLon = (lon2-lon1) * Math.PI / 180;
-        let a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return (R * c).toFixed(1);
     },
 
     filterMap(cat) {
@@ -289,91 +323,46 @@ const app = {
     renderCards() {
         const l = document.getElementById('grid-list');
         const f = document.getElementById('grid-frosty');
-        let htmlL = '', htmlF = ''; let countL = 0, countF = 0;
-
+        let htmlL = '', htmlF = ''; 
         const sortedDB = [...DB].sort((a,b) => this.visited.has(b.id) - this.visited.has(a.id));
 
         sortedDB.forEach(p => {
             let isF = p.cat === 'frosty', isW = p.cat === 'vinho', isV = this.visited.has(p.id);
-            if(isF && countF > 60) return;
-            if(!isF && countL > 60) return;
-
-            let poem = this.poems[p.id];
             let cardClass = isF ? 'frosty-card' : (isW ? 'wine-card' : '');
             let routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
 
             let html = `
                 <div class="rich-card ${cardClass}">
-                    <div class="card-cover"><span class="card-badge">${p.cat}</span></div>
                     <div class="card-body">
                         <h3>${p.name}</h3>
                         <p>${p.desc}</p>
-                        ${poem ? `<div class="poem-diary">"${poem}"</div>` : ''}
                         <div class="card-actions">
-                            <a href="${routeUrl}" target="_blank" class="btn-route"><span class="material-icons-round" style="font-size:14px;">navigation</span> Rota</a>
-                            <button class="btn-star ${isV ? 'visited' : ''}" onclick="app.handleStarClick(${p.id})">
+                            <a href="${routeUrl}" target="_blank" class="btn-route"><span class="material-icons-round" style="font-size:14px;">directions_car</span> Rota</a>
+                            <button class="btn-star ${isV ? 'visited' : ''}" onclick="app.toggleStar(${p.id})">
                                 <span class="material-icons-round">${isV ? 'star' : 'star_border'}</span>
                             </button>
                         </div>
                     </div>
                 </div>`;
             
-            if(isF) { htmlF += html; countF++; } else { htmlL += html; countL++; }
+            if(isF) htmlF += html; else htmlL += html;
         });
         l.innerHTML = htmlL; f.innerHTML = htmlF;
     },
 
-    surpriseDate() {
-        let randomPlace = DB[Math.floor(Math.random() * DB.length)];
-        alert(`🎲 Nosso Date de Hoje: \n\n📍 ${randomPlace.name}\n💡 ${randomPlace.desc}\n\nAbra o mapa para conferir a rota!`);
-        this.map.flyTo([randomPlace.lat, randomPlace.lng], 14);
-        this.switchTab('view-map', document.querySelectorAll('.nav-item')[0], 'primary');
-    },
-
-    handleStarClick(id) {
-        if(this.visited.has(id)) {
-            this.visited.delete(id); delete this.poems[id];
-            this.saveData(); this.renderCards(); this.plotCurrentFilter();
-        } else {
-            this.activePlaceId = id;
-            document.getElementById('poemInput').value = '';
-            document.getElementById('poemModal').classList.add('active');
-        }
-    },
-
-    closeModal() {
-        document.getElementById('poemModal').classList.remove('active');
-        if(this.activePlaceId) {
-            this.visited.add(this.activePlaceId);
-            this.saveData(); this.renderCards(); this.plotCurrentFilter();
-            this.activePlaceId = null;
-        }
-    },
-
-    savePoem() {
-        let text = document.getElementById('poemInput').value;
-        if(text.trim() !== '') this.poems[this.activePlaceId] = text;
-        this.closeModal();
-    },
-
-    saveData() {
-        localStorage.setItem('ceara_master', JSON.stringify([...this.visited]));
-        localStorage.setItem('ceara_poems_master', JSON.stringify(this.poems));
-        this.updateStats();
-    },
-
-    plotCurrentFilter() {
-        let active = document.querySelector('.chip.active');
-        if(!active) return;
-        let filter = active.innerText.toLowerCase();
+    toggleStar(id) {
+        if(this.visited.has(id)) this.visited.delete(id); else this.visited.add(id);
+        localStorage.setItem('ceara_master_2', JSON.stringify([...this.visited]));
+        this.updateStats(); this.renderCards();
+        let filter = document.querySelector('.chip.active').innerText.toLowerCase();
         let cat = filter.includes('frosty') ? 'frosty' : (filter.includes('vinho') ? 'vinho' : (filter.includes('praia') ? 'praia' : (filter.includes('cultura') ? 'cultura' : 'all')));
         this.plot(cat);
     },
 
     updateStats() {
         const v = this.visited.size;
-        document.getElementById('stats').innerText = `${v} / 500 Locais`;
-        document.getElementById('progress').style.width = `${(v/500)*100}%`;
+        document.getElementById('stats').innerText = `${v} Visitados`;
+        document.getElementById('progress').style.width = `${(v/DB.length)*100}%`;
     },
 
     switchTab(id, btn, color) {
@@ -387,20 +376,8 @@ const app = {
     locate() {
         if("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(pos => {
-                this.userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                this.map.flyTo([this.userPos.lat, this.userPos.lng], 14);
-                document.getElementById('gps-status').innerText = "GPS Ativo - Distâncias calculadas";
-                this.plotCurrentFilter();
+                this.map.flyTo([pos.coords.latitude, pos.coords.longitude], 14);
             });
-        }
-    },
-
-    toggleTheme() {
-        this.isDark = !this.isDark;
-        document.getElementById('theme-icon').innerText = this.isDark ? 'light_mode' : 'dark_mode';
-        let tileEl = document.querySelector('.leaflet-tile-pane');
-        if(tileEl) {
-            tileEl.style.filter = this.isDark ? 'invert(100%) hue-rotate(180deg) brightness(90%) contrast(90%)' : 'none';
         }
     }
 };
