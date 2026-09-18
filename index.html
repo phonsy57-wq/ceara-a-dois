@@ -3,207 +3,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ceará a Dois - Google Maps Style</title>
+    <title>Ceará a Dois - Premium App</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --primary: #8e44ad; /* Roxo Ceará */
-            --secondary: #2ecc71; /* Verde Frosty Oficial */
-            --wine: #e74c3c; /* Vermelho/Vinho */
-            --google-blue: #4285F4;
-            --bg-light: #f5f6f8;
-            --glass-bg: rgba(255, 255, 255, 0.85);
-            --glass-border: rgba(255, 255, 255, 0.6);
-            --text-main: #333333;
-            --text-dim: #666666;
-            --gold: #f1c40f;
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --app-bg: #f4f5f9;
+            --surface: #ffffff;
+            --primary: #7C3AED; /* Roxo vibrante e moderno */
+            --primary-light: #EDE9FE;
+            --secondary: #10B981; /* Verde esmeralda Frosty */
+            --secondary-light: #D1FAE5;
+            --wine: #E11D48; 
+            --wine-light: #FFE4E6;
+            --text-dark: #1E293B;
+            --text-gray: #64748B;
+            --gold: #F59E0B;
+            --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.1);
+            --shadow-float: 0 20px 40px rgba(124, 58, 237, 0.15);
         }
 
-        body, html { 
-            margin: 0; padding: 0; height: 100%; font-family: 'Outfit', sans-serif; 
-            color: var(--text-main); overflow: hidden; background: var(--bg-light);
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
+        body, html { 
+            margin: 0; padding: 0; height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--app-bg); color: var(--text-dark); overflow: hidden;
+        }
+
         #app { display: flex; flex-direction: column; height: 100vh; position: relative; }
 
-        .glass { 
-            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-            border: 1px solid var(--glass-border); box-shadow: var(--card-shadow); 
-        }
+        /* TABS (VIEWS) */
+        .view-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; padding-bottom: 120px; background: var(--app-bg); }
+        .view-layer.active { display: block; animation: slideFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideFade { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .header { padding: 15px 20px; z-index: 10; border-bottom-left-radius: 20px; border-bottom-right-radius: 20px; margin-bottom: 5px; }
-        .title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;}
-        .title-row h1 { margin: 0; font-size: 20px; font-weight: 700; color: var(--primary); }
-        .stats { font-size: 13px; font-weight: 500; background: #e0e0e0; padding: 4px 10px; border-radius: 12px; color: #333;}
+        /* MAPA (Fullscreen UI) */
+        #view-map { padding-bottom: 0; background: #E5E3DF; }
+        #map { width: 100%; height: 100%; z-index: 1; }
         
-        .progress-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 10px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--secondary)); width: 0%; transition: 0.8s; }
+        .map-header { position: absolute; top: 0; left: 0; width: 100%; padding: 15px 20px; z-index: 1000; background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0)); pointer-events: none; }
+        .map-header h1 { margin: 0; font-size: 22px; font-weight: 800; color: var(--primary); pointer-events: auto;}
+        .map-header p { margin: 2px 0 0; font-size: 13px; color: var(--text-gray); font-weight: 600; pointer-events: auto;}
 
-        .tab-content { flex: 1; display: none; position: relative; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth;}
-        .tab-content.active { display: block; animation: fadeUp 0.4s ease-out; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .filter-scroll { position: absolute; top: 80px; left: 0; width: 100%; z-index: 1000; display: flex; gap: 10px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; pointer-events: auto;}
+        .filter-scroll::-webkit-scrollbar { display: none; }
+        .chip { background: var(--surface); border: 1.5px solid transparent; color: var(--text-gray); padding: 10px 18px; border-radius: 30px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: var(--shadow-sm); transition: 0.3s; display: flex; align-items: center; gap: 6px;}
+        .chip.active { background: var(--primary); color: white; box-shadow: 0 8px 15px rgba(124, 58, 237, 0.3); }
+        .chip.frosty.active { background: var(--secondary); box-shadow: 0 8px 15px rgba(16, 185, 129, 0.3); }
+        .chip.wine.active { background: var(--wine); box-shadow: 0 8px 15px rgba(225, 29, 72, 0.3); }
+        .chip .material-icons-round { font-size: 16px; }
 
-        /* Mapa e UI do Mapa (Estilo Google) */
-        #map { width: 100%; height: 100%; z-index: 1; border-radius: 20px; }
-        .map-wrapper { padding: 0 10px; height: calc(100% - 10px); position: relative; }
-        
-        .filters { position: absolute; top: 15px; left: 20px; right: 20px; z-index: 1000; display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-        .filters::-webkit-scrollbar { display: none; }
-        .filter-btn { 
-            background: white; border: 1px solid #ddd; color: var(--text-main); 
-            padding: 10px 16px; border-radius: 25px; font-size: 13px; font-weight: 600; 
-            white-space: nowrap; transition: 0.3s; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .filter-btn.active { background: var(--primary); border-color: var(--primary); color: #fff;}
-        .filter-btn.frosty.active { background: var(--secondary); border-color: var(--secondary); color: #fff; }
-        .filter-btn.wine.active { background: var(--wine); border-color: var(--wine); color: #fff; }
-        
-        .fab { position: absolute; bottom: 85px; right: 25px; width: 55px; height: 55px; border-radius: 50%; color: var(--google-blue); display: flex; justify-content: center; align-items: center; z-index: 1000; cursor: pointer; border: 1px solid #ddd; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.15);}
-        .fab:active { transform: scale(0.9); }
+        .fab-gps { position: absolute; bottom: 100px; right: 20px; width: 50px; height: 50px; background: var(--surface); color: var(--primary); border: none; border-radius: 50%; box-shadow: var(--shadow-lg); display: flex; justify-content: center; align-items: center; z-index: 1000; cursor: pointer; }
 
-        /* Lista de Locais */
-        .list-container { padding: 10px 20px 100px; display: grid; gap: 15px; }
-        .card { 
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); 
-            border: 1px solid #eee; padding: 18px; border-radius: 20px; 
-            display: flex; flex-direction: column; gap: 8px; position: relative; 
-            overflow: hidden; box-shadow: var(--card-shadow);
-        }
-        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary); }
-        .card.frosty-card::before { background: var(--secondary); }
-        .card.wine-card::before { background: var(--wine); }
+        /* DASHBOARD & LISTA (App Premium Style) */
+        .dash-hero { background: var(--primary); color: white; padding: 40px 20px 30px; border-radius: 0 0 35px 35px; box-shadow: var(--shadow-lg); position: relative; overflow: hidden;}
+        .dash-hero::after { content: ''; position: absolute; top: -50%; right: -20%; width: 200px; height: 200px; background: rgba(255,255,255,0.1); border-radius: 50%; }
+        .dash-title { font-size: 28px; font-weight: 800; margin: 0 0 5px; }
+        .dash-subtitle { font-size: 14px; opacity: 0.9; margin: 0 0 25px; font-weight: 400;}
         
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .card-title { font-size: 16px; font-weight: 700; margin: 0; color: #222;}
-        .card-cat { font-size: 10px; color: var(--primary); text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 4px;}
-        .frosty-card .card-cat { color: var(--secondary); }
-        .wine-card .card-cat { color: var(--wine); }
-        .card-desc { font-size: 13px; color: var(--text-dim); margin: 0; line-height: 1.4; }
-        
-        .poem-text { margin-top: 10px; padding: 12px; background: #fff9e6; border-radius: 10px; font-size: 12px; font-style: italic; color: #555; border-left: 3px solid var(--gold); box-shadow: inset 0 0 5px rgba(0,0,0,0.02);}
-        
-        .star-btn { background: #f0f0f0; border: none; width: 40px; height: 40px; border-radius: 50%; color: #aaa; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: 0.3s; }
-        .star-btn.visited { color: var(--gold); background: #fff9e6; }
+        .progress-container { background: rgba(255,255,255,0.2); height: 10px; border-radius: 20px; overflow: hidden; margin-bottom: 8px;}
+        .progress-bar { background: var(--secondary); height: 100%; width: 0%; border-radius: 20px; transition: 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .stats-text { font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; }
 
-        /* Navegação Inferior */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; z-index: 2000; display: flex; justify-content: space-around; padding: 15px 0 25px; border-top: 1px solid rgba(0,0,0,0.05); border-top-left-radius: 25px; border-top-right-radius: 25px;}
-        .nav-item { background: none; border: none; color: #888; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; flex: 1; cursor: pointer; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item.active-frosty { color: var(--secondary); }
-        .nav-item .material-icons-round { font-size: 26px; transition: 0.3s; }
-        .nav-item.active .material-icons-round { transform: translateY(-4px); }
+        .section-title { padding: 25px 20px 10px; font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;}
 
-        /* Modal do Diário Poético */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(3px);}
+        /* Rich Cards */
+        .grid { display: grid; gap: 20px; padding: 10px 20px 30px; }
+        .rich-card { background: var(--surface); border-radius: 24px; overflow: hidden; box-shadow: var(--shadow-sm); transition: 0.3s; position: relative; }
+        .rich-card:active { transform: scale(0.98); }
+        
+        .card-cover { height: 110px; background: linear-gradient(135deg, var(--primary-light), #C4B5FD); display: flex; justify-content: flex-end; padding: 15px; position: relative; }
+        .frosty-card .card-cover { background: linear-gradient(135deg, var(--secondary-light), #6EE7B7); }
+        .wine-card .card-cover { background: linear-gradient(135deg, var(--wine-light), #FDA4AF); }
+        
+        .card-badge { position: absolute; bottom: -12px; left: 20px; background: var(--surface); color: var(--primary); padding: 6px 12px; border-radius: 12px; font-size: 10px; font-weight: 800; text-transform: uppercase; box-shadow: var(--shadow-sm); }
+        .frosty-card .card-badge { color: var(--secondary); }
+        .wine-card .card-badge { color: var(--wine); }
+
+        .card-body { padding: 25px 20px 20px; }
+        .card-body h3 { margin: 0 0 6px; font-size: 17px; font-weight: 800; color: var(--text-dark); }
+        .card-body p { margin: 0 0 15px; font-size: 13px; color: var(--text-gray); line-height: 1.5; }
+        
+        .card-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 15px;}
+        .btn-route { background: var(--primary-light); color: var(--primary); border: none; padding: 8px 16px; border-radius: 12px; font-weight: 700; font-size: 12px; font-family: inherit; display: flex; align-items: center; gap: 5px; text-decoration: none; }
+        .btn-star { background: transparent; border: none; color: #CBD5E1; font-size: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s;}
+        .btn-star.visited { color: var(--gold); filter: drop-shadow(0 4px 8px rgba(245, 158, 11, 0.4)); }
+
+        .poem-diary { margin-top: 15px; padding: 15px; background: #FFFBEB; border-radius: 12px; font-size: 13px; font-style: italic; color: #92400E; border-left: 4px solid var(--gold); }
+
+        /* FLOATING NAV (Estilo iOS) */
+        .floating-nav { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 380px; background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 35px; box-shadow: var(--shadow-float); display: flex; justify-content: space-between; padding: 8px 12px; z-index: 2000; border: 1px solid rgba(255,255,255,0.4); }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 0; border-radius: 25px; border: none; background: transparent; color: var(--text-gray); font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .nav-item .material-icons-round { font-size: 24px; margin-bottom: 2px; transition: 0.3s; }
+        .nav-item.active { background: var(--primary-light); color: var(--primary); }
+        .nav-item.active-frosty { background: var(--secondary-light); color: var(--secondary); }
+        .nav-item.active .material-icons-round { transform: scale(1.1); }
+
+        /* MODAL DIÁRIO */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: flex-end; z-index: 3000; opacity: 0; pointer-events: none; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
-        .modal-box { background: white; padding: 20px; border-radius: 20px; width: 85%; max-width: 400px; box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
-        .modal-box h2 { margin: 0 0 10px; font-size: 18px; color: var(--primary); }
-        .modal-box textarea { width: 100%; height: 100px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 10px; color: #333; padding: 10px; font-family: 'Outfit'; font-size: 13px; outline: none; resize: none; box-sizing: border-box; margin-bottom: 15px;}
-        .modal-box textarea:focus { border-color: var(--primary); }
-        .modal-btns { display: flex; gap: 10px; }
-        .modal-btns button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-family: 'Outfit';}
-        .btn-cancel { background: #eee; color: #555; }
-        .btn-save { background: var(--primary); color: white; }
+        .modal-content { background: var(--surface); width: 100%; border-radius: 30px 30px 0 0; padding: 30px 25px 40px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        
+        .modal-content h2 { margin: 0 0 5px; font-size: 22px; color: var(--text-dark); font-weight: 800;}
+        .modal-content p { color: var(--text-gray); font-size: 14px; margin: 0 0 20px; }
+        .modal-content textarea { width: 100%; height: 120px; background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 16px; padding: 15px; font-family: inherit; font-size: 14px; outline: none; resize: none; margin-bottom: 20px; color: var(--text-dark);}
+        .modal-content textarea:focus { border-color: var(--primary); }
+        
+        .btn-row { display: flex; gap: 15px; }
+        .btn-modal { flex: 1; padding: 16px; border-radius: 16px; border: none; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; }
+        .btn-skip { background: #F1F5F9; color: var(--text-gray); }
+        .btn-save { background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(124, 58, 237, 0.3); }
 
-        /* Popup Estilo Google Maps */
-        .leaflet-popup-content-wrapper { background: white; color: #333; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.15);}
-        .leaflet-popup-tip { background: white; }
-        .route-btn { display: block; width: 100%; padding: 8px; margin-top: 10px; background: var(--google-blue); color: white; text-align: center; border-radius: 20px; text-decoration: none; font-weight: bold; font-family: 'Outfit'; font-size: 12px; box-shadow: 0 2px 5px rgba(66, 133, 244, 0.3);}
+        /* POPUP MAPA CUSTOMIZADO */
+        .leaflet-popup-content-wrapper { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-lg); padding: 5px; }
+        .leaflet-popup-content { margin: 10px; font-family: 'Plus Jakarta Sans'; }
+        .leaflet-popup-tip { background: var(--surface); }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div class="header glass">
-        <div class="title-row">
-            <h1>Ceará a Dois</h1>
-            <span class="stats" id="stats">0 / 500</span>
+    <!-- VIEW 1: MAPA -->
+    <div id="view-map" class="view-layer active">
+        <div class="map-header">
+            <h1>Explorar Ceará 🗺️</h1>
+            <p>Encontre o próximo roteiro de vocês</p>
         </div>
-        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+        
+        <div class="filter-scroll">
+            <button class="chip active" onclick="app.filterMap('all')"><span class="material-icons-round">explore</span> Todos</button>
+            <button class="chip" onclick="app.filterMap('praia')"><span class="material-icons-round">water</span> Praias</button>
+            <button class="chip" onclick="app.filterMap('cultura')"><span class="material-icons-round">museum</span> Cultura</button>
+            <button class="chip wine" onclick="app.filterMap('vinho')"><span class="material-icons-round">wine_bar</span> Cafés & Vinhos</button>
+            <button class="chip frosty" onclick="app.filterMap('frosty')"><span class="material-icons-round">icecream</span> Frosty VIP</button>
+        </div>
+
+        <div id="map"></div>
+        <button class="fab-gps" onclick="app.locate()"><span class="material-icons-round">my_location</span></button>
     </div>
 
-    <!-- MAPA -->
-    <div id="tab-map" class="tab-content active">
-        <div class="map-wrapper">
-            <div class="filters">
-                <button class="filter-btn active" onclick="app.filterMap('all')">🌍 Todos</button>
-                <button class="filter-btn" onclick="app.filterMap('praia')">🌊 Praias</button>
-                <button class="filter-btn" onclick="app.filterMap('cultura')">🏛️ Cultura</button>
-                <button class="filter-btn wine" onclick="app.filterMap('vinho')">🍷 Vinhos</button>
-                <button class="filter-btn frosty" onclick="app.filterMap('frosty')">🍦 Frosty VIP</button>
-            </div>
-            <div id="map" class="glass"></div>
-            <button class="fab" onclick="app.locate()"><span class="material-icons-round">my_location</span></button>
+    <!-- VIEW 2: DESCOBRIR / DIÁRIO -->
+    <div id="view-list" class="view-layer">
+        <div class="dash-hero">
+            <h1 class="dash-title">Nosso Diário 💜</h1>
+            <p class="dash-subtitle">Registrando memórias por todo o Ceará</p>
+            <div class="progress-container"><div class="progress-bar" id="progress"></div></div>
+            <div class="stats-text"><span>Progresso</span><span id="stats">0 / 500 Locais</span></div>
         </div>
+        <h2 class="section-title">Todos os Destinos</h2>
+        <div class="grid" id="grid-list"></div>
     </div>
 
-    <!-- LISTA E FROSTY -->
-    <div id="tab-list" class="tab-content"><div class="list-container" id="grid-list"></div></div>
-    <div id="tab-frosty" class="tab-content"><div class="list-container" id="grid-frosty"></div></div>
+    <!-- VIEW 3: FROSTY VIP -->
+    <div id="view-frosty" class="view-layer">
+        <div class="dash-hero" style="background: var(--secondary);">
+            <h1 class="dash-title">Frosty VIP 🍦</h1>
+            <p class="dash-subtitle">Os melhores lugares para uma sobremesa a dois</p>
+        </div>
+        <div class="grid" id="grid-frosty"></div>
+    </div>
 
-    <!-- NAV BOTTOM -->
-    <div class="bottom-nav glass">
-        <button class="nav-item active" onclick="app.switchTab('tab-map', this, 'primary')"><span class="material-icons-round">map</span>Mapa</button>
-        <button class="nav-item" onclick="app.switchTab('tab-list', this, 'primary')"><span class="material-icons-round">book</span>Diário</button>
-        <button class="nav-item" onclick="app.switchTab('tab-frosty', this, 'secondary')"><span class="material-icons-round">icecream</span>Frosty</button>
+    <!-- FLOATING NAV (Estilo iOS) -->
+    <div class="floating-nav">
+        <button class="nav-item active" onclick="app.switchTab('view-map', this, 'primary')">
+            <span class="material-icons-round">map</span> Mapa
+        </button>
+        <button class="nav-item" onclick="app.switchTab('view-list', this, 'primary')">
+            <span class="material-icons-round">auto_awesome_mosaic</span> Diário
+        </button>
+        <button class="nav-item" onclick="app.switchTab('view-frosty', this, 'secondary')">
+            <span class="material-icons-round">icecream</span> Frosty
+        </button>
     </div>
 </div>
 
+<!-- BOTTOM SHEET MODAL (Para o Diário Poético) -->
 <div class="modal-overlay" id="poemModal">
-    <div class="modal-box">
+    <div class="modal-content">
         <h2>Guardar Memória ✨</h2>
-        <p style="font-size: 12px; color: var(--text-dim); margin-top:0;">Escreva um texto ou sentimento sobre a visita.</p>
-        <textarea id="poemInput" placeholder="A saudade é a memória do coração..."></textarea>
-        <div class="modal-btns">
-            <button class="btn-cancel" onclick="app.closeModal()">Pular</button>
-            <button class="btn-save" onclick="app.savePoem()">Guardar</button>
+        <p>Como foi a experiência de vocês aqui?</p>
+        <textarea id="poemInput" placeholder="A saudade é a memória do coração... Escreva aqui!"></textarea>
+        <div class="btn-row">
+            <button class="btn-modal btn-skip" onclick="app.closeModal()">Apenas Salvar</button>
+            <button class="btn-modal btn-save" onclick="app.savePoem()">Guardar Diário</button>
         </div>
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const DB = [];
-let nextId = 1;
-
+// --- BANCO DE DADOS HÍBRIDO (500) ---
+const DB = []; let nextId = 1;
 function addP(name, cat, lat, lng, desc) { DB.push({ id: nextId++, name, cat, lat, lng, desc }); }
 
+// Unidades Frosty
 const frostys = [ [-3.7250, -38.4975], [-3.7360, -38.5000], [-3.7385, -38.5375], [-3.8290, -38.4950], [-3.7750, -38.5620], [-3.7251, -38.5201], [-3.7431, -38.4751], [-3.8897, -38.4502] ];
-frostys.forEach((c, i) => { addP(`Frosty Oficial #${i+1}`, 'frosty', c[0], c[1], "Sobremesa a dois perfeita."); addP(`Frosty Express #${i+1}`, 'frosty', c[0]+0.01, c[1]-0.01, "Sorvete rápido."); });
+frostys.forEach((c, i) => { addP(`Frosty Loja #${i+1}`, 'frosty', c[0], c[1], "Sobremesa a dois. Perfeito para o fim de tarde."); addP(`Frosty Express #${i+1}`, 'frosty', c[0]+0.01, c[1]-0.01, "Para um docinho rápido durante o passeio."); });
 
+// Cafés & Vinhos
 const vinhos = [{n: "Santa Clara Eco Café", l: [-3.7315, -38.5020]}, {n: "Grand Cru Vinhos", l: [-3.7380, -38.4950]}, {n: "Brava Wine", l: [-3.7405, -38.4900]}];
-vinhos.forEach(v => addP(v.n, 'vinho', v.l[0], v.l[1], "Ideal para vinhos e queijos a dois."));
+vinhos.forEach(v => addP(v.n, 'vinho', v.l[0], v.l[1], "Clima romântico. Ideal para vinhos, queijos ou cafés especiais a dois."));
 
-const reais = [ {n: "Beira Mar", l: [-3.7255, -38.4950], c:"cultura"}, {n: "Parque do Cocó", l: [-3.7483, -38.4844], c:"cultura"}, {n: "Dragão do Mar", l: [-3.7214, -38.5117], c:"cultura"}, {n: "Jericoacoara", l: [-2.7975, -40.5141], c:"praia"} ];
-reais.forEach(r => addP(r.n, r.c, r.l[0], r.l[1], "Passeio turístico."));
+// Turismo e Praias
+const reais = [ {n: "Beira Mar - Espigão", l: [-3.7255, -38.4950], c:"cultura"}, {n: "Parque Ecológico do Cocó", l: [-3.7483, -38.4844], c:"cultura"}, {n: "Dragão do Mar", l: [-3.7214, -38.5117], c:"cultura"}, {n: "Duna do Pôr do Sol - Jeri", l: [-2.7975, -40.5141], c:"praia"} ];
+reais.forEach(r => addP(r.n, r.c, r.l[0], r.l[1], "Ponto turístico imperdível. Uma experiência incrível para casais."));
 
+// Gerador Inteligente até 500
 for(let i=DB.length; i < 500; i++) {
     let cat = Math.random() > 0.5 ? 'praia' : 'cultura';
-    addP(`Ponto Turístico #${i}`, cat, -3.7 - (Math.random()*3), -38.4 - (Math.random()*3), "Passeio romântico mapeado.");
+    let nome = cat === 'praia' ? `Praia Secreta #${i}` : `Ponto Histórico #${i}`;
+    addP(nome, cat, -3.7 - (Math.random()*3), -38.4 - (Math.random()*3), "Ponto turístico mapeado na região. Ótimo para explorar e bater fotos.");
 }
 
 const app = {
-    visited: new Set(JSON.parse(localStorage.getItem('ceara_v6')) || []),
-    poems: JSON.parse(localStorage.getItem('ceara_poems_v6')) || {},
+    visited: new Set(JSON.parse(localStorage.getItem('ceara_premium')) || []),
+    poems: JSON.parse(localStorage.getItem('ceara_poems_premium')) || {},
     map: null, pointsLayer: null, activePlaceId: null,
 
     init() {
         this.updateStats();
-        setTimeout(() => { this.initMap(); this.renderCards(); }, 300);
+        setTimeout(() => { this.initMap(); this.renderCards(); }, 200);
     },
 
     initMap() {
         this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-3.75, -38.5], 11);
         
-        // MÁGICA AQUI: O Mapa "Osm Bright" imita perfeitamente o visual clássico do Google Maps
-        // Ruas brancas, parques verdes, água azul clara. 100% Grátis.
-        L.tileLayer('https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}{r}.png', {
-            maxZoom: 20, attribution: '© Stadia Maps'
+        // MÁGICA: CartoDB Voyager. É 100% livre, não bloqueia Vercel e é um "clone" do Google Maps (Ruas amarelas, parques verdes, água azul).
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            maxZoom: 20, attribution: '© CARTO'
         }).addTo(this.map);
 
         this.pointsLayer = L.layerGroup().addTo(this.map);
@@ -215,18 +247,16 @@ const app = {
         DB.forEach(p => {
             if(filter === 'all' || p.cat === filter) {
                 let isF = p.cat === 'frosty', isW = p.cat === 'vinho', isV = this.visited.has(p.id);
-                
-                let color = isF ? '#2ecc71' : (isW ? '#e74c3c' : '#8e44ad'); 
-                if(isV) color = '#f1c40f'; // Dourado
+                let color = isF ? '#10B981' : (isW ? '#E11D48' : '#7C3AED'); 
+                if(isV) color = '#F59E0B'; // Gold
 
-                // Pin simples, circular, estilo Google Places
-                let m = L.circleMarker([p.lat, p.lng], { radius: 7, fillColor: color, color: '#fff', weight: 2, fillOpacity: 1 });
+                let m = L.circleMarker([p.lat, p.lng], { radius: 7, fillColor: color, color: '#fff', weight: 2.5, fillOpacity: 1 });
                 
                 let routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
                 m.bindPopup(`
-                    <b style="color:${color}; font-size:14px; font-family: 'Outfit'">${p.name}</b><br>
-                    <span style="font-size:12px; color:#555; font-family: 'Outfit'">${p.desc}</span>
-                    <a href="${routeUrl}" target="_blank" class="route-btn">Direções</a>
+                    <h3 style="margin:0 0 5px; font-size:15px; font-weight:800; color:${color};">${p.name}</h3>
+                    <p style="margin:0 0 10px; font-size:12px; color:#64748B;">${p.desc}</p>
+                    <a href="${routeUrl}" target="_blank" style="display:block; background:${color}; color:#fff; text-align:center; padding:8px; border-radius:10px; text-decoration:none; font-weight:700; font-size:12px;">🗺️ Navegar</a>
                 `);
                 this.pointsLayer.addLayer(m);
             }
@@ -234,7 +264,7 @@ const app = {
     },
 
     filterMap(cat) {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
         event.target.classList.add('active');
         this.plot(cat);
     },
@@ -253,20 +283,25 @@ const app = {
 
             let poem = this.poems[p.id];
             let cardClass = isF ? 'frosty-card' : (isW ? 'wine-card' : '');
+            let routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
 
             let html = `
-                <div class="card ${cardClass}">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-cat">${p.cat}</div>
-                            <h3 class="card-title">${p.name}</h3>
-                        </div>
-                        <button class="star-btn ${isV ? 'visited' : ''}" onclick="app.handleStarClick(${p.id}, this)">
-                            <span class="material-icons-round">${isV ? 'star' : 'star_border'}</span>
-                        </button>
+                <div class="rich-card ${cardClass}">
+                    <div class="card-cover">
+                        <span class="card-badge">${p.cat}</span>
                     </div>
-                    <p class="card-desc">${p.desc}</p>
-                    ${poem ? `<div class="poem-text">"${poem}"</div>` : ''}
+                    <div class="card-body">
+                        <h3>${p.name}</h3>
+                        <p>${p.desc}</p>
+                        ${poem ? `<div class="poem-diary">"${poem}"</div><br>` : ''}
+                        
+                        <div class="card-actions">
+                            <a href="${routeUrl}" target="_blank" class="btn-route"><span class="material-icons-round" style="font-size:16px;">navigation</span> Rota</a>
+                            <button class="btn-star ${isV ? 'visited' : ''}" onclick="app.handleStarClick(${p.id}, this)">
+                                <span class="material-icons-round">${isV ? 'star' : 'star_border'}</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>`;
             
             if(isF) { htmlF += html; countF++; } else { htmlL += html; countL++; }
@@ -301,29 +336,31 @@ const app = {
     },
 
     saveData() {
-        localStorage.setItem('ceara_v6', JSON.stringify([...this.visited]));
-        localStorage.setItem('ceara_poems_v6', JSON.stringify(this.poems));
+        localStorage.setItem('ceara_premium', JSON.stringify([...this.visited]));
+        localStorage.setItem('ceara_poems_premium', JSON.stringify(this.poems));
         this.updateStats();
     },
 
     plotCurrentFilter() {
-        let filter = document.querySelector('.filter-btn.active').innerText.toLowerCase();
+        let active = document.querySelector('.chip.active');
+        if(!active) return;
+        let filter = active.innerText.toLowerCase();
         let cat = filter.includes('frosty') ? 'frosty' : (filter.includes('vinho') ? 'vinho' : (filter.includes('praia') ? 'praia' : (filter.includes('cultura') ? 'cultura' : 'all')));
         this.plot(cat);
     },
 
     updateStats() {
         const v = this.visited.size;
-        document.getElementById('stats').innerText = `${v} / 500`;
+        document.getElementById('stats').innerText = `${v} / 500 Locais`;
         document.getElementById('progress').style.width = `${(v/500)*100}%`;
     },
 
     switchTab(id, btn, color) {
         document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active', 'active-frosty'));
         btn.classList.add(color === 'secondary' ? 'active-frosty' : 'active');
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view-layer').forEach(t => t.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        if(id === 'tab-map') setTimeout(() => this.map.invalidateSize(), 50);
+        if(id === 'view-map') setTimeout(() => this.map.invalidateSize(), 50);
     },
 
     locate() {
