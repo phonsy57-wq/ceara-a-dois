@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ceará a Dois - Master Experience</title>
+    <title>Ceará a Dois - Liquid Glass Experience</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -11,91 +11,110 @@
     
     <style>
         :root {
-            --app-bg: #f8fafc;
-            --surface: #ffffff;
-            --primary: #7C3AED; 
-            --primary-light: #EDE9FE;
-            --secondary: #10B981; 
-            --secondary-light: #D1FAE5;
-            --wine: #E11D48; 
-            --wine-light: #FFE4E6;
-            --text-dark: #1E293B;
-            --text-gray: #64748B;
-            --gold: #F59E0B;
-            --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.05);
-            --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.1);
-            --shadow-float: 0 20px 40px rgba(124, 58, 237, 0.15);
+            --bg-gradient: linear-gradient(135deg, #0f0c1b, #1e1b4b, #090d16);
+            --glass-bg: rgba(255, 255, 255, 0.07);
+            --glass-card: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --primary: #9d4edd;
+            --secondary: #00f5d4;
+            --wine: #ff477e;
+            --gold: #ffd700;
+            --text-main: #ffffff;
+            --text-dim: #94a3b8;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--app-bg); color: var(--text-dark); overflow: hidden; }
+        body, html { 
+            margin: 0; padding: 0; height: 100%; font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: var(--bg-gradient); background-attachment: fixed; color: var(--text-main); overflow: hidden; 
+        }
 
         #app { display: flex; flex-direction: column; height: 100vh; position: relative; }
 
-        .view-layer { position: absolute; inset: 0; display: none; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; padding-bottom: 120px; background: var(--app-bg); }
-        .view-layer.active { display: block; animation: slideFade 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes slideFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .view-layer { position: absolute; inset: 0; display: none; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; padding-bottom: 130px; }
+        .view-layer.active { display: block; animation: glassEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes glassEntrance { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        /* HEADER DO MAPA E CLIMA */
-        .map-header { position: absolute; top: 0; left: 0; width: 100%; padding: 15px 20px; z-index: 1000; background: linear-gradient(to bottom, rgba(255,255,255,1) 40%, rgba(255,255,255,0)); pointer-events: none;}
-        .map-header h1 { margin: 0; font-size: 20px; font-weight: 800; color: var(--primary); pointer-events: auto;}
+        /* LIQUID GLASS COMPONENTS */
+        .liquid-glass {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        /* MAP HEADER & WEATHER */
+        .map-header { position: absolute; top: 15px; left: 15px; right: 15px; z-index: 1000; pointer-events: none; }
+        .map-header h1 { margin: 0 0 8px; font-size: 20px; font-weight: 800; background: linear-gradient(90deg, #fff, var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         
-        .smart-suggestion { background: var(--surface); padding: 10px 15px; border-radius: 16px; box-shadow: var(--shadow-sm); margin-top: 10px; display: flex; gap: 10px; align-items: center; pointer-events: auto; border-left: 4px solid var(--secondary);}
-        .smart-suggestion .icon { font-size: 24px; color: var(--gold); }
-        .smart-suggestion p { margin: 0; font-size: 12px; color: var(--text-gray); font-weight: 600; line-height: 1.4;}
+        .smart-suggestion { background: rgba(15, 12, 27, 0.75); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); padding: 12px 16px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); display: flex; gap: 12px; align-items: center; pointer-events: auto; }
+        .smart-suggestion .icon { font-size: 24px; color: var(--gold); filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.5)); }
+        .smart-suggestion p { margin: 0; font-size: 12px; color: var(--text-dim); font-weight: 500; line-height: 1.4; }
 
-        /* FILTROS */
-        .filter-scroll { position: absolute; top: 120px; left: 0; width: 100%; z-index: 1000; display: flex; gap: 8px; padding: 0 20px; overflow-x: auto; scrollbar-width: none; pointer-events: auto;}
+        /* FILTERS */
+        .filter-scroll { position: absolute; top: 130px; left: 0; width: 100%; z-index: 1000; display: flex; gap: 10px; padding: 0 15px; overflow-x: auto; scrollbar-width: none; pointer-events: auto; }
         .filter-scroll::-webkit-scrollbar { display: none; }
-        .chip { background: var(--surface); border: 1.5px solid #e2e8f0; color: var(--text-gray); padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 5px;}
-        .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .chip.frosty.active { background: var(--secondary); border-color: var(--secondary); }
-        .chip.wine.active { background: var(--wine); border-color: var(--wine); }
+        .chip { background: rgba(20, 18, 35, 0.8); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); color: var(--text-dim); padding: 10px 18px; border-radius: 30px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .chip.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 20px rgba(157, 78, 221, 0.6); transform: scale(1.05); }
+        .chip.frosty.active { background: var(--secondary); color: #000; border-color: var(--secondary); box-shadow: 0 0 20px rgba(0, 245, 212, 0.6); }
+        .chip.wine.active { background: var(--wine); color: white; border-color: var(--wine); box-shadow: 0 0 20px rgba(255, 71, 126, 0.6); }
 
         #map { width: 100%; height: 100%; z-index: 1; }
-        .fab-gps { position: absolute; bottom: 100px; right: 20px; width: 48px; height: 48px; background: var(--surface); color: var(--primary); border: none; border-radius: 50%; box-shadow: var(--shadow-lg); display: flex; justify-content: center; align-items: center; z-index: 1000; cursor: pointer; }
+        .fab-gps { position: absolute; bottom: 110px; right: 20px; width: 52px; height: 52px; background: rgba(20, 18, 35, 0.85); backdrop-filter: blur(15px); color: var(--secondary); border: 1px solid var(--glass-border); border-radius: 50%; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; cursor: pointer; transition: 0.3s; }
+        .fab-gps:active { transform: scale(0.9); }
 
-        /* DASHBOARD */
-        .dash-hero { background: var(--primary); color: white; padding: 35px 20px 25px; border-radius: 0 0 30px 30px; box-shadow: var(--shadow-lg); position: relative; }
-        .dash-title { font-size: 24px; font-weight: 800; margin: 0 0 5px; }
-        .progress-container { background: rgba(255,255,255,0.2); height: 8px; border-radius: 20px; overflow: hidden; margin-bottom: 6px; margin-top: 15px;}
-        .progress-bar { background: var(--secondary); height: 100%; width: 0%; border-radius: 20px; transition: 1s; }
-        .stats-text { font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; }
+        /* DASHBOARD HERO */
+        .dash-hero { background: rgba(15, 12, 27, 0.6); backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); padding: 40px 20px 25px; border-radius: 0 0 35px 35px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); position: relative; overflow: hidden; }
+        .dash-hero::before { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: var(--primary); filter: blur(60px); opacity: 0.4; }
+        .dash-title { font-size: 26px; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.5px; }
+        
+        .progress-container { background: rgba(255,255,255,0.08); height: 10px; border-radius: 20px; overflow: hidden; margin: 15px 0 6px; border: 1px solid rgba(255,255,255,0.05); }
+        .progress-bar { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; width: 0%; border-radius: 20px; transition: 1.2s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 15px var(--secondary); }
+        .stats-text { font-size: 11px; font-weight: 600; color: var(--text-dim); display: flex; justify-content: space-between; }
 
-        /* Sorteador */
-        .surprise-box { margin: 20px; background: linear-gradient(135deg, #FF758C, #FF7EB3); border-radius: 20px; padding: 20px; color: white; box-shadow: 0 10px 20px rgba(255, 117, 140, 0.3); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        /* SURPRISE BOX */
+        .surprise-box { margin: 20px; background: linear-gradient(135deg, rgba(157, 78, 221, 0.25), rgba(255, 71, 126, 0.25)); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px; color: white; box-shadow: 0 15px 35px rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; }
+        .surprise-box:active { transform: scale(0.98); }
         .surprise-box h3 { margin: 0 0 4px; font-size: 16px; font-weight: 800; }
-        .surprise-box p { margin: 0; font-size: 12px; opacity: 0.9; }
-        .surprise-btn { background: white; color: #FF758C; border: none; padding: 10px 15px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: var(--shadow-sm); }
+        .surprise-box p { margin: 0; font-size: 12px; color: var(--text-dim); }
+        .surprise-btn { background: white; color: #1e1b4b; border: none; padding: 10px 16px; border-radius: 14px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; }
 
-        .section-title { padding: 20px 20px 5px; font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;}
+        .section-title { padding: 15px 20px 5px; font-size: 18px; font-weight: 800; color: white; margin: 0; letter-spacing: -0.5px; }
 
         /* CARDS */
-        .grid { display: grid; gap: 15px; padding: 10px 20px 30px; }
-        .rich-card { background: var(--surface); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-sm); position: relative; border: 1px solid #e2e8f0;}
-        .card-body { padding: 20px 16px; }
-        .card-body h3 { margin: 0 0 4px; font-size: 16px; font-weight: 800; color: var(--primary); }
-        .frosty-card .card-body h3 { color: var(--secondary); }
-        .wine-card .card-body h3 { color: var(--wine); }
+        .grid { display: grid; gap: 16px; padding: 10px 20px 40px; }
+        .rich-card { background: var(--glass-card); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .rich-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,0.3); }
         
-        .card-body p { margin: 0 0 12px; font-size: 12px; color: var(--text-gray); line-height: 1.4; }
-        .card-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #F1F5F9; padding-top: 12px;}
-        .btn-route { background: var(--app-bg); color: var(--text-dark); border: none; padding: 8px 12px; border-radius: 10px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 4px;}
-        .btn-star { background: transparent; border: none; color: #CBD5E1; font-size: 26px; cursor: pointer; }
-        .btn-star.visited { color: var(--gold); }
+        .card-body { padding: 20px; }
+        .card-body h3 { margin: 0 0 4px; font-size: 15px; font-weight: 800; color: #fff; }
+        .frosty-card h3 { color: var(--secondary); }
+        .wine-card h3 { color: var(--wine); }
+        
+        .card-sub { font-size: 11px; color: var(--gold); font-weight: 600; margin-bottom: 8px; display: block; }
+        .card-body p { margin: 0 0 15px; font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+        .card-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px; }
+        
+        .btn-route { background: rgba(255,255,255,0.08); color: white; border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: 12px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 6px; transition: 0.3s; }
+        .btn-route:active { background: rgba(255,255,255,0.2); }
+        
+        .btn-star { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); width: 40px; height: 40px; border-radius: 50%; color: var(--text-dim); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .btn-star.visited { color: var(--gold); background: rgba(255, 215, 0, 0.15); border-color: rgba(255, 215, 0, 0.4); box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); transform: scale(1.1); }
 
-        /* FLOATING NAV */
-        .floating-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 360px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 30px; box-shadow: var(--shadow-float); display: flex; justify-content: space-between; padding: 6px 10px; z-index: 2000; border: 1px solid rgba(255,255,255,0.5); }
-        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 0; border-radius: 20px; border: none; background: transparent; color: var(--text-gray); font-family: inherit; font-size: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .nav-item .material-icons-round { font-size: 22px; margin-bottom: 2px; }
-        .nav-item.active { background: var(--primary-light); color: var(--primary); }
-        .nav-item.active-frosty { background: var(--secondary-light); color: var(--secondary); }
+        /* FLOATING NAV (LIQUID GLASS PILL) */
+        .floating-nav { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); width: 88%; max-width: 380px; background: rgba(15, 12, 27, 0.7); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 35px; box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.2); display: flex; justify-content: space-between; padding: 8px 12px; z-index: 2000; border: 1px solid var(--glass-border); }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 10px 0; border-radius: 25px; border: none; background: transparent; color: var(--text-dim); font-family: inherit; font-size: 10px; font-weight: 600; cursor: pointer; transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .nav-item .material-icons-round { font-size: 22px; margin-bottom: 3px; transition: 0.3s; }
+        .nav-item.active { background: var(--primary); color: white; box-shadow: 0 0 20px rgba(157, 78, 221, 0.6); transform: translateY(-3px); }
+        .nav-item.active-frosty { background: var(--secondary); color: #000; box-shadow: 0 0 20px rgba(0, 245, 212, 0.6); transform: translateY(-3px); }
 
-        /* POPUP MAPA */
-        .leaflet-popup-content-wrapper { border-radius: 14px; box-shadow: var(--shadow-lg); font-family: 'Plus Jakarta Sans'; }
-        .route-btn { display: block; background: var(--primary); color: white; text-align: center; padding: 8px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 11px; margin-top: 8px; }
-        .route-btn.frosty { background: var(--secondary); }
-        .route-btn.wine { background: var(--wine); }
+        /* MAP POPUPS */
+        .leaflet-popup-content-wrapper { background: rgba(15, 12, 27, 0.85) !important; backdrop-filter: blur(20px); color: white !important; border: 1px solid var(--glass-border); border-radius: 20px !important; box-shadow: 0 20px 40px rgba(0,0,0,0.6) !important; }
+        .leaflet-popup-tip { background: rgba(15, 12, 27, 0.85) !important; }
+        .route-btn { display: block; background: var(--primary); color: white; text-align: center; padding: 8px 12px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 11px; margin-top: 10px; box-shadow: 0 5px 15px rgba(157, 78, 221, 0.4); }
+        .route-btn.frosty { background: var(--secondary); color: #000; box-shadow: 0 5px 15px rgba(0, 245, 212, 0.4); }
+        .route-btn.wine { background: var(--wine); box-shadow: 0 5px 15px rgba(255, 71, 126, 0.4); }
     </style>
 </head>
 <body>
@@ -104,57 +123,57 @@
     <!-- VIEW 1: MAPA -->
     <div id="view-map" class="view-layer active">
         <div class="map-header">
-            <div>
-                <h1>Ceará a Dois</h1>
-                <div class="smart-suggestion">
-                    <span class="icon material-icons-round" id="weather-icon">wb_sunny</span>
-                    <p id="smart-tip">Analisando clima e horário para recomendar um roteiro...</p>
-                </div>
+            <h1>Ceará a Dois</h1>
+            <div class="smart-suggestion">
+                <span class="icon material-icons-round" id="weather-icon">wb_sunny</span>
+                <p id="smart-tip">Sincronizando clima e horários...</p>
             </div>
         </div>
         
         <div class="filter-scroll">
             <button class="chip active" onclick="app.filterMap('all')">🌍 Todos</button>
-            <button class="chip" onclick="app.filterMap('praia')">🌊 Praias & Natureza</button>
-            <button class="chip" onclick="app.filterMap('cultura')">🏛️ Arte & Cultura</button>
-            <button class="chip wine" onclick="app.filterMap('vinho')">🍷 Vinhos & Cafés</button>
-            <button class="chip frosty" onclick="app.filterMap('frosty')">🍦 Frosty Ice Cream</button>
+            <button class="chip" onclick="app.filterMap('praia')">🌊 Praias</button>
+            <button class="chip" onclick="app.filterMap('cultura')">🏛️ Cultura</button>
+            <button class="chip wine" onclick="app.filterMap('vinho')">🍷 Vinhos</button>
+            <button class="chip frosty" onclick="app.filterMap('frosty')">🍦 Frosty</button>
         </div>
 
         <div id="map"></div>
-        <button class="fab-gps" onclick="app.locate()"><span class="material-icons-round">my_location</span></button>
+        <button class="fab-gps liquid-glass" onclick="app.locate()"><span class="material-icons-round">my_location</span></button>
     </div>
 
     <!-- VIEW 2: DIÁRIO -->
     <div id="view-list" class="view-layer">
         <div class="dash-hero">
             <h1 class="dash-title">Nosso Diário 💜</h1>
-            <p style="margin:0; font-size:14px; opacity:0.9;">Registrando nossas memórias.</p>
+            <p style="margin:0; font-size:13px; color: var(--text-dim);">Colecionando momentos por todo o Ceará.</p>
             <div class="progress-container"><div class="progress-bar" id="progress"></div></div>
-            <div class="stats-text"><span>Progresso</span><span id="stats">0 Visitados</span></div>
+            <div class="stats-text"><span>Progresso dos Date</span><span id="stats">0 Visitados</span></div>
         </div>
 
         <div class="surprise-box" onclick="app.surpriseDate()">
             <div>
                 <h3>🎲 Sorteador de Date</h3>
-                <p>Não sabem para onde ir hoje? Deixe a sorte decidir!</p>
+                <p>Deixe a sorte escolher nosso próximo destino!</p>
             </div>
             <button class="surprise-btn">Sortear</button>
         </div>
 
-        <h2 class="section-title">Nossos Roteiros</h2>
+        <h2 class="section-title">Todos os Roteiros</h2>
         <div class="grid" id="grid-list"></div>
     </div>
 
     <!-- VIEW 3: FROSTY -->
     <div id="view-frosty" class="view-layer">
-        <div class="dash-hero" style="background: var(--secondary);">
-            <h1 class="dash-title">Frosty VIP 🍦</h1>
-            <p style="margin:0; font-size:14px; opacity:0.9;">As melhores lojas para um doce a dois.</p>
+        <div class="dash-hero" style="border-bottom-color: rgba(0, 245, 212, 0.3);">
+            <h1 class="dash-title" style="color: var(--secondary);">Frosty VIP 🍦</h1>
+            <p style="margin:0; font-size:13px; color: var(--text-dim);">Todas as unidades oficiais no Ceará.</p>
         </div>
+        <h2 class="section-title">Lojas Disponíveis</h2>
         <div class="grid" id="grid-frosty"></div>
     </div>
 
+    <!-- FLOATING NAV -->
     <div class="floating-nav">
         <button class="nav-item active" onclick="app.switchTab('view-map', this, 'primary')">
             <span class="material-icons-round">map</span> Mapa
@@ -170,77 +189,120 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ==========================================
-// CONFIGURAÇÃO DA CHAVE CARTO
-// ==========================================
-const CARTO_API_KEY = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7"; // Cole sua chave gerada em carto.com/basemaps/apikey
+// Chave da Carto Integrada com Sucesso
+const CARTO_API_KEY = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";
 
-// ==========================================
-// BANCO DE DADOS REAL E MASSIVO
-// ==========================================
 const DB = []; let nextId = 1;
-function addP(name, cat, lat, lng, desc) { DB.push({ id: nextId++, name, cat, lat, lng, desc }); }
+function addP(name, cat, lat, lng, address, neighborhood) { 
+    DB.push({ id: nextId++, name, cat, lat, lng, address, neighborhood }); 
+}
 
-// Unidades Frosty Reais
-const frostys = [
-    { n: "Frosty Beira Mar", l: [-3.7250, -38.4975], d: "Ponto clássico. Ideal para caminhar no calçadão saboreando um sorvete." },
-    { n: "Frosty Aldeota", l: [-3.7360, -38.5000], d: "Ótima parada durante a tarde na cidade." },
-    { n: "Frosty Benfica", l: [-3.7385, -38.5375], d: "Clima jovem e universitário." },
-    { n: "Frosty Messejana", l: [-3.8290, -38.4950], d: "Perfeita para fechar o dia pelo bairro." },
-    { n: "Frosty Parangaba", l: [-3.7750, -38.5620], d: "Bem localizada, ótima estrutura." },
-    { n: "Frosty Cidade dos Funcionários", l: [-3.7920, -38.4980], d: "Point agradável para a noite." },
-    { n: "Frosty Eusébio", l: [-3.8897, -38.4502], d: "No centro do Eusébio, ótima para um passeio no fim de semana." },
-    { n: "Frosty Maracanaú", l: [-3.8760, -38.6250], d: "Excelente loja na região metropolitana." },
-    { n: "Frosty Caucaia", l: [-3.7325, -38.6570], d: "Ótima para depois de um dia de sol nas praias da região." },
-    { n: "Frosty Sobral", l: [-3.6894, -40.3497], d: "Uma pausa refrescante na Princesa do Norte." },
-    { n: "Frosty Juazeiro do Norte", l: [-7.2307, -39.3130], d: "Point gelado no coração do Cariri." },
-    { n: "Frosty Crato", l: [-7.2340, -39.4120], d: "Ideal após conhecer a Encosta do Seminário." },
-    { n: "Frosty Iguatu", l: [-6.3580, -39.2980], d: "Sorvete e açaí deliciosos no centro." },
-    { n: "Frosty Aracati", l: [-4.5600, -37.7690], d: "A caminho de Canoa Quebrada." },
-    { n: "Frosty Cascavel", l: [-4.1300, -38.2400], d: "Doce parada pelo litoral leste." }
+// ==========================================
+// TODAS AS UNIDADES OFICIAIS DA FROSTY
+// ==========================================
+const frostyUnits = [
+    {n: "Frosty Praça Matriz", l: [-3.8290, -38.4950], a: "R. Manuel Castelo Branco, 352 – Loja 2", b: "Messejana"},
+    {n: "Frosty Cocó", l: [-3.7431, -38.4844], a: "R. Dr. Gilberto Studart, 155 – Lj 14", b: "Cocó"},
+    {n: "Frosty Washington Soares", l: [-3.7750, -38.4800], a: "Av. Washington Soares, 4200 – Loja 5", b: "Edson Queiroz"},
+    {n: "Frosty Cambeba", l: [-3.7850, -38.4900], a: "Av. Washington Soares, 6180 – Quiosque 2", b: "Parque Manibura"},
+    {n: "Frosty Lago Jacarey", l: [-3.7900, -38.4850], a: "Av. Viena Weyne, 540", b: "Cambeba"},
+    {n: "Frosty São João", l: [-3.7315, -38.5020], a: "Av. Santos Dumont, 1169", b: "Aldeota"},
+    {n: "Frosty Shopping Aldeota", l: [-3.7360, -38.5000], a: "Av. Dom Luís, 500 – Piso L1, Lj 11", b: "Aldeota"},
+    {n: "Frosty Barão de Studart", l: [-3.7380, -38.5050], a: "Av. Barão de Studart, 771", b: "Aldeota"},
+    {n: "Frosty Pinto Madeira", l: [-3.7280, -38.5150], a: "R. Pinto Madeira, 1236", b: "Aldeota"},
+    {n: "Frosty Sargento Hermínio", l: [-3.7200, -38.5500], a: "Av. Sgt. Hermínio Sampaio, 1320", b: "Monte Castelo"},
+    {n: "Frosty Jóquei Clube", l: [-3.7450, -38.5650], a: "Av. Sen. Fernandes Távora, 820 – Lj 31", b: "Jóquei Clube"},
+    {n: "Frosty Messejana (Frei Cirilo)", l: [-3.8350, -38.4900], a: "Av. Frei Cirilo, 3270 – Lj 10", b: "Cajazeiras"},
+    {n: "Frosty Conjunto Ceará", l: [-3.7400, -38.6000], a: "Av. H, 986", b: "Conjunto Ceará II"},
+    {n: "Frosty Solares", l: [-3.7600, -38.5800], a: "R. Cônego de Castro, 1138", b: "Parque São José"},
+    {n: "Frosty José Walter", l: [-3.8100, -38.5300], a: "Av. João de Araújo Lima, 1092", b: "Prefeito José Walter"},
+    {n: "Frosty Mateus José Walter", l: [-3.8120, -38.5320], a: "Av. João de Araújo Lima, 280 – Loja 04", b: "Prefeito José Walter"},
+    {n: "Frosty Maraponga", l: [-3.7800, -38.5400], a: "Av. Godofredo Maciel, 2540 – Loja 06", b: "Maraponga"},
+    {n: "Frosty Maraponga II", l: [-3.7650, -38.5450], a: "Av. Godofredo Maciel, 4035 – Lj 15", b: "Mondubim"},
+    {n: "Frosty Parangaba", l: [-3.7700, -38.5550], a: "Av. Godofredo Maciel, 86 – Loja 05", b: "Parangaba"},
+    {n: "Frosty Barra do Ceará", l: [-3.7150, -38.5800], a: "Av. Pres. Castelo Branco, 5943 – Lj 4, 5 e 6", b: "Barra do Ceará"},
+    {n: "Frosty Cidade 2000", l: [-3.7400, -38.4650], a: "R. Andrade Furtado", b: "Papicu"},
+    {n: "Frosty Presidente Kennedy", l: [-3.7300, -38.5700], a: "Av. Cearenses, 423 – Lj 17 e 18", b: "Presidente Kennedy"},
+    {n: "Frosty São Cristóvão", l: [-3.7500, -38.5400], a: "Av. Castelo de Castro, 371", b: "São Cristóvão"},
+    {n: "Frosty João Pessoa", l: [-3.7450, -38.5300], a: "R. Des. Praxedes, 163 – Lj 11 e 12", b: "Damas"},
+    {n: "Frosty Itaoca Mall", l: [-3.7550, -38.5450], a: "R. 15 de Novembro, 340", b: "Itaoca"},
+    {n: "Frosty Borges de Melo", l: [-3.7500, -38.5200], a: "Av. Borges de Melo, 1287", b: "Parreão"},
+    {n: "Frosty Jacarecanga", l: [-3.7220, -38.5350], a: "Av. Francisco Sá, 2670", b: "Jacarecanga"},
+    {n: "Frosty Bom Jardim", l: [-3.7800, -38.6000], a: "Av. Oscar Araripe, 1909", b: "Bom Jardim"},
+    {n: "Frosty Pátio Castelão", l: [-3.8000, -38.5200], a: "Av. Alberto Craveiro, 1972 – Lj 7 e 8", b: "Boa Vista / Castelão"},
+    {n: "Frosty Valparaíso", l: [-3.8500, -38.4700], a: "R. Valparaíso, 1303 – Lj 26", b: "Jangurussu"},
+    {n: "Frosty Silas Munguba", l: [-3.7850, -38.5250], a: "Av. Dr. Silas Munguba, 4301 – Lj 4", b: "Serrinha"},
+
+    // Região Metropolitana
+    {n: "Frosty Fábrica (matriz)", l: [-3.8760, -38.6250], a: "Av. Wilson Camurça, 2600", b: "Distrito Industrial, Maracanaú"},
+    {n: "Frosty Pitaguary", l: [-3.8700, -38.6200], a: "Av. Carlos Jereissati, 113 – Lj B", b: "Centro, Maracanaú"},
+    {n: "Frosty Pacatuba", l: [-3.9800, -38.6300], a: "Av. XVII, 404", b: "CJereissati II, Pacatuba"},
+    {n: "Frosty Maranguape", l: [-3.8900, -38.6800], a: "R. Chicó Anísio, 200 – Lj 9 e 10", b: "Centro, Maranguape"},
+    {n: "Frosty Sol Poente", l: [-3.6500, -38.7000], a: "Rod. CE-085, 1950 – Loja 10", b: "Curicaca, Caucaia"},
+    {n: "Frosty Icaraí", l: [-3.6300, -38.7300], a: "Estrada do Cumbuco, 1031", b: "Icaraí, Caucaia"},
+    {n: "Frosty Jurema", l: [-3.7200, -38.6400], a: "Av. Dom Almeida Lustosa, 2702", b: "Parque Guadalajara, Caucaia"},
+    {n: "Frosty Palmares", l: [-3.8897, -38.4502], a: "Av. Eusébio de Queiroz, 2880 – Lj 21", b: "Coité, Eusébio"},
+    {n: "Frosty Shopping Eusébio", l: [-3.8950, -38.4600], a: "Av. Eusébio de Queiroz, 1890 – Lj 294", b: "Tamatanduba, Eusébio"},
+    {n: "Frosty Buena Vista", l: [-3.8900, -38.4550], a: "R. Farias Brito, s/n", b: "Amador, Eusébio"},
+    {n: "Frosty Porto das Dunas", l: [-3.8500, -38.3600], a: "Porto das Dunas (Palmares)", b: "Porto das Dunas, Aquiraz"},
+    {n: "Frosty Aquiraz Centro", l: [-3.9000, -38.3800], a: "Av. N. Sra. de Lurdes, 77", b: "Centro, Aquiraz"},
+    {n: "Frosty Horizonte", l: [-4.1000, -38.4900], a: "R. Manoel Conrado de Sousa, 953 – Lj D", b: "Zumbi, Horizonte"},
+    {n: "Frosty Pacajus II", l: [-4.1800, -38.4700], a: "Av. Pedro Philomeno Gomes, 356 – Loja 2", b: "Centro, Pacajus"},
+
+    // Interior do Ceará
+    {n: "Frosty Cascavel", l: [-4.1300, -38.2400], a: "R. Francisco Galdino de Souza, 2319", b: "Centro, Cascavel"},
+    {n: "Frosty Beberibe", l: [-4.1800, -38.1300], a: "Rua I, Lot. Sagrada Família – Lj 01 e 02", b: "Sagrada Família, Beberibe"},
+    {n: "Frosty Aracati", l: [-4.5600, -37.7690], a: "Av. Abelardo Gurgel Costa Lima, 1917", b: "Várzea da Matriz, Aracati"},
+    {n: "Frosty Fortim", l: [-4.4500, -37.7800], a: "Av. Joaquim Crisóstomo, 1395 – Loja 03", b: "Centro, Fortim"},
+    {n: "Frosty Russas", l: [-4.9400, -37.9700], a: "R. Padre Zacarias Ramalho, 235", b: "Centro, Russas"},
+    {n: "Frosty Limoeiro do Norte", l: [-5.1500, -38.0800], a: "R. Cel. Serafim Chaves, 330", b: "Centro, Limoeiro do Norte"},
+    {n: "Frosty Quixeramobim", l: [-5.2100, -39.3000], a: "Av. Dr. Joaquim Fernandes, 798", b: "Centro, Quixeramobim"},
+    {n: "Frosty Quixadá", l: [-4.9700, -39.0100], a: "Av. Plácido Castelo, 1943", b: "Centro, Quixadá"},
+    {n: "Frosty Canindé", l: [-4.3500, -39.3100], a: "R. Joaquim Magalhães, 895 A", b: "Centro, Canindé"},
+    {n: "Frosty Iguatu", l: [-6.3580, -39.2980], a: "Av. Carlos Roberto Costa, 982", b: "Vila Centenário, Iguatu"},
+    {n: "Frosty São José", l: [-7.2307, -39.3130], a: "Av. Padre Cícero, 4255", b: "São José, Juazeiro do Norte"},
+    {n: "Frosty Juazeiro Mall", l: [-7.2250, -39.3100], a: "Av. Padre Cícero, 2241 – Lj 25", b: "São José, Juazeiro do Norte"},
+    {n: "Frosty Praça do Romeiro", l: [-7.2200, -39.3200], a: "R. do Cruzeiro, 179", b: "Centro, Juazeiro do Norte"},
+    {n: "Frosty Tiradentes", l: [-7.2400, -39.3000], a: "Av. Pres. Castelo Branco, 3090", b: "Tiradentes, Juazeiro do Norte"},
+    {n: "Frosty Barbalha", l: [-7.3100, -39.3000], a: "R. do Vidéo, 4", b: "Centro, Barbalha"},
+    {n: "Frosty Sobral", l: [-3.6894, -40.3497], a: "Av. Dr. Guarani, 1066", b: "Centro, Sobral"},
+    {n: "Frosty Tianguá", l: [-3.6700, -40.9900], a: "R. Maria de Lourdes A. de Vasconcelos, 200 – Lj 41", b: "Centro, Tianguá"},
+    {n: "Frosty Itapipoca Centro", l: [-3.4900, -39.5800], a: "Av. Anastácio Braga, 912 A", b: "Centro, Itapipoca"},
+    {n: "Frosty Itapipoca Pinheiro", l: [-3.4950, -39.5750], a: "Av. José do Patrocínio, 1481", b: "Coqueiro, Itapipoca"},
+    {n: "Frosty Trairi", l: [-3.2700, -39.2600], a: "Av. Padre Tomás Feliu Amengual, 191 – Lj 08 e 09", b: "Centro, Trairi"},
+    {n: "Frosty Acaraú", l: [-2.8800, -40.1200], a: "R. Expedito Farias", b: "José Sousa Farias, Acaraú"}
 ];
-frostys.forEach(f => addP(f.n, 'frosty', f.l[0], f.l[1], f.d));
 
-// Cafés e Vinhos
+frostys.forEach(f => addP(f.n, 'frosty', f.l[0], f.l[1], `${f.a} - ${f.b}`, f.b));
+
+// Cafés & Vinhos
 const vinhos = [
-    { n: "Santa Clara Eco Café", l: [-3.7214, -38.5117], d: "Um café especial no ambiente rústico do Dragão do Mar." },
-    { n: "Brava Wine", l: [-3.7405, -38.4900], d: "Excelente carta de vinhos e ambiente sofisticado para um date." },
-    { n: "Grand Cru Vinhos", l: [-3.7380, -38.4950], d: "Vinhos importados e tábuas de queijos maravilhosas." },
-    { n: "Amika Coffeehouse", l: [-3.7350, -38.4920], d: "Cafés especiais extraídos à perfeição, ótimo para boas conversas." },
-    { n: "Le Pain Le Café", l: [-3.7390, -38.4910], d: "Pães e cafés deliciosos com clima acolhedor." },
-    { n: "Cabaña Del Primo", l: [-3.7319, -38.4875], d: "Perfeito para um jantar romântico com bons vinhos." }
+    {n: "Santa Clara Eco Café", l: [-3.7214, -38.5117], a: "Dragão do Mar", b: "Praia de Iracema"},
+    {n: "Brava Wine", l: [-3.7405, -38.4900], a: "Av. Desembargador Moreira", b: "Aldeota"},
+    {n: "Grand Cru Vinhos", l: [-3.7380, -38.4950], a: "Rua Tibúrcio Cavalcante", b: "Aldeota"},
+    {n: "Amika Coffeehouse", l: [-3.7350, -38.4920], a: "Rua Ana Bilhar", b: "Meireles"}
 ];
-vinhos.forEach(v => addP(v.n, 'vinho', v.l[0], v.l[1], v.d));
+vinhos.forEach(v => addP(v.n, 'vinho', v.l[0], v.l[1], `${v.a} - ${v.b}`, v.b));
 
-// Arte, Cultura & Praias
+// Cultura & Praias
 const cultura = [
-    { n: "Museu da Fotografia", l: [-3.7431, -38.4912], d: "Exposições incríveis de imagens. Perfeito para quem gosta de fotografia." },
-    { n: "Centro Dragão do Mar", l: [-3.7214, -38.5117], d: "Planetário, cinema, exposições e bares clássicos ao redor." },
-    { n: "Theatro José de Alencar", l: [-3.7275, -38.5305], d: "Arquitetura riquíssima e histórica. Rende fotos belíssimas." },
-    { n: "Passeio Público", l: [-3.7222, -38.5255], d: "A praça mais antiga. Sentar debaixo de um baobá é muito relaxante." },
-    { n: "Estação das Artes", l: [-3.7210, -38.5300], d: "Polo cultural novíssimo, sempre com ótimos eventos de arte." },
-    { n: "Praça Luíza Távora (Ceart)", l: [-3.7335, -38.5100], d: "Artesanato cearense e um local muito agradável para o fim de tarde." },
-    { n: "Pinacoteca do Ceará", l: [-3.7215, -38.5290], d: "Obras de arte contemporâneas e espaços inspiradores." },
-    { n: "Parque do Cocó", l: [-3.7483, -38.4844], d: "Trilhas, natureza e piqueniques na maior área verde da cidade." },
-    { n: "Mercado Central", l: [-3.7225, -38.5247], d: "Para explorar as raízes e a cultura artesanal do estado." }
+    {n: "Museu da Fotografia", l: [-3.7431, -38.4912], a: "Rua Frederico Borges, 545", b: "Aldeota"},
+    {n: "Centro Dragão do Mar", l: [-3.7214, -38.5117], a: "Rua Almirante Jaceguai, 81", b: "Praia de Iracema"},
+    {n: "Theatro José de Alencar", l: [-3.7275, -38.5305], a: "Praça José de Alencar", b: "Centro"},
+    {n: "Parque do Cocó", l: [-3.7483, -38.4844], a: "Av. Padre Antônio Tomás", b: "Cocó"}
 ];
-cultura.forEach(c => addP(c.n, 'cultura', c.l[0], c.l[1], c.d));
+cultura.forEach(c => addP(c.n, 'cultura', c.l[0], c.l[1], `${c.a} - ${c.b}`, c.b));
 
 const praias = [
-    { n: "Beira Mar - Espigão do Náutico", l: [-3.7255, -38.4950], d: "Caminhar à noite aqui ou assistir ao pôr do sol é essencial." },
-    { n: "Praia do Futuro", l: [-3.7420, -38.4560], d: "Estrutura gigante e caranguejo." },
-    { n: "Cumbuco", l: [-3.6300, -38.7300], d: "Passeios de buggy com emoção nas dunas." },
-    { n: "Morro Branco", l: [-4.1333, -38.1167], d: "Labirinto natural de falésias coloridas. Paisagem inesquecível." },
-    { n: "Canoa Quebrada", l: [-4.5269, -37.6974], d: "Falésias avermelhadas e a agitada noite na Broadway." },
-    { n: "Jericoacoara", l: [-2.7975, -40.5141], d: "O paraíso das redes na água e do pôr do sol nas dunas." },
-    { n: "Pico Alto - Guaramiranga", l: [-4.2625, -38.9328], d: "Frio na serra! Clima propício para foundue, vinhos e muito amor." },
-    { n: "Praia de Flecheiras", l: [-3.2200, -39.2600], d: "Piscinas naturais belíssimas." }
+    {n: "Beira Mar - Espigão", l: [-3.7255, -38.4950], a: "Av. Beira Mar", b: "Meireles"},
+    {n: "Jericoacoara", l: [-2.7975, -40.5141], a: "Vila de Jericoacoara", b: "Jeri"},
+    {n: "Pico Alto - Guaramiranga", l: [-4.2625, -38.9328], a: "Serra de Baturité", b: "Guaramiranga"}
 ];
-praias.forEach(p => addP(p.n, 'praia', p.l[0], p.l[1], p.d));
+praias.forEach(p => addP(p.n, 'praia', p.l[0], p.l[1], `${p.a} - ${p.b}`, p.b));
 
 
 const app = {
-    visited: new Set(JSON.parse(localStorage.getItem('ceara_master_3')) || []),
+    visited: new Set(JSON.parse(localStorage.getItem('ceara_liquid_v5')) || []),
     map: null, pointsLayer: null,
 
     init() {
@@ -251,7 +313,7 @@ const app = {
 
     async checkWeatherAndTime() {
         const hour = new Date().getHours();
-        let temp = 26; let isRaining = false;
+        let temp = 27; let isRaining = false;
         try {
             const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-3.7172&longitude=-38.5430&current_weather=true');
             const data = await res.json();
@@ -263,31 +325,20 @@ const app = {
         const iconEl = document.getElementById('weather-icon');
 
         if (hour >= 18 || hour < 4) {
-            iconEl.innerText = "dark_mode"; iconEl.style.color = "#7C3AED";
-            tipEl.innerText = isRaining ? `Noite com chuva (${temp}°C). Que tal um ambiente acolhedor com vinhos a dois?` : `A noite está agradável (${temp}°C). Excelente horário para um passeio na Beira Mar ou tomar um sorvete na Frosty!`;
+            iconEl.innerText = "dark_mode";
+            tipEl.innerText = isRaining ? `Noite com chuva (${temp}°C). Perfeito para um vinho ou açaí aconchegante!` : `Noite linda (${temp}°C). Que tal um passeio na Beira Mar ou uma unidade Frosty?`;
         } else {
-            if (isRaining) {
-                iconEl.innerText = "water_drop"; iconEl.style.color = "#3B82F6";
-                tipEl.innerText = `Chuva lá fora (${temp}°C). Ideal para roteiros culturais e cafés fechados.`;
-            } else if (temp >= 29) {
-                iconEl.innerText = "local_fire_department"; iconEl.style.color = "#EF4444";
-                tipEl.innerText = `Calor de ${temp}°C! Perfeito para ir à praia ou se refrescar numa unidade Frosty.`;
-            } else {
-                iconEl.innerText = "wb_sunny"; iconEl.style.color = "#F59E0B";
-                tipEl.innerText = `Dia lindo (${temp}°C). Ótimo para caminhar ao ar livre.`;
-            }
+            iconEl.innerText = temp >= 29 ? "local_fire_department" : "wb_sunny";
+            tipEl.innerText = temp >= 29 ? `Calor de ${temp}°C! Ideal para praias ou um sorvete gelado.` : `Dia agradável (${temp}°C). Ótimo para caminhar ao ar livre.`;
         }
     },
 
     initMap() {
-        this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-3.75, -38.5], 11);
+        this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-3.75, -38.5], 10);
         
-        // CartoDB Voyager Oficial com suporte à sua API Key (Remove totalmente o aviso de restrição)
-        const tileUrl = CARTO_API_KEY && CARTO_API_KEY !== "COLE_SUA_CHAVE_AQUI" 
-            ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`
-            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-
-        L.tileLayer(tileUrl, { maxZoom: 20, attribution: '© CARTO & OpenStreetMap' }).addTo(this.map);
+        // CartoDB Voyager com a sua chave oficial integrada
+        const tileUrl = `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`;
+        L.tileLayer(tileUrl, { maxZoom: 20, attribution: '© CARTO' }).addTo(this.map);
 
         this.pointsLayer = L.layerGroup().addTo(this.map);
         this.plot('all');
@@ -298,16 +349,24 @@ const app = {
         DB.forEach(p => {
             if(filter === 'all' || p.cat === filter) {
                 let isF = p.cat === 'frosty', isW = p.cat === 'vinho', isV = this.visited.has(p.id);
-                let color = isF ? '#10B981' : (isW ? '#E11D48' : '#7C3AED'); 
-                if(isV) color = '#F59E0B';
+                
+                let markerHtml, m;
+                if(isV) {
+                    markerHtml = `<div style="background: rgba(255, 215, 0, 0.25); border: 2px solid #ffd700; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); box-shadow: 0 0 18px #ffd700;"><span class="material-icons-round" style="color: #ffd700; font-size: 18px;">star</span></div>`;
+                    let customIcon = L.divIcon({ html: markerHtml, className: 'custom-star-marker', iconSize: [34, 34], iconAnchor: [17, 17] });
+                    m = L.marker([p.lat, p.lng], { icon: customIcon });
+                } else {
+                    let color = isF ? '#00f5d4' : (isW ? '#ff477e' : '#9d4edd');
+                    m = L.circleMarker([p.lat, p.lng], { radius: 7, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.9 });
+                }
 
                 let btnClass = isF ? 'frosty' : (isW ? 'wine' : '');
-                let m = L.circleMarker([p.lat, p.lng], { radius: 7, fillColor: color, color: '#fff', weight: 2, fillOpacity: 1 });
                 let routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
                 
                 m.bindPopup(`
-                    <h3 style="margin:0 0 4px; font-size:15px; font-weight:800; color:${color};">${p.name}</h3>
-                    <p style="margin:0 0 10px; font-size:12px; color:#64748B;">${p.desc}</p>
+                    <h3 style="margin:0 0 4px; font-size:15px; font-weight:800; color:${isV ? '#ffd700' : '#fff'};">${p.name} ${isV ? '⭐' : ''}</h3>
+                    <span style="font-size:11px; color:#38bdf8; display:block; margin-bottom:4px;">📍 ${p.address}</span>
+                    <p style="margin:0 0 10px; font-size:12px; color:#cbd5e1;">${p.desc || 'Unidade oficial Frosty.'}</p>
                     <a href="${routeUrl}" target="_blank" class="route-btn ${btnClass}">🗺️ Rota GPS Automática</a>
                 `);
                 this.pointsLayer.addLayer(m);
@@ -329,15 +388,17 @@ const app = {
 
         sortedDB.forEach(p => {
             let isF = p.cat === 'frosty', isW = p.cat === 'vinho', isV = this.visited.has(p.id);
+            let cardClass = isF ? 'frosty-card' : (isW ? 'wine-card' : '');
             let routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
 
             let html = `
-                <div class="rich-card">
+                <div class="rich-card ${cardClass}">
                     <div class="card-body">
                         <h3>${p.name}</h3>
-                        <p>${p.desc}</p>
+                        <span class="card-sub">📍 ${p.address}</span>
+                        <p>${p.desc || 'Local mapeado para roteiro a dois.'}</p>
                         <div class="card-actions">
-                            <a href="${routeUrl}" target="_blank" class="btn-route"><span class="material-icons-round" style="font-size:14px;">directions_car</span> Rota</a>
+                            <a href="${routeUrl}" target="_blank" class="btn-route"><span class="material-icons-round" style="font-size:14px;">navigation</span> Rota GPS</a>
                             <button class="btn-star ${isV ? 'visited' : ''}" onclick="app.toggleStar(${p.id})">
                                 <span class="material-icons-round">${isV ? 'star' : 'star_border'}</span>
                             </button>
@@ -352,7 +413,7 @@ const app = {
 
     toggleStar(id) {
         if(this.visited.has(id)) this.visited.delete(id); else this.visited.add(id);
-        localStorage.setItem('ceara_master_3', JSON.stringify([...this.visited]));
+        localStorage.setItem('ceara_liquid_v5', JSON.stringify([...this.visited]));
         this.updateStats(); this.renderCards();
         let active = document.querySelector('.chip.active');
         let filter = active ? active.innerText.toLowerCase() : 'all';
@@ -362,7 +423,7 @@ const app = {
 
     surpriseDate() {
         let randomPlace = DB[Math.floor(Math.random() * DB.length)];
-        alert(`🎲 Nosso Date de Hoje: \n\n📍 ${randomPlace.name}\n💡 ${randomPlace.desc}\n\nAbra o mapa para conferir a rota!`);
+        alert(`🎲 Nosso Date de Hoje: \n\n📍 ${randomPlace.name}\n📫 ${randomPlace.address}\n\nAbra o mapa para conferir a rota!`);
         this.map.flyTo([randomPlace.lat, randomPlace.lng], 14);
         this.switchTab('view-map', document.querySelectorAll('.nav-item')[0], 'primary');
     },
