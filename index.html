@@ -31,16 +31,13 @@
 
         #app { width: 100%; height: 100%; position: relative; overflow: hidden; }
 
-        /* VIEW LAYERS (Telas do App) */
         .view-layer { position: absolute; inset: 0; display: none; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; padding-bottom: 120px; }
         .view-layer.active { display: block; animation: glassEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes glassEntrance { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* TELA DE MAPA BLINDADA */
         #view-map { padding-bottom: 0; background: #0f0c1b; }
         #map { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
 
-        /* LIQUID GLASS COMPONENTS */
         .liquid-glass {
             background: var(--glass-bg);
             backdrop-filter: blur(20px);
@@ -49,7 +46,6 @@
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
         }
 
-        /* MAP HEADER & WEATHER */
         .map-header { position: absolute; top: 15px; left: 15px; right: 15px; z-index: 1000; pointer-events: none; }
         .map-header h1 { margin: 0 0 6px; font-size: 20px; font-weight: 800; background: linear-gradient(90deg, #fff, var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         
@@ -57,7 +53,6 @@
         .smart-suggestion .icon { font-size: 22px; color: var(--gold); }
         .smart-suggestion p { margin: 0; font-size: 11px; color: var(--text-dim); font-weight: 500; line-height: 1.3; }
 
-        /* FILTERS */
         .filter-scroll { position: absolute; top: 115px; left: 0; width: 100%; z-index: 1000; display: flex; gap: 8px; padding: 0 15px; overflow-x: auto; scrollbar-width: none; pointer-events: auto; }
         .filter-scroll::-webkit-scrollbar { display: none; }
         .chip { background: rgba(20, 18, 35, 0.85); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); color: var(--text-dim); padding: 8px 16px; border-radius: 30px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
@@ -67,7 +62,6 @@
 
         .fab-gps { position: absolute; bottom: 110px; right: 20px; width: 50px; height: 50px; background: rgba(20, 18, 35, 0.9); backdrop-filter: blur(15px); color: var(--secondary); border: 1px solid var(--glass-border); border-radius: 50%; box-shadow: 0 10px 25px rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000; cursor: pointer; }
 
-        /* DASHBOARD HERO */
         .dash-hero { background: rgba(15, 12, 27, 0.6); backdrop-filter: blur(25px); border-bottom: 1px solid var(--glass-border); padding: 35px 20px 20px; border-radius: 0 0 30px 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
         .dash-title { font-size: 24px; font-weight: 800; margin: 0 0 4px; }
         
@@ -75,7 +69,6 @@
         .progress-bar { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; width: 0%; border-radius: 20px; transition: 1s; }
         .stats-text { font-size: 11px; font-weight: 600; color: var(--text-dim); display: flex; justify-content: space-between; }
 
-        /* SURPRISE BOX */
         .surprise-box { margin: 20px; background: linear-gradient(135deg, rgba(157, 78, 221, 0.25), rgba(255, 71, 126, 0.25)); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; color: white; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .surprise-box h3 { margin: 0 0 4px; font-size: 15px; font-weight: 800; }
         .surprise-box p { margin: 0; font-size: 11px; color: var(--text-dim); }
@@ -83,7 +76,6 @@
 
         .section-title { padding: 15px 20px 5px; font-size: 17px; font-weight: 800; color: white; margin: 0; }
 
-        /* CARDS */
         .grid { display: grid; gap: 15px; padding: 10px 20px 40px; }
         .rich-card { background: var(--glass-card); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         .card-body { padding: 18px; }
@@ -99,14 +91,12 @@
         .btn-star { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); width: 38px; height: 38px; border-radius: 50%; color: var(--text-dim); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
         .btn-star.visited { color: var(--gold); background: rgba(255, 215, 0, 0.15); border-color: rgba(255, 215, 0, 0.4); box-shadow: 0 0 12px rgba(255, 215, 0, 0.4); }
 
-        /* FLOATING NAV */
         .floating-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 88%; max-width: 380px; background: rgba(15, 12, 27, 0.75); backdrop-filter: blur(25px); border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: flex; justify-content: space-between; padding: 6px 10px; z-index: 2000; border: 1px solid var(--glass-border); }
         .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 0; border-radius: 20px; border: none; background: transparent; color: var(--text-dim); font-family: inherit; font-size: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .nav-item .material-icons-round { font-size: 22px; margin-bottom: 2px; }
         .nav-item.active { background: var(--primary); color: white; box-shadow: 0 0 15px rgba(157, 78, 221, 0.6); transform: translateY(-2px); }
         .nav-item.active-frosty { background: var(--secondary); color: #000; box-shadow: 0 0 15px rgba(0, 245, 212, 0.6); transform: translateY(-2px); }
 
-        /* MAP POPUPS */
         .leaflet-popup-content-wrapper { background: rgba(15, 12, 27, 0.9) !important; backdrop-filter: blur(20px); color: white !important; border: 1px solid var(--glass-border); border-radius: 16px !important; box-shadow: 0 15px 30px rgba(0,0,0,0.6) !important; }
         .leaflet-popup-tip { background: rgba(15, 12, 27, 0.9) !important; }
         .route-btn { display: block; background: var(--primary); color: white; text-align: center; padding: 7px 10px; border-radius: 10px; text-decoration: none; font-weight: bold; font-size: 11px; margin-top: 8px; }
@@ -117,7 +107,6 @@
 <body>
 
 <div id="app">
-    <!-- VIEW 1: MAPA -->
     <div id="view-map" class="view-layer active">
         <div class="map-header">
             <h1>Ceará a Dois</h1>
@@ -139,7 +128,6 @@
         <button class="fab-gps liquid-glass" onclick="app.locate()"><span class="material-icons-round">my_location</span></button>
     </div>
 
-    <!-- VIEW 2: DIÁRIO -->
     <div id="view-list" class="view-layer">
         <div class="dash-hero">
             <h1 class="dash-title">Nosso Diário 💜</h1>
@@ -160,7 +148,6 @@
         <div class="grid" id="grid-list"></div>
     </div>
 
-    <!-- VIEW 3: FROSTY -->
     <div id="view-frosty" class="view-layer">
         <div class="dash-hero" style="border-bottom-color: rgba(0, 245, 212, 0.3);">
             <h1 class="dash-title" style="color: var(--secondary);">Frosty VIP 🍦</h1>
@@ -170,7 +157,6 @@
         <div class="grid" id="grid-frosty"></div>
     </div>
 
-    <!-- FLOATING NAV -->
     <div class="floating-nav">
         <button class="nav-item active" onclick="app.switchTab('view-map', this, 'primary')">
             <span class="material-icons-round">map</span> Mapa
@@ -193,89 +179,91 @@ function addP(name, cat, lat, lng, address, neighborhood) {
     DB.push({ id: nextId++, name, cat, lat, lng, address, neighborhood }); 
 }
 
-// Unidades oficiais Frosty
+// ==========================================
+// UNIDADES OFICIAIS DA FROSTY (COORDENADAS CORRIGIDAS)
+// ==========================================
 const frostyUnits = [
-    {n: "Frosty Praça Matriz", l: [-3.8290, -38.4950], a: "R. Manuel Castelo Branco, 352 – Loja 2", b: "Messejana"},
-    {n: "Frosty Cocó", l: [-3.7431, -38.4844], a: "R. Dr. Gilberto Studart, 155 – Lj 14", b: "Cocó"},
-    {n: "Frosty Washington Soares", l: [-3.7750, -38.4800], a: "Av. Washington Soares, 4200 – Loja 5", b: "Edson Queiroz"},
-    {n: "Frosty Cambeba", l: [-3.7850, -38.4900], a: "Av. Washington Soares, 6180 – Quiosque 2", b: "Parque Manibura"},
-    {n: "Frosty Lago Jacarey", l: [-3.7900, -38.4850], a: "Av. Viena Weyne, 540", b: "Cambeba"},
-    {n: "Frosty São João", l: [-3.7315, -38.5020], a: "Av. Santos Dumont, 1169", b: "Aldeota"},
-    {n: "Frosty Shopping Aldeota", l: [-3.7360, -38.5000], a: "Av. Dom Luís, 500 – Piso L1, Lj 11", b: "Aldeota"},
-    {n: "Frosty Barão de Studart", l: [-3.7380, -38.5050], a: "Av. Barão de Studart, 771", b: "Aldeota"},
-    {n: "Frosty Pinto Madeira", l: [-3.7280, -38.5150], a: "R. Pinto Madeira, 1236", b: "Aldeota"},
-    {n: "Frosty Sargento Hermínio", l: [-3.7200, -38.5500], a: "Av. Sgt. Hermínio Sampaio, 1320", b: "Monte Castelo"},
-    {n: "Frosty Jóquei Clube", l: [-3.7450, -38.5650], a: "Av. Sen. Fernandes Távora, 820 – Lj 31", b: "Jóquei Clube"},
-    {n: "Frosty Messejana (Frei Cirilo)", l: [-3.8350, -38.4900], a: "Av. Frei Cirilo, 3270 – Lj 10", b: "Cajazeiras"},
-    {n: "Frosty Conjunto Ceará", l: [-3.7400, -38.6000], a: "Av. H, 986", b: "Conjunto Ceará II"},
-    {n: "Frosty Solares", l: [-3.7600, -38.5800], a: "R. Cônego de Castro, 1138", b: "Parque São José"},
-    {n: "Frosty José Walter", l: [-3.8100, -38.5300], a: "Av. João de Araújo Lima, 1092", b: "Prefeito José Walter"},
-    {n: "Frosty Mateus José Walter", l: [-3.8120, -38.5320], a: "Av. João de Araújo Lima, 280 – Loja 04", b: "Prefeito José Walter"},
-    {n: "Frosty Maraponga", l: [-3.7800, -38.5400], a: "Av. Godofredo Maciel, 2540 – Loja 06", b: "Maraponga"},
-    {n: "Frosty Maraponga II", l: [-3.7650, -38.5450], a: "Av. Godofredo Maciel, 4035 – Lj 15", b: "Mondubim"},
-    {n: "Frosty Parangaba", l: [-3.7700, -38.5550], a: "Av. Godofredo Maciel, 86 – Loja 05", b: "Parangaba"},
-    {n: "Frosty Barra do Ceará", l: [-3.7150, -38.5800], a: "Av. Pres. Castelo Branco, 5943 – Lj 4, 5 e 6", b: "Barra do Ceará"},
-    {n: "Frosty Cidade 2000", l: [-3.7400, -38.4650], a: "R. Andrade Furtado", b: "Papicu"},
-    {n: "Frosty Presidente Kennedy", l: [-3.7300, -38.5700], a: "Av. Cearenses, 423 – Lj 17 e 18", b: "Presidente Kennedy"},
-    {n: "Frosty São Cristóvão", l: [-3.7500, -38.5400], a: "Av. Castelo de Castro, 371", b: "São Cristóvão"},
-    {n: "Frosty João Pessoa", l: [-3.7450, -38.5300], a: "R. Des. Praxedes, 163 – Lj 11 e 12", b: "Damas"},
-    {n: "Frosty Itaoca Mall", l: [-3.7550, -38.5450], a: "R. 15 de Novembro, 340", b: "Itaoca"},
-    {n: "Frosty Borges de Melo", l: [-3.7500, -38.5200], a: "Av. Borges de Melo, 1287", b: "Parreão"},
-    {n: "Frosty Jacarecanga", l: [-3.7220, -38.5350], a: "Av. Francisco Sá, 2670", b: "Jacarecanga"},
-    {n: "Frosty Bom Jardim", l: [-3.7800, -38.6000], a: "Av. Oscar Araripe, 1909", b: "Bom Jardim"},
-    {n: "Frosty Pátio Castelão", l: [-3.8000, -38.5200], a: "Av. Alberto Craveiro, 1972 – Lj 7 e 8", b: "Boa Vista / Castelão"},
-    {n: "Frosty Valparaíso", l: [-3.8500, -38.4700], a: "R. Valparaíso, 1303 – Lj 26", b: "Jangurussu"},
-    {n: "Frosty Silas Munguba", l: [-3.7850, -38.5250], a: "Av. Dr. Silas Munguba, 4301 – Lj 4", b: "Serrinha"},
+    {n: "Frosty Praça Matriz", l: [-3.8344, -38.4891], a: "R. Manuel Castelo Branco, 352", b: "Messejana"},
+    {n: "Frosty Cocó", l: [-3.7445, -38.4802], a: "R. Dr. Gilberto Studart, 155", b: "Cocó"},
+    {n: "Frosty Washington Soares", l: [-3.7821, -38.4770], a: "Av. Washington Soares, 4200", b: "Edson Queiroz"},
+    {n: "Frosty Cambeba", l: [-3.7915, -38.4850], a: "Av. Washington Soares, 6180", b: "Parque Manibura"},
+    {n: "Frosty Lago Jacarey", l: [-3.7930, -38.4790], a: "Av. Viena Weyne, 540", b: "Cambeba"},
+    {n: "Frosty São João", l: [-3.7311, -38.5080], a: "Av. Santos Dumont, 1169", b: "Aldeota"},
+    {n: "Frosty Shopping Aldeota", l: [-3.7345, -38.5020], a: "Av. Dom Luís, 500", b: "Aldeota"},
+    {n: "Frosty Barão de Studart", l: [-3.7390, -38.5090], a: "Av. Barão de Studart, 771", b: "Aldeota"},
+    {n: "Frosty Pinto Madeira", l: [-3.7295, -38.5200], a: "R. Pinto Madeira, 1236", b: "Aldeota"},
+    {n: "Frosty Sargento Hermínio", l: [-3.7320, -38.5570], a: "Av. Sgt. Hermínio Sampaio, 1320", b: "Monte Castelo"},
+    {n: "Frosty Jóquei Clube", l: [-3.7480, -38.5680], a: "Av. Sen. Fernandes Távora, 820", b: "Jóquei Clube"},
+    {n: "Frosty Messejana (Frei Cirilo)", l: [-3.8410, -38.4880], a: "Av. Frei Cirilo, 3270", b: "Cajazeiras"},
+    {n: "Frosty Conjunto Ceará", l: [-3.7460, -38.6050], a: "Av. H, 986", b: "Conjunto Ceará II"},
+    {n: "Frosty Solares", l: [-3.7650, -38.5850], a: "R. Cônego de Castro, 1138", b: "Parque São José"},
+    {n: "Frosty José Walter", l: [-3.8180, -38.5350], a: "Av. João de Araújo Lima, 1092", b: "Prefeito José Walter"},
+    {n: "Frosty Mateus José Walter", l: [-3.8150, -38.5380], a: "Av. João de Araújo Lima, 280", b: "Prefeito José Walter"},
+    {n: "Frosty Maraponga", l: [-3.7870, -38.5480], a: "Av. Godofredo Maciel, 2540", b: "Maraponga"},
+    {n: "Frosty Maraponga II", l: [-3.7710, -38.5520], a: "Av. Godofredo Maciel, 4035", b: "Mondubim"},
+    {n: "Frosty Parangaba", l: [-3.7780, -38.5600], a: "Av. Godofredo Maciel, 86", b: "Parangaba"},
+    {n: "Frosty Barra do Ceará", l: [-3.7080, -38.5850], a: "Av. Pres. Castelo Branco, 5943", b: "Barra do Ceará"},
+    {n: "Frosty Cidade 2000", l: [-3.7470, -38.4700], a: "R. Andrade Furtado", b: "Papicu"},
+    {n: "Frosty Presidente Kennedy", l: [-3.7380, -38.5750], a: "Av. Cearenses, 423", b: "Presidente Kennedy"},
+    {n: "Frosty São Cristóvão", l: [-3.7550, -38.5480], a: "Av. Castelo de Castro, 371", b: "São Cristóvão"},
+    {n: "Frosty João Pessoa", l: [-3.7510, -38.5350], a: "R. Des. Praxedes, 163", b: "Damas"},
+    {n: "Frosty Itaoca Mall", l: [-3.7600, -38.5500], a: "R. 15 de Novembro, 340", b: "Itaoca"},
+    {n: "Frosty Borges de Melo", l: [-3.7560, -38.5280], a: "Av. Borges de Melo, 1287", b: "Parreão"},
+    {n: "Frosty Jacarecanga", l: [-3.7220, -38.5420], a: "Av. Francisco Sá, 2670", b: "Jacarecanga"},
+    {n: "Frosty Bom Jardim", l: [-3.7850, -38.6100], a: "Av. Oscar Araripe, 1909", b: "Bom Jardim"},
+    {n: "Frosty Pátio Castelão", l: [-3.8050, -38.5250], a: "Av. Alberto Craveiro, 1972", b: "Boa Vista / Castelão"},
+    {n: "Frosty Valparaíso", l: [-3.8550, -38.4750], a: "R. Valparaíso, 1303", b: "Jangurussu"},
+    {n: "Frosty Silas Munguba", l: [-3.7900, -38.5300], a: "Av. Dr. Silas Munguba, 4301", b: "Serrinha"},
     {n: "Frosty Fábrica (matriz)", l: [-3.8760, -38.6250], a: "Av. Wilson Camurça, 2600", b: "Distrito Industrial, Maracanaú"},
-    {n: "Frosty Pitaguary", l: [-3.8700, -38.6200], a: "Av. Carlos Jereissati, 113 – Lj B", b: "Centro, Maracanaú"},
-    {n: "Frosty Pacatuba", l: [-3.9800, -38.6300], a: "Av. XVII, 404", b: "CJereissati II, Pacatuba"},
-    {n: "Frosty Maranguape", l: [-3.8900, -38.6800], a: "R. Chicó Anísio, 200 – Lj 9 e 10", b: "Centro, Maranguape"},
-    {n: "Frosty Sol Poente", l: [-3.6500, -38.7000], a: "Rod. CE-085, 1950 – Loja 10", b: "Curicaca, Caucaia"},
-    {n: "Frosty Icaraí", l: [-3.6300, -38.7300], a: "Estrada do Cumbuco, 1031", b: "Icaraí, Caucaia"},
-    {n: "Frosty Jurema", l: [-3.7200, -38.6400], a: "Av. Dom Almeida Lustosa, 2702", b: "Parque Guadalajara, Caucaia"},
-    {n: "Frosty Palmares", l: [-3.8897, -38.4502], a: "Av. Eusébio de Queiroz, 2880 – Lj 21", b: "Coité, Eusébio"},
-    {n: "Frosty Shopping Eusébio", l: [-3.8950, -38.4600], a: "Av. Eusébio de Queiroz, 1890 – Lj 294", b: "Tamatanduba, Eusébio"},
-    {n: "Frosty Buena Vista", l: [-3.8900, -38.4550], a: "R. Farias Brito, s/n", b: "Amador, Eusébio"},
-    {n: "Frosty Porto das Dunas", l: [-3.8500, -38.3600], a: "Porto das Dunas (Palmares)", b: "Porto das Dunas, Aquiraz"},
-    {n: "Frosty Aquiraz Centro", l: [-3.9000, -38.3800], a: "Av. N. Sra. de Lurdes, 77", b: "Centro, Aquiraz"},
-    {n: "Frosty Horizonte", l: [-4.1000, -38.4900], a: "R. Manoel Conrado de Sousa, 953 – Lj D", b: "Zumbi, Horizonte"},
-    {n: "Frosty Pacajus II", l: [-4.1800, -38.4700], a: "Av. Pedro Philomeno Gomes, 356 – Loja 2", b: "Centro, Pacajus"},
-    {n: "Frosty Cascavel", l: [-4.1300, -38.2400], a: "R. Francisco Galdino de Souza, 2319", b: "Centro, Cascavel"},
-    {n: "Frosty Beberibe", l: [-4.1800, -38.1300], a: "Rua I, Lot. Sagrada Família – Lj 01 e 02", b: "Sagrada Família, Beberibe"},
-    {n: "Frosty Aracati", l: [-4.5600, -37.7690], a: "Av. Abelardo Gurgel Costa Lima, 1917", b: "Várzea da Matriz, Aracati"},
-    {n: "Frosty Fortim", l: [-4.4500, -37.7800], a: "Av. Joaquim Crisóstomo, 1395 – Loja 03", b: "Centro, Fortim"},
-    {n: "Frosty Russas", l: [-4.9400, -37.9700], a: "R. Padre Zacarias Ramalho, 235", b: "Centro, Russas"},
-    {n: "Frosty Limoeiro do Norte", l: [-5.1500, -38.0800], a: "R. Cel. Serafim Chaves, 330", b: "Centro, Limoeiro do Norte"},
-    {n: "Frosty Quixeramobim", l: [-5.2100, -39.3000], a: "Av. Dr. Joaquim Fernandes, 798", b: "Centro, Quixeramobim"},
-    {n: "Frosty Quixadá", l: [-4.9700, -39.0100], a: "Av. Plácido Castelo, 1943", b: "Centro, Quixadá"},
-    {n: "Frosty Canindé", l: [-4.3500, -39.3100], a: "R. Joaquim Magalhães, 895 A", b: "Centro, Canindé"},
-    {n: "Frosty Iguatu", l: [-6.3580, -39.2980], a: "Av. Carlos Roberto Costa, 982", b: "Vila Centenário, Iguatu"},
-    {n: "Frosty São José", l: [-7.2307, -39.3130], a: "Av. Padre Cícero, 4255", b: "São José, Juazeiro do Norte"},
-    {n: "Frosty Juazeiro Mall", l: [-7.2250, -39.3100], a: "Av. Padre Cícero, 2241 – Lj 25", b: "São José, Juazeiro do Norte"},
-    {n: "Frosty Praça do Romeiro", l: [-7.2200, -39.3200], a: "R. do Cruzeiro, 179", b: "Centro, Juazeiro do Norte"},
-    {n: "Frosty Tiradentes", l: [-7.2400, -39.3000], a: "Av. Pres. Castelo Branco, 3090", b: "Tiradentes, Juazeiro do Norte"},
-    {n: "Frosty Barbalha", l: [-7.3100, -39.3000], a: "R. do Vidéo, 4", b: "Centro, Barbalha"},
-    {n: "Frosty Sobral", l: [-3.6894, -40.3497], a: "Av. Dr. Guarani, 1066", b: "Centro, Sobral"},
-    {n: "Frosty Tianguá", l: [-3.6700, -40.9900], a: "R. Maria de Lourdes A. de Vasconcelos, 200 – Lj 41", b: "Centro, Tianguá"},
-    {n: "Frosty Itapipoca Centro", l: [-3.4900, -39.5800], a: "Av. Anastácio Braga, 912 A", b: "Centro, Itapipoca"},
-    {n: "Frosty Itapipoca Pinheiro", l: [-3.4950, -39.5750], a: "Av. José do Patrocínio, 1481", b: "Coqueiro, Itapipoca"},
-    {n: "Frosty Trairi", l: [-3.2700, -39.2600], a: "Av. Padre Tomás Feliu Amengual, 191 – Lj 08 e 09", b: "Centro, Trairi"},
-    {n: "Frosty Acaraú", l: [-2.8800, -40.1200], a: "R. Expedito Farias", b: "José Sousa Farias, Acaraú"}
+    {n: "Frosty Pitaguary", l: [-3.8700, -38.6200], a: "Av. Carlos Jereissati, 113", b: "Centro, Maracanaú"},
+    {n: "Frosty Pacatuba", l: [-3.9800, -38.6300], a: "Av. XVII, 404", b: "Pacatuba"},
+    {n: "Frosty Maranguape", l: [-3.8900, -38.6800], a: "R. Chicó Anísio, 200", b: "Centro, Maranguape"},
+    {n: "Frosty Sol Poente", l: [-3.6500, -38.7000], a: "Rod. CE-085, 1950", b: "Caucaia"},
+    {n: "Frosty Icaraí", l: [-3.6300, -38.7300], a: "Estrada do Cumbuco, 1031", b: "Caucaia"},
+    {n: "Frosty Jurema", l: [-3.7200, -38.6400], a: "Av. Dom Almeida Lustosa, 2702", b: "Caucaia"},
+    {n: "Frosty Palmares", l: [-3.8897, -38.4502], a: "Av. Eusébio de Queiroz, 2880", b: "Eusébio"},
+    {n: "Frosty Shopping Eusébio", l: [-3.8950, -38.4600], a: "Av. Eusébio de Queiroz, 1890", b: "Eusébio"},
+    {n: "Frosty Buena Vista", l: [-3.8900, -38.4550], a: "R. Farias Brito, s/n", b: "Eusébio"},
+    {n: "Frosty Porto das Dunas", l: [-3.8500, -38.3600], a: "Porto das Dunas", b: "Aquiraz"},
+    {n: "Frosty Aquiraz Centro", l: [-3.9000, -38.3800], a: "Av. N. Sra. de Lurdes, 77", b: "Aquiraz"},
+    {n: "Frosty Horizonte", l: [-4.1000, -38.4900], a: "R. Manoel Conrado de Sousa, 953", b: "Horizonte"},
+    {n: "Frosty Pacajus II", l: [-4.1800, -38.4700], a: "Av. Pedro Philomeno Gomes, 356", b: "Pacajus"},
+    {n: "Frosty Cascavel", l: [-4.1300, -38.2400], a: "R. Francisco Galdino de Souza, 2319", b: "Cascavel"},
+    {n: "Frosty Beberibe", l: [-4.1800, -38.1300], a: "Rua I, Lot. Sagrada Família", b: "Beberibe"},
+    {n: "Frosty Aracati", l: [-4.5600, -37.7690], a: "Av. Abelardo Gurgel Costa Lima, 1917", b: "Aracati"},
+    {n: "Frosty Fortim", l: [-4.4500, -37.7800], a: "Av. Joaquim Crisóstomo, 1395", b: "Fortim"},
+    {n: "Frosty Russas", l: [-4.9400, -37.9700], a: "R. Padre Zacarias Ramalho, 235", b: "Russas"},
+    {n: "Frosty Limoeiro do Norte", l: [-5.1500, -38.0800], a: "R. Cel. Serafim Chaves, 330", b: "Limoeiro do Norte"},
+    {n: "Frosty Quixeramobim", l: [-5.2100, -39.3000], a: "Av. Dr. Joaquim Fernandes, 798", b: "Quixeramobim"},
+    {n: "Frosty Quixadá", l: [-4.9700, -39.0100], a: "Av. Plácido Castelo, 1943", b: "Quixadá"},
+    {n: "Frosty Canindé", l: [-4.3500, -39.3100], a: "R. Joaquim Magalhães, 895 A", b: "Canindé"},
+    {n: "Frosty Iguatu", l: [-6.3580, -39.2980], a: "Av. Carlos Roberto Costa, 982", b: "Iguatu"},
+    {n: "Frosty São José", l: [-7.2307, -39.3130], a: "Av. Padre Cícero, 4255", b: "Juazeiro do Norte"},
+    {n: "Frosty Juazeiro Mall", l: [-7.2250, -39.3100], a: "Av. Padre Cícero, 2241", b: "Juazeiro do Norte"},
+    {n: "Frosty Praça do Romeiro", l: [-7.2200, -39.3200], a: "R. do Cruzeiro, 179", b: "Juazeiro do Norte"},
+    {n: "Frosty Tiradentes", l: [-7.2400, -39.3000], a: "Av. Pres. Castelo Branco, 3090", b: "Juazeiro do Norte"},
+    {n: "Frosty Barbalha", l: [-7.3100, -39.3000], a: "R. do Vidéo, 4", b: "Barbalha"},
+    {n: "Frosty Sobral", l: [-3.6894, -40.3497], a: "Av. Dr. Guarani, 1066", b: "Sobral"},
+    {n: "Frosty Tianguá", l: [-3.6700, -40.9900], a: "R. Maria de Lourdes A. de Vasconcelos, 200", b: "Tianguá"},
+    {n: "Frosty Itapipoca Centro", l: [-3.4900, -39.5800], a: "Av. Anastácio Braga, 912 A", b: "Itapipoca"},
+    {n: "Frosty Itapipoca Pinheiro", l: [-3.4950, -39.5750], a: "Av. José do Patrocínio, 1481", b: "Itapipoca"},
+    {n: "Frosty Trairi", l: [-3.2700, -39.2600], a: "Av. Padre Tomás Feliu Amengual, 191", b: "Trairi"},
+    {n: "Frosty Acaraú", l: [-2.8800, -40.1200], a: "R. Expedito Farias", b: "Acaraú"}
 ];
 frostyUnits.forEach(f => addP(f.n, 'frosty', f.l[0], f.l[1], `${f.a} - ${f.b}`, f.b));
 
-// Cafés & Vinhos
+// Cafés & Vinhos (Coordenadas Reais Ajustadas)
 const vinhos = [
     {n: "Santa Clara Eco Café", l: [-3.7214, -38.5117], a: "Dragão do Mar", b: "Praia de Iracema"},
-    {n: "Brava Wine", l: [-3.7405, -38.4900], a: "Av. Desembargador Moreira", b: "Aldeota"},
-    {n: "Grand Cru Vinhos", l: [-3.7380, -38.4950], a: "Rua Tibúrcio Cavalcante", b: "Aldeota"},
-    {n: "Amika Coffeehouse", l: [-3.7350, -38.4920], a: "Rua Ana Bilhar", b: "Meireles"}
+    {n: "Brava Wine", l: [-3.7380, -38.4870], a: "Av. Desembargador Moreira", b: "Aldeota"},
+    {n: "Grand Cru Vinhos", l: [-3.7330, -38.4980], a: "Rua Tibúrcio Cavalcante", b: "Aldeota"},
+    {n: "Amika Coffeehouse", l: [-3.7335, -38.4910], a: "Rua Ana Bilhar", b: "Meireles"}
 ];
 vinhos.forEach(v => addP(v.n, 'vinho', v.l[0], v.l[1], `${v.a} - ${v.b}`, v.b));
 
-// Cultura & Praias
+// Cultura & Praias (Coordenadas Reais Ajustadas)
 const cultura = [
-    {n: "Museu da Fotografia", l: [-3.7431, -38.4912], a: "Rua Frederico Borges, 545", b: "Aldeota"},
+    {n: "Museu da Fotografia", l: [-3.7420, -38.4925], a: "Rua Frederico Borges, 545", b: "Aldeota"},
     {n: "Centro Dragão do Mar", l: [-3.7214, -38.5117], a: "Rua Almirante Jaceguai, 81", b: "Praia de Iracema"},
     {n: "Theatro José de Alencar", l: [-3.7275, -38.5305], a: "Praça José de Alencar", b: "Centro"},
     {n: "Parque do Cocó", l: [-3.7483, -38.4844], a: "Av. Padre Antônio Tomás", b: "Cocó"}
@@ -283,7 +271,7 @@ const cultura = [
 cultura.forEach(c => addP(c.n, 'cultura', c.l[0], c.l[1], `${c.a} - ${c.b}`, c.b));
 
 const praias = [
-    {n: "Beira Mar - Espigão", l: [-3.7255, -38.4950], a: "Av. Beira Mar", b: "Meireles"},
+    {n: "Beira Mar - Espigão", l: [-3.7230, -38.4920], a: "Av. Beira Mar", b: "Meireles"},
     {n: "Jericoacoara", l: [-2.7975, -40.5141], a: "Vila de Jericoacoara", b: "Jeri"},
     {n: "Pico Alto - Guaramiranga", l: [-4.2625, -38.9328], a: "Serra de Baturité", b: "Guaramiranga"}
 ];
@@ -291,7 +279,7 @@ praias.forEach(p => addP(p.n, 'praia', p.l[0], p.l[1], `${p.a} - ${p.b}`, p.b));
 
 
 const app = {
-    visited: new Set(JSON.parse(localStorage.getItem('ceara_liquid_v7')) || []),
+    visited: new Set(JSON.parse(localStorage.getItem('ceara_liquid_v8')) || []),
     map: null, pointsLayer: null,
 
     init() {
@@ -328,7 +316,7 @@ const app = {
         const mapEl = document.getElementById('map');
         if(!mapEl) return;
 
-        this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-3.75, -38.5], 10);
+        this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-3.73, -38.52], 12);
         
         const tileUrl = `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`;
         L.tileLayer(tileUrl, { 
@@ -412,7 +400,7 @@ const app = {
 
     toggleStar(id) {
         if(this.visited.has(id)) this.visited.delete(id); else this.visited.add(id);
-        localStorage.setItem('ceara_liquid_v7', JSON.stringify([...this.visited]));
+        localStorage.setItem('ceara_liquid_v8', JSON.stringify([...this.visited]));
         this.updateStats(); this.renderCards();
         let active = document.querySelector('.chip.active');
         let filter = active ? active.innerText.toLowerCase() : 'all';
