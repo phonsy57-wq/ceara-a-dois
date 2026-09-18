@@ -27,6 +27,9 @@
   --ease:cubic-bezier(.2,.9,.25,1);
 }
 html[data-theme="dark"]{
+  --tile-op:.52;
+  --veil:rgba(4,8,18,.60);
+  --veil-map:rgba(4,8,18,.18);
   --canvas:#060a12;
   --canvas-2:#0d1730;
   --canvas-3:#12102a;
@@ -43,6 +46,9 @@ html[data-theme="dark"]{
   --scrim:rgba(6,10,18,.78);
 }
 html[data-theme="light"]{
+  --tile-op:.72;
+  --veil:rgba(244,248,252,.58);
+  --veil-map:rgba(244,248,252,.14);
   --canvas:#e8f1f4;
   --canvas-2:#f6ece0;
   --canvas-3:#dfeaf3;
@@ -64,13 +70,78 @@ html,body{margin:0;height:100%;overflow:hidden}
 body{
   font-family:'Inter',system-ui,sans-serif;
   color:var(--ink);
-  background:
-    radial-gradient(120% 80% at 8% 0%, var(--canvas-3) 0%, transparent 60%),
-    radial-gradient(110% 90% at 100% 100%, var(--canvas-2) 0%, transparent 55%),
-    var(--canvas);
-  background-attachment:fixed;
-  transition:background .5s var(--ease), color .3s var(--ease);
+  background:var(--canvas);
+  transition:color .3s var(--ease);
 }
+
+/* ───────────────────  CÉU DINÂMICO (o dia passando)  ─────────────────── */
+#sky{
+  position:fixed;inset:0;z-index:-3;overflow:hidden;
+  background:linear-gradient(180deg, var(--sky-1,#04070f) 0%, var(--sky-2,#0a1028) 52%, var(--sky-3,#121a3e) 100%);
+  transition:background 3s linear;
+}
+#sky .stars, #sky .stars2{
+  position:absolute;inset:-10% -10% 30%;opacity:var(--stars,1);transition:opacity 3s linear;
+}
+#sky .stars{
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 18%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 28% 42%, #dfe9ff, transparent),
+    radial-gradient(1.8px 1.8px at 44% 12%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 61% 33%, #cfe0ff, transparent),
+    radial-gradient(1.7px 1.7px at 76% 9%,  #fff, transparent),
+    radial-gradient(1.3px 1.3px at 88% 38%, #e6eeff, transparent),
+    radial-gradient(1.5px 1.5px at 8%  56%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 35% 62%, #d6e3ff, transparent),
+    radial-gradient(1.6px 1.6px at 69% 58%, #fff, transparent),
+    radial-gradient(1.3px 1.3px at 93% 64%, #e9f0ff, transparent);
+  animation:twinkle 5.5s ease-in-out infinite;
+}
+#sky .stars2{
+  background-image:
+    radial-gradient(1px 1px at 19% 27%, #fff, transparent),
+    radial-gradient(1px 1px at 52% 21%, #fff, transparent),
+    radial-gradient(1px 1px at 66% 44%, #fff, transparent),
+    radial-gradient(1px 1px at 82% 25%, #fff, transparent),
+    radial-gradient(1px 1px at 41% 51%, #fff, transparent),
+    radial-gradient(1px 1px at 24% 68%, #fff, transparent);
+  animation:twinkle 8s ease-in-out infinite reverse;
+}
+@keyframes twinkle{0%,100%{opacity:calc(var(--stars,1) * .45)}50%{opacity:var(--stars,1)}}
+
+#sky .orb{position:absolute;border-radius:50%;transition:opacity 3s linear, left 60s linear, top 60s linear}
+#sky .sun{
+  width:112px;height:112px;
+  background:radial-gradient(circle at 42% 38%, #fff8e0 0%, #ffd06a 42%, #ff9a3c 70%, rgba(255,140,60,0) 74%);
+  box-shadow:0 0 140px 60px rgba(255,170,80,.30);
+  opacity:var(--sun,0);
+}
+#sky .moon{
+  width:64px;height:64px;background:radial-gradient(circle at 36% 34%, #ffffff 0%, #e6ecff 55%, #b9c6e8 100%);
+  box-shadow:0 0 70px 26px rgba(200,215,255,.22), inset -14px -8px 0 -6px rgba(120,140,190,.35);
+  opacity:var(--moon,0);
+}
+#sky .haze{
+  position:absolute;left:-20%;right:-20%;bottom:-12%;height:62%;
+  background:radial-gradient(60% 100% at 50% 100%, var(--glow,rgba(255,150,80,0)) 0%, transparent 72%);
+  transition:background 3s linear;
+}
+#sky .clouds{
+  position:absolute;inset:0;opacity:var(--clouds,0);transition:opacity 3s linear;
+  background:
+    radial-gradient(38% 16% at 22% 26%, rgba(255,255,255,.30), transparent 70%),
+    radial-gradient(30% 12% at 68% 17%, rgba(255,255,255,.22), transparent 70%),
+    radial-gradient(44% 18% at 86% 40%, rgba(255,255,255,.16), transparent 70%);
+  animation:drift 90s linear infinite alternate;
+}
+@keyframes drift{from{transform:translateX(-4%)}to{transform:translateX(4%)}}
+
+#veil{position:fixed;inset:0;z-index:-2;background:var(--veil);transition:background .6s var(--ease)}
+body.on-map #veil{background:var(--veil-map)}
+
+/* o mapa fica translúcido para o céu aparecer por baixo */
+.leaflet-container{background:transparent!important}
+.leaflet-tile-pane{opacity:var(--tile-op);transition:opacity .6s var(--ease)}
 h1,h2,h3,.display{font-family:'Bricolage Grotesque','Inter',sans-serif;letter-spacing:-.02em}
 button,input,select,textarea{font-family:inherit;color:inherit}
 ::selection{background:var(--mar);color:#04110f}
@@ -253,6 +324,21 @@ select.field{appearance:none;background-image:none}
   border-radius:16px;padding:11px 16px;font-size:12.5px;font-weight:600;max-width:88%;opacity:0;pointer-events:none;transition:.32s var(--ease)}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 
+/* roteiro do momento */
+.plan-quote{font-size:14px;line-height:1.55;margin:2px 0 14px;font-weight:500}
+.plan-title{font-family:'Bricolage Grotesque';font-size:17px;font-weight:800;margin:0 0 6px}
+.stops{position:relative;margin:0 0 14px;padding-left:22px}
+.stops::before{content:'';position:absolute;left:6px;top:8px;bottom:8px;width:2px;border-radius:2px;
+  background:linear-gradient(var(--sol),var(--hibisco),var(--mar))}
+.stop{position:relative;padding:9px 0}
+.stop::before{content:'';position:absolute;left:-21px;top:14px;width:12px;height:12px;border-radius:50%;
+  background:var(--sol);border:2px solid var(--canvas);box-shadow:0 0 0 2px var(--sol)}
+.stop b{display:block;font-size:13.5px;font-weight:700}
+.stop em{font-style:normal;font-size:11px;color:var(--duna);font-weight:700}
+.stop span{display:block;font-size:11.5px;color:var(--ink-2);line-height:1.45;margin-top:3px}
+.sources{font-size:10.5px;color:var(--ink-3);line-height:1.5;margin:10px 0 0}
+.sources a{color:var(--ink-2)}
+
 .empty{text-align:center;padding:42px 18px;color:var(--ink-2)}
 .empty .material-icons-round{font-size:38px;color:var(--ink-3);display:block;margin-bottom:10px}
 .empty b{display:block;font-size:14px;color:var(--ink);margin-bottom:5px}
@@ -272,7 +358,17 @@ select.field{appearance:none;background-image:none}
 .leaflet-control-attribution a{color:var(--ink-2)!important}
 </style>
 </head>
-<body>
+<body class="on-map">
+
+<div id="sky" aria-hidden="true">
+  <div class="stars"></div>
+  <div class="stars2"></div>
+  <div class="clouds"></div>
+  <div class="orb sun" id="sun"></div>
+  <div class="orb moon" id="moon"></div>
+  <div class="haze"></div>
+</div>
+<div id="veil" aria-hidden="true"></div>
 
 <div id="app">
 
@@ -303,6 +399,7 @@ select.field{appearance:none;background-image:none}
 
       <div class="map-bottom">
         <button class="fab" onclick="App.fitAll()" title="Ver tudo"><span class="material-icons-round">zoom_out_map</span></button>
+        <button class="fab" onclick="App.askPlan()" title="O que fazer agora"><span class="material-icons-round">auto_awesome</span></button>
         <button class="fab" onclick="App.nearbyLive()" title="O que tem perto de mim agora"><span class="material-icons-round">radar</span></button>
         <button class="fab accent" onclick="App.locate()" title="Minha localização"><span class="material-icons-round">near_me</span></button>
       </div>
@@ -333,11 +430,18 @@ select.field{appearance:none;background-image:none}
     </div></div>
     <div class="wrap">
 
-      <div class="glass panel" style="margin-top:0">
-        <h3><span class="material-icons-round" style="color:var(--mar)">auto_awesome</span> Sugestões do Gemini</h3>
-        <p class="lead">A IA lê o clima, a hora e os lugares que vocês já curtiram, escolhe novos programas reais no Ceará e joga direto aqui na lista e no mapa.</p>
-        <button class="btn primary" id="btn-ai" onclick="App.askGemini()"><span class="material-icons-round" style="font-size:18px">bolt</span> Gerar sugestões agora</button>
-        <button class="btn ghost" style="margin-top:8px" onclick="App.openSheet()">Configurar chave da IA</button>
+      <div class="glass panel plan" id="plan-card" style="margin-top:0">
+        <h3><span class="material-icons-round" style="color:var(--sol)">wb_twilight</span> O que fazer agora</h3>
+        <p class="lead">O Gemini olha a hora, o clima e onde vocês estão, pesquisa na internet o que está funcionando hoje e monta um roteiro curto encadeado.</p>
+        <div id="plan-body"></div>
+        <button class="btn warm" id="btn-plan" onclick="App.askPlan()"><span class="material-icons-round" style="font-size:18px">auto_awesome</span> Montar um roteiro pra agora</button>
+      </div>
+
+      <div class="glass panel">
+        <h3><span class="material-icons-round" style="color:var(--mar)">travel_explore</span> Descobrir lugares novos</h3>
+        <p class="lead">Busca na web quatro lugares que ainda não estão na sua lista e joga direto no mapa.</p>
+        <button class="btn primary" id="btn-ai" onclick="App.askGemini()"><span class="material-icons-round" style="font-size:18px">bolt</span> Buscar quatro ideias</button>
+        <button class="btn ghost" style="margin-top:8px" onclick="App.openSheet()">Trocar a chave da IA</button>
       </div>
 
       <div class="glass panel">
@@ -401,6 +505,12 @@ select.field{appearance:none;background-image:none}
     <span class="material-icons-round">contrast</span>
     <div><b>Modo claro</b><small>Segue o sistema até você escolher</small></div>
     <button class="switch" id="sw-theme" role="switch" aria-checked="false" onclick="App.toggleTheme()"><i></i></button>
+  </div>
+
+  <div class="set-row">
+    <span class="material-icons-round">wb_twilight</span>
+    <div><b>Tema segue o céu</b><small>Claro de dia, escuro depois do pôr do sol</small></div>
+    <button class="switch" id="sw-sky" role="switch" aria-checked="false" onclick="App.toggleSkyTheme()"><i></i></button>
   </div>
 
   <div class="set-row">
@@ -589,11 +699,34 @@ const CATS = {
 /* ═══════════════════════════════════════════════════════════════
    APP
    ═══════════════════════════════════════════════════════════════ */
+/* Chaves pessoais deste arquivo. Se um dia ele sair do seu aparelho, troque as duas. */
+const CARTO_KEY  = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";
+const GEMINI_KEY = "AQ.Ab8RN6K-F02TFXs-cG9ZA0MbK72oK0Bq4jVeTi8z4hn4-3apSA";
+
 const LS = {
   places:'cd2_places', ratings:'cd2_ratings', visited:'cd2_visited',
   todo:'cd2_todo', theme:'cd2_theme', key:'cd2_key', model:'cd2_model',
-  auto:'cd2_auto', lastAI:'cd2_lastai'
+  auto:'cd2_auto', lastAI:'cd2_lastai', plan:'cd2_plan', skyTheme:'cd2_skytheme'
 };
+
+/* fases do dia: [hora, céu topo, céu meio, céu base, estrelas, sol, lua, nuvens, brilho no horizonte] */
+const SKY = [
+  [ 0 ,'#04070f','#090f26','#111a3c', 1, 0, 1, .05,'rgba(60,80,160,.16)'],
+  [ 4.5,'#070c1e','#141a42','#2a2158',.85,0,.8, .10,'rgba(120,90,180,.20)'],
+  [ 5.8,'#16215a','#6b4676','#c9663f',.35,.15,.25,.28,'rgba(255,130,70,.34)'],
+  [ 6.6,'#2f4d92','#c2764f','#ffc27a',.08,.65,0, .35,'rgba(255,170,90,.42)'],
+  [ 8.5,'#2a7cc4','#7ec0e8','#dcf0fa', 0 , 1 , 0, .45,'rgba(255,220,160,.18)'],
+  [12  ,'#1673cd','#57b2e8','#cfe9f8', 0 , 1 , 0, .40,'rgba(255,240,200,.14)'],
+  [15.5,'#2183c8','#87b6df','#ffd9a8', 0 , 1 , 0, .42,'rgba(255,190,110,.24)'],
+  [17.6,'#1b2a63','#d2603c','#ffb267',.10,.75,0, .34,'rgba(255,120,50,.46)'],
+  [18.6,'#101744','#5a2f68','#d9633f',.35,.20,.3,.22,'rgba(220,90,70,.34)'],
+  [19.6,'#0a1030','#251f52','#4a2a5e',.70,0,.65,.12,'rgba(90,70,150,.22)'],
+  [21.5,'#04070f','#090f26','#111a3c', 1, 0, 1, .05,'rgba(60,80,160,.16)'],
+  [24  ,'#04070f','#090f26','#111a3c', 1, 0, 1, .05,'rgba(60,80,160,.16)'],
+];
+const hex2rgb = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const mix = (a,b,k)=>{ const A=hex2rgb(a),B=hex2rgb(b);
+  return `rgb(${A.map((v,i)=>Math.round(v+(B[i]-v)*k)).join(',')})`; };
 const get = (k,f)=>{ try{ const v=localStorage.getItem(k); return v===null?f:JSON.parse(v);}catch(e){return f;} };
 const set = (k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
 const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -615,12 +748,15 @@ const App = {
     ['btn-theme','btn-theme-2','btn-theme-3','btn-theme-4'].forEach(id=>{
       const b=document.getElementById(id); if(b) b.onclick=()=>this.toggleTheme();
     });
-    document.getElementById('in-key').value   = get(LS.key,'');
-    document.getElementById('in-model').value = get(LS.model,'gemini-2.0-flash');
+    document.getElementById('in-key').value   = get(LS.key,GEMINI_KEY);
+    document.getElementById('in-model').value = get(LS.model,'gemini-2.5-flash');
     document.getElementById('sw-auto').setAttribute('aria-checked', get(LS.auto,false));
+    document.getElementById('sw-sky').setAttribute('aria-checked', get(LS.skyTheme,false));
 
+    this.sky(); setInterval(()=>this.sky(), 60000);
     this.initMap();
     this.renderAll();
+    this.renderPlan(get(LS.plan,null));
     this.weather();
     if(get(LS.auto,false) && Date.now()-get(LS.lastAI,0) > 20*36e5) setTimeout(()=>this.askGemini(true), 4000);
   },
@@ -644,7 +780,45 @@ const App = {
     if(this.map) this.swapTiles();
     if(!silent) this.toast(t==='light'?'Modo claro ligado':'Modo escuro ligado');
   },
-  toggleTheme(){ this.applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'); },
+  toggleTheme(){ set(LS.skyTheme,false); document.getElementById('sw-sky').setAttribute('aria-checked',false);
+    this.applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'); },
+  toggleSkyTheme(){
+    const v=!get(LS.skyTheme,false); set(LS.skyTheme,v);
+    document.getElementById('sw-sky').setAttribute('aria-checked',v);
+    this.sky(); this.toast(v?'O tema vai acompanhar o céu':'Tema fixo na sua escolha');
+  },
+
+  /* ── céu: o dia passando em degradê ─────────────────── */
+  sky(){
+    const d=new Date(), t=d.getHours()+d.getMinutes()/60;
+    let i=0; while(i<SKY.length-2 && t>=SKY[i+1][0]) i++;
+    const a=SKY[i], b=SKY[i+1], k=Math.min(1,Math.max(0,(t-a[0])/(b[0]-a[0]||1)));
+    const s=document.getElementById('sky').style;
+    s.setProperty('--sky-1',mix(a[1],b[1],k));
+    s.setProperty('--sky-2',mix(a[2],b[2],k));
+    s.setProperty('--sky-3',mix(a[3],b[3],k));
+    const num=(x,y)=>x+(y-x)*k;
+    s.setProperty('--stars', num(a[4],b[4]).toFixed(2));
+    s.setProperty('--sun',   num(a[5],b[5]).toFixed(2));
+    s.setProperty('--moon',  num(a[6],b[6]).toFixed(2));
+    s.setProperty('--clouds',num(a[7],b[7]).toFixed(2));
+    s.setProperty('--glow',  k<.5?a[8]:b[8]);
+
+    const arc=(prog,el,size)=>{
+      const p=Math.min(1,Math.max(0,prog));
+      el.style.left = `calc(${(8+p*84).toFixed(1)}% - ${size/2}px)`;
+      el.style.top  = `calc(${(80-Math.sin(Math.PI*p)*62).toFixed(1)}% - ${size/2}px)`;
+    };
+    arc((t-6)/12, document.getElementById('sun'), 112);
+    arc(t>=18?(t-18)/12:(t+6)/12, document.getElementById('moon'), 64);
+
+    this.phase = t<5.5?'madrugada':t<7?'amanhecer':t<11?'manhã':t<15?'tarde':t<17.3?'fim de tarde':
+                 t<18.8?'pôr do sol':t<20?'anoitecer':'noite';
+    if(get(LS.skyTheme,false)){
+      const want = (t>=6.8 && t<17.9) ? 'light' : 'dark';
+      if(document.documentElement.dataset.theme!==want) this.applyTheme(want,true);
+    }
+  },
   toggleAuto(){
     const v=!get(LS.auto,false); set(LS.auto,v);
     document.getElementById('sw-auto').setAttribute('aria-checked',v);
@@ -653,19 +827,16 @@ const App = {
 
   /* ── mapa ───────────────────────────────────────────── */
   initMap(){
-   const CARTO_API_KEY = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";
     this.map = L.map('map',{zoomControl:false,preferCanvas:false,attributionControl:true}).setView([-3.76,-38.55],11);
     this.swapTiles();
     this.layer     = L.layerGroup().addTo(this.map);
     this.liveLayer = L.layerGroup().addTo(this.map);
     this.plot();
-   const CARTO_API_KEY = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";
   },
   swapTiles(){
     const dark = document.documentElement.dataset.theme==='dark';
-    const url = dark
-      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+    const style = dark ? 'dark_all' : 'rastertiles/voyager';
+    const url = `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`;
     if(this.tiles) this.map.removeLayer(this.tiles);
     this.tiles = L.tileLayer(url,{maxZoom:19,subdomains:'abcd',attribution:'© OpenStreetMap · © CARTO'}).addTo(this.map);
     this.tiles.getContainer && this.tiles.on('add',()=>{});
@@ -854,13 +1025,174 @@ const App = {
     }
   },
 
-  /* ── Gemini ─────────────────────────────────────────── */
+  /* ── Gemini com busca na web ────────────────────────── */
+  cutJSON(txt){
+    const s=String(txt).replace(/```json/gi,'').replace(/```/g,'').trim();
+    const i=s.search(/[\[{]/); if(i<0) return null;
+    const open=s[i], close=open==='['?']':'}';
+    const j=s.lastIndexOf(close); if(j<i) return null;
+    try{ return JSON.parse(s.slice(i,j+1)); }catch(e){ return null; }
+  },
+  async gemini(prompt){
+    const key=get(LS.key,GEMINI_KEY), model=get(LS.model,'gemini-2.5-flash');
+    if(!key) throw new Error('sem chave');
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{role:'user',parts:[{text:prompt}]}],
+        tools:[{google_search:{}}],                    // deixa o modelo pesquisar na internet
+        generationConfig:{temperature:1,topP:.95}
+      })
+    });
+    if(!res.ok) throw new Error(await res.text());
+    const d=await res.json();
+    const c=d.candidates?.[0]||{};
+    const txt=(c.content?.parts||[]).map(p=>p.text||'').join('');
+    const src=(c.groundingMetadata?.groundingChunks||[])
+      .map(g=>g.web&&{title:g.web.title,uri:g.web.uri}).filter(Boolean).slice(0,4);
+    return {txt, src, json:this.cutJSON(txt)};
+  },
+
+  /* roteiro encadeado para a hora de agora */
+  async askPlan(){
+    if(this.planBusy) return;
+    this.planBusy=true;
+    const btn=document.getElementById('btn-plan');
+    if(btn){btn.disabled=true;btn.innerHTML='<span class="material-icons-round" style="font-size:18px">hourglass_top</span> Pesquisando na internet…';}
+    this.tab('todo',document.querySelectorAll('.nav button')[2]);
+    this.toast('O Gemini está pesquisando o que dá pra fazer agora…');
+    const fim=()=>{ this.planBusy=false; if(btn){btn.disabled=false;
+      btn.innerHTML='<span class="material-icons-round" style="font-size:18px">refresh</span> Montar outro roteiro';} };
+
+    const base = this.myPos || [-3.7319,-38.5267];
+    const perto = this.places
+      .map(p=>({p,d:Math.hypot(p.lat-base[0],p.lng-base[1])}))
+      .sort((a,b)=>a.d-b.d).slice(0,14)
+      .map(x=>`${x.p.name} (${x.p.area}, ${x.p.city})`).join('; ');
+    const hoje = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+    const hora = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+
+    const prompt = `Você é um guia local do Ceará falando com um casal, em português do Brasil.
+Agora é ${hoje}, ${hora}, fase do dia: ${this.phase||'dia'}. Tempo: ${this.wx?this.wx.t+'°C':'não sei'}${this.wx&&[51,53,55,61,63,65,80,81,82,95,96,99].includes(this.wx.code)?', chovendo':''}.
+Eles estão perto de ${base[0].toFixed(3)}, ${base[1].toFixed(3)}.
+Lugares que já estão na lista deles e podem entrar no roteiro: ${perto}.
+
+Use a busca do Google para conferir o que realmente existe, está aberto hoje e o que está acontecendo nesta semana por lá (shows, feiras, exposições, horários).
+Monte UM roteiro de 2 a 3 paradas encadeadas, que caiba nas próximas 3 ou 4 horas, com no máximo 25 km entre elas, coerente com o clima e a hora. Se couber, termine com sorvete numa loja Frosty próxima.
+No campo "texto", fale direto com o casal em 2 frases, começando pelo clima. Exemplo de tom: "Está fazendo sol e a maré está baixa: dá para caminhar na trilha do Parque do Cocó e depois tomar sorvete na Frosty do Cocó, que fica a cinco minutos."
+
+Responda SOMENTE com JSON puro, sem markdown:
+{"titulo":"até 5 palavras","texto":"duas frases","paradas":[{"name":"","area":"","city":"","cat":"date|praia|serra|cultura|frosty","hora":"ex 17h30","note":"por que essa parada, uma frase"}]}`;
+
+    try{
+      const r = await this.gemini(prompt);
+      const plan = r.json;
+      if(!plan||!Array.isArray(plan.paradas)||!plan.paradas.length) throw new Error('resposta vazia');
+      for(const s of plan.paradas){
+        const known=this.places.find(p=>p.name.toLowerCase()===String(s.name).toLowerCase());
+        if(known){ s.lat=known.lat; s.lng=known.lng; s.knownId=known.id; continue; }
+        const g=await this.geocode(`${s.name}, ${s.area||''} ${s.city||'Fortaleza'}`);
+        if(g){ s.lat=g.lat; s.lng=g.lng; }
+        await new Promise(x=>setTimeout(x,1100));
+      }
+      plan.src=r.src; plan.when=Date.now();
+      set(LS.plan,plan); this.renderPlan(plan); fim();
+      this.toast('Roteiro pronto');
+    }catch(e){
+      console.warn(e); fim();
+      const fb=this.offlinePlan();
+      set(LS.plan,fb); this.renderPlan(fb);
+      this.toast('A IA não respondeu agora. Montei um roteiro com o que já está na lista.');
+    }
+  },
+  offlinePlan(){
+    const h=new Date().getHours(), rain=this.wx&&[61,63,65,80,81,82,95].includes(this.wx.code);
+    const pick=(cat,n=1)=>this.places.filter(p=>p.cat===cat).sort(()=>Math.random()-.5).slice(0,n);
+    let paradas, texto, titulo;
+    if(rain){
+      titulo='Programa coberto';
+      paradas=[...pick('cultura'),...pick('date'),...pick('frosty')];
+      texto='Está chovendo, então nada de praia agora. Comecem por um lugar coberto, sigam para um jantar tranquilo e fechem com sorvete.';
+    } else if(h<10){
+      titulo='Manhã na rua';
+      paradas=[...pick('serra'),...pick('date')];
+      texto='O sol ainda está fraco e o ar está bom. Aproveitem para caminhar cedo e emendar num café depois.';
+    } else if(h<16){
+      titulo='Tarde de sol';
+      paradas=[...pick('praia'),...pick('frosty')];
+      texto='Sol firme no meio do dia. Praia com sombra garantida e, na volta, uma parada gelada na Frosty.';
+    } else if(h<19){
+      titulo='Pôr do sol a dois';
+      paradas=[...pick('praia'),...pick('date')];
+      texto='Está na hora do sol cair. Peguem o fim de tarde na beira do mar e sigam para jantar por perto.';
+    } else {
+      titulo='Noite sem pressa';
+      paradas=[...pick('date'),...pick('frosty')];
+      texto='A noite está para ficar na rua. Jantem com calma e terminem com sorvete no caminho de casa.';
+    }
+    return {titulo,texto,when:Date.now(),offline:true,
+      paradas:paradas.filter(Boolean).map(p=>({name:p.name,area:p.area,city:p.city,cat:p.cat,
+        note:p.note,lat:p.lat,lng:p.lng,knownId:p.id}))};
+  },
+  renderPlan(plan){
+    const box=document.getElementById('plan-body'); if(!box) return;
+    if(!plan){ box.innerHTML=''; return; }
+    const quando=new Date(plan.when||Date.now()).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    box.innerHTML=`
+      <p class="plan-title">${esc(plan.titulo||'Roteiro de agora')}</p>
+      <p class="plan-quote">${esc(plan.texto||'')}</p>
+      <div class="stops">${(plan.paradas||[]).map(s=>`
+        <div class="stop">
+          <b>${esc(s.name)} ${s.hora?`<em>· ${esc(s.hora)}</em>`:''}</b>
+          <span>${esc([s.area,s.city].filter(Boolean).join(' · '))}${s.note?' — '+esc(s.note):''}</span>
+        </div>`).join('')}</div>
+      <div class="row2">
+        <button class="btn ghost" onclick="App.planOnMap()">Ver no mapa</button>
+        <button class="btn ghost" onclick="App.planSave()">Salvar as paradas</button>
+      </div>
+      ${plan.src&&plan.src.length?`<p class="sources">Checado na web em ${esc(quando)}: ${
+        plan.src.map(s=>`<a href="${esc(s.uri)}" target="_blank" rel="noopener">${esc((s.title||'fonte').slice(0,28))}</a>`).join(' · ')}</p>`
+        :`<p class="sources">${plan.offline?'Montado offline com os lugares da sua lista':'Gerado às '+esc(quando)}</p>`}`;
+  },
+  planOnMap(){
+    const plan=get(LS.plan,null); if(!plan) return;
+    const pts=(plan.paradas||[]).filter(s=>s.lat).map(s=>[s.lat,s.lng]);
+    if(!pts.length) return this.toast('Não consegui localizar essas paradas no mapa');
+    this.tab('map',document.querySelectorAll('.nav button')[0]);
+    setTimeout(()=>{
+      this.map.invalidateSize();
+      this.liveLayer.clearLayers();
+      L.polyline(pts,{color:'#ff7a2f',weight:3,opacity:.85,dashArray:'7 8'}).addTo(this.liveLayer);
+      plan.paradas.filter(s=>s.lat).forEach((s,i)=>{
+        L.marker([s.lat,s.lng],{icon:L.divIcon({className:'',iconSize:[30,30],iconAnchor:[15,15],
+          html:`<div class="pin pulse" style="background:#ff7a2f">${i+1}</div>`})})
+         .bindPopup(`<div class="pop"><h4>${esc(s.name)}</h4><span>${esc(s.hora||'')} ${esc(s.area||'')}</span>
+           <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(s.name+', '+(s.city||'Ceará'))}" target="_blank" rel="noopener">Traçar rota</a></div>`)
+         .addTo(this.liveLayer);
+      });
+      this.map.fitBounds(L.latLngBounds(pts).pad(.3));
+    },280);
+  },
+  planSave(){
+    const plan=get(LS.plan,null); if(!plan) return;
+    let n=0;
+    (plan.paradas||[]).forEach(s=>{
+      if(s.knownId){ this.todo[s.knownId]=true; n++; return; }
+      if(!s.lat) return;
+      if(this.places.some(p=>p.name.toLowerCase()===String(s.name).toLowerCase())) return;
+      this.addPlace({name:s.name,cat:CATS[s.cat]?s.cat:'date',area:s.area||'',city:s.city||'Ceará',
+        lat:s.lat,lng:s.lng,note:s.note||'',exact:false,ai:true,todo:true}); n++;
+    });
+    set(LS.todo,this.todo); this.renderAll(); this.plot();
+    this.toast(n?`${n} paradas guardadas`:'Essas paradas já estavam salvas');
+  },
+
   async askGemini(auto){
     if(this.aiBusy) return;
-    const key=get(LS.key,'AQ.Ab8RN6K-F02TFXs-cG9ZA0MbK72oK0Bq4jVeTi8z4hn4-3apSA'), model=get(LS.model,'gemini-2.0-flash');
+    const key=get(LS.key,GEMINI_KEY);
     const btn=document.getElementById('btn-ai');
-    this.aiBusy=true; if(btn){btn.disabled=true;btn.innerHTML='<span class="material-icons-round" style="font-size:18px">hourglass_top</span> Pensando…';}
-    const done=()=>{this.aiBusy=false; if(btn){btn.disabled=false;btn.innerHTML='<span class="material-icons-round" style="font-size:18px">bolt</span> Gerar sugestões agora';}};
+    this.aiBusy=true; if(btn){btn.disabled=true;btn.innerHTML='<span class="material-icons-round" style="font-size:18px">hourglass_top</span> Pesquisando na internet…';}
+    const done=()=>{this.aiBusy=false; if(btn){btn.disabled=false;btn.innerHTML='<span class="material-icons-round" style="font-size:18px">bolt</span> Buscar quatro ideias';}};
 
     let list=null;
     if(key){
@@ -868,21 +1200,15 @@ const App = {
         const liked=this.places.filter(p=>this.ratings[p.id]>=4).map(p=>p.name).slice(0,8).join(', ')||'nenhum ainda';
         const known=this.places.map(p=>p.name).slice(0,140).join('; ');
         const hora=new Date().getHours();
-        const prompt=`Você conhece bem o Ceará, Brasil. Sugira 4 lugares REAIS e atuais para um casal visitar.
-Contexto: agora são ${hora}h, tempo ${this.wx?this.wx.t+'°C':'indefinido'}. O casal gostou de: ${liked}.
+        const prompt=`Você conhece o Ceará, Brasil. Use a busca do Google para conferir o que existe e está aberto hoje.
+Sugira 4 lugares REAIS e atuais para um casal visitar. Se achar algo que abriu ou virou moda nos últimos meses, prefira esse.
+Contexto: agora são ${hora}h, tempo ${this.wx?this.wx.t+'°C':'indefinido'}, fase do dia ${this.phase||'dia'}. O casal gostou de: ${liked}.
 NÃO repita nenhum destes: ${known}.
 Varie entre restaurante/bar/café, praia, serra e cultura, e priorize lugares a até 200 km de Fortaleza.
-Responda SOMENTE um array JSON, sem markdown, no formato:
+Responda SOMENTE um array JSON puro, sem markdown:
 [{"name":"","area":"bairro ou distrito","city":"cidade","cat":"date|praia|serra|cultura","note":"uma frase curta dizendo por que vale a pena"}]`;
-        const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{
-          method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],
-            generationConfig:{temperature:1,responseMimeType:'application/json'}})
-        });
-        if(!res.ok) throw new Error(await res.text());
-        const data=await res.json();
-        const txt=(data.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('');
-        list=JSON.parse(txt.replace(/```json|```/g,'').trim());
+        const r=await this.gemini(prompt);
+        list = Array.isArray(r.json) ? r.json : (r.json?.lugares || null);
       }catch(e){
         console.warn(e);
         this.toast('A IA não respondeu. Usando o banco de ideias offline.');
@@ -1025,6 +1351,7 @@ Responda SOMENTE um array JSON, sem markdown, no formato:
     document.getElementById('view-'+id).classList.add('on');
     document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-current','false'));
     btn?.setAttribute('aria-current','true');
+    document.body.classList.toggle('on-map', id==='map');
     if(id==='map') setTimeout(()=>this.map.invalidateSize(),60);
   },
   openSheet(){ document.getElementById('sheet').classList.add('on'); document.getElementById('sheet-bg').classList.add('on'); },
