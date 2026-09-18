@@ -355,11 +355,10 @@ select.field{appearance:none;background-image:none}
 .emoji-in{width:52px;height:36px;text-align:center;border-radius:11px;border:1px solid var(--edge);background:var(--glass-2);font-size:16px}
 .place-pick{display:flex;gap:8px;margin-bottom:6px}
 .place-pick input{flex:1}
-.sync-box textarea{width:100%;height:78px;border-radius:14px;padding:10px 12px;font-size:10.5px;line-height:1.4;
-  background:var(--glass-2);border:1px solid var(--edge);resize:none;margin-bottom:9px;font-family:ui-monospace,monospace}
 .pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:5px 10px;border-radius:999px;
   background:var(--glass-2);border:1px solid var(--edge-2);color:var(--ink-2)}
 .pill.ok{color:#04110f;background:var(--mar);border-color:transparent}
+.pill.err{color:#fff;background:var(--hibisco);border-color:transparent}
 .pill .material-icons-round{font-size:13px}
 
 .empty{text-align:center;padding:42px 18px;color:var(--ink-2)}
@@ -601,21 +600,16 @@ select.field{appearance:none;background-image:none}
     <button class="btn primary" onclick="App.saveKey()">Salvar chave</button>
   </div>
 
-  <div style="padding:14px 0 4px" class="sync-box">
-    <b style="font-size:13px">Sincronizar com quem você quiser</b>
+  <div style="padding:14px 0 4px">
+    <b style="font-size:13px">Nuvem (Firebase)</b>
     <p style="margin:4px 0 10px;font-size:11.5px;color:var(--ink-2);line-height:1.5">
-      Este arquivo não tem servidor, então o que é marcado aqui fica só neste aparelho e neste navegador —
-      é por isso que abrir o app em outro celular começa "zerado". Para juntar o progresso dos dois,
-      gere um código, mande por WhatsApp e a outra pessoa cola o código dela aqui. As duas listas se somam
-      (visitados, notas, pendentes e ícones), nada se perde.
+      Visitados, notas, pendentes, ícones e lugares adicionados ficam salvos num banco de dados
+      compartilhado — qualquer aparelho que abrir este arquivo vê e atualiza a mesma lista, em tempo real.
     </p>
-    <textarea id="sync-out" readonly placeholder="Toque em «Gerar código» para ver o código aqui"></textarea>
-    <div class="row2">
-      <button class="btn primary" onclick="App.syncExport()"><span class="material-icons-round" style="font-size:16px">qr_code_2</span> Gerar código</button>
-      <button class="btn ghost" onclick="App.syncCopy()"><span class="material-icons-round" style="font-size:16px">content_copy</span> Copiar</button>
-    </div>
-    <textarea id="sync-in" placeholder="Cole aqui o código que a outra pessoa te mandou" style="margin-top:10px"></textarea>
-    <button class="btn warm" onclick="App.syncImport()">Juntar com o meu</button>
+    <div id="cloud-status" class="pill"><span class="material-icons-round">cloud_sync</span> Conectando…</div>
+  </div>
+  <div id="cloud-warn" style="display:none;background:rgba(255,122,47,.14);border:1px solid rgba(255,122,47,.3);border-radius:var(--r-md);padding:10px 12px;font-size:11px;color:var(--ink-2);line-height:1.5;margin-top:8px">
+    Não consegui falar com o Firebase agora. O app continua funcionando neste aparelho e tenta se reconectar sozinho.
   </div>
 
   <div class="row2" style="margin-top:14px">
@@ -630,8 +624,33 @@ select.field{appearance:none;background-image:none}
 
 <div class="glass" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
+/* ═══════════════════════════════════════════════════════════════
+   FIREBASE — banco de dados compartilhado (substitui o localStorage
+   como fonte única: qualquer aparelho que abrir este arquivo lê e
+   escreve no mesmo documento, em tempo real).
+   Como este arquivo é um HTML solto (sem bundler/npm), a inicialização
+   usa o SDK "compat" via <script> (já carregado acima) em vez do
+   `import` de módulos ES que o Firebase Console sugere — o resultado
+   final é o mesmo banco de dados.
+   ═══════════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAlvNKOcD68hfnhLDQUPek8oiLkPCyAbkw",
+  authDomain: "ceara-a-dois.firebaseapp.com",
+  projectId: "ceara-a-dois",
+  storageBucket: "ceara-a-dois.firebasestorage.app",
+  messagingSenderId: "965667757272",
+  appId: "1:965667757272:web:a038a53cd06655893ccbad"
+};
+let cloudRef = null;
+try{
+  firebase.initializeApp(firebaseConfig);
+  cloudRef = firebase.firestore().collection('ceara-a-dois').doc('dados-compartilhados');
+}catch(e){ console.error('Firebase não iniciou:', e); }
+
 /* ═══════════════════════════════════════════════════════════════
    BANCO DE LUGARES  —  [nome, categoria, bairro/área, cidade, lat, lng, nota]
    ═══════════════════════════════════════════════════════════════ */
@@ -840,6 +859,7 @@ const App = {
 
     this.sky(); setInterval(()=>this.sky(), 60000);
     this.initMap();
+    this.initCloud();
     this.renderAll();
     this.renderIconCats(); this.renderIconPicks();
     this.renderPlan(get(LS.plan,null));
@@ -853,7 +873,50 @@ const App = {
     const b = FROSTY.map(r=>({id:++id,name:r[0],cat:'frosty',area:r[1],city:r[2],lat:r[3],lng:r[4],note:r[5]}));
     const all=[...a,...b]; set(LS.places,all); return all;
   },
-  save(){ set(LS.places,this.places); },
+
+  /* ── nuvem (Firebase) ──────────────────────────────────
+     Doc único compartilhado por todos os aparelhos: places,
+     ratings, visited, todo e icons vivem lá. localStorage vira
+     só um cache para abrir instantâneo e funcionar offline. */
+  cloudRef:null,
+  setCloudStatus(icon,txt,warn){
+    const el=document.getElementById('cloud-status');
+    if(el) el.innerHTML=`<span class="material-icons-round">${icon}</span> ${txt}`;
+    const w=document.getElementById('cloud-warn');
+    if(w) w.style.display = warn ? 'block' : 'none';
+  },
+  initCloud(){
+    if(!cloudRef){ this.setCloudStatus('cloud_off','Nuvem indisponível',true); return; }
+    this.cloudRef = cloudRef;
+    this.cloudRef.onSnapshot(snap=>{
+      if(!snap.exists){
+        // primeiro uso deste banco: sobe o que já tem neste aparelho para criar o documento compartilhado
+        this.cloudRef.set({places:this.places,ratings:this.ratings,visited:this.visited,todo:this.todo,icons:this.icons}).catch(()=>{});
+        this.setCloudStatus('cloud_done','Conectado — tempo real'); return;
+      }
+      const d=snap.data()||{};
+      if(d.places) this.places=d.places;
+      this.ratings=d.ratings||{}; this.visited=d.visited||{}; this.todo=d.todo||{};
+      this.icons=d.icons||{cats:{},places:{}};
+      set(LS.places,this.places); set(LS.ratings,this.ratings); set(LS.visited,this.visited);
+      set(LS.todo,this.todo); set(LS.icons,this.icons);
+      this.renderAll(); this.plot();
+      if(this.renderIconCats) this.renderIconCats();
+      if(this.renderIconPicks) this.renderIconPicks();
+      this.setCloudStatus('cloud_done','Conectado — tempo real');
+    }, err=>{
+      console.error('Firestore:', err);
+      this.setCloudStatus('cloud_off','Sem conexão com a nuvem agora',true);
+    });
+  },
+  save(){
+    set(LS.places,this.places); set(LS.ratings,this.ratings); set(LS.visited,this.visited);
+    set(LS.todo,this.todo); set(LS.icons,this.icons);
+    if(this.cloudRef){
+      this.cloudRef.set({places:this.places,ratings:this.ratings,visited:this.visited,todo:this.todo,icons:this.icons})
+        .catch(()=>this.toast('Não sincronizou com a nuvem agora — salvo só neste aparelho'));
+    }
+  },
 
   /* ── tema ───────────────────────────────────────────── */
   applyTheme(t,silent){
@@ -1033,8 +1096,9 @@ const App = {
   addPlace(o){
     const id = Date.now()+Math.floor(Math.random()*999);
     const p = {id,exact:!!o.exact,custom:true,...o}; p.id=id;
-    this.places.push(p); this.save();
-    if(o.todo){ this.todo[id]=true; set(LS.todo,this.todo); }
+    this.places.push(p);
+    if(o.todo){ this.todo[id]=true; }
+    this.save();
     this.renderAll(); this.plot();
     return p;
   },
@@ -1060,25 +1124,25 @@ const App = {
   },
   rate(id,n){
     this.ratings[id] = this.ratings[id]===n ? 0 : n;
-    set(LS.ratings,this.ratings);
-    if(this.ratings[id] && !this.visited[id]){ this.visited[id]=true; set(LS.visited,this.visited); }
+    if(this.ratings[id] && !this.visited[id]){ this.visited[id]=true; }
+    this.save();
     this.renderAll(); this.plot();
   },
   toggleVisited(id){
     if(this.visited[id]) delete this.visited[id]; else { this.visited[id]=true; delete this.todo[id]; }
-    set(LS.visited,this.visited); set(LS.todo,this.todo);
+    this.save();
     this.renderAll(); this.plot(); this.map.closePopup();
     this.toast(this.visited[id]?'Marcado como visitado':'Tirado dos visitados');
   },
   toggleTodo(id){
     if(this.todo[id]) delete this.todo[id]; else this.todo[id]=true;
-    set(LS.todo,this.todo); this.renderAll();
+    this.save(); this.renderAll();
     this.toast(this.todo[id]?'Guardado na lista "Pra ir"':'Removido da lista');
   },
   removePlace(id){
     this.places=this.places.filter(p=>p.id!==id);
     delete this.todo[id]; delete this.visited[id]; delete this.ratings[id]; delete this.icons.places[id];
-    this.save(); set(LS.todo,this.todo); set(LS.visited,this.visited); set(LS.ratings,this.ratings); set(LS.icons,this.icons);
+    this.save();
     this.renderAll(); this.plot(); this.toast('Lugar removido');
   },
 
@@ -1098,7 +1162,7 @@ const App = {
       img.src=url;
     });
   },
-  saveIcons(){ set(LS.icons,this.icons); this.plot(); this.renderAll(); },
+  saveIcons(){ this.save(); this.plot(); this.renderAll(); },
   setCatEmoji(cat,val){
     val=val.trim(); if(!val) return;
     this.icons.cats[cat]=val; this.saveIcons(); this.renderIconCats();
@@ -1393,7 +1457,7 @@ PARADA | nome do lugar | bairro | cidade | categoria (date/praia/serra/cultura/f
       this.addPlace({name:s.name,cat:CATS[s.cat]?s.cat:'date',area:s.area||'',city:s.city||'Ceará',
         lat:s.lat,lng:s.lng,note:s.note||'',exact:false,ai:true,todo:true}); n++;
     });
-    set(LS.todo,this.todo); this.renderAll(); this.plot();
+    this.save(); this.renderAll(); this.plot();
     this.toast(n?`${n} paradas guardadas`:'Essas paradas já estavam salvas');
   },
 
@@ -1578,53 +1642,6 @@ LUGAR | nome | bairro ou distrito | cidade | categoria (date/praia/serra/cultura
     const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
     clearTimeout(this._tt); this._tt=setTimeout(()=>t.classList.remove('on'),3200);
   },
-  b64enc(obj){ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); },
-  b64dec(str){ return JSON.parse(decodeURIComponent(escape(atob(str.trim())))); },
-  syncExport(){
-    const payload={
-      v:1, ratings:this.ratings, visited:this.visited, todo:this.todo, icons:this.icons,
-      customPlaces:this.places.filter(p=>p.custom)
-    };
-    const code=this.b64enc(payload);
-    document.getElementById('sync-out').value=code;
-    this.toast('Código gerado — copie e mande pra outra pessoa');
-  },
-  syncCopy(){
-    const t=document.getElementById('sync-out');
-    if(!t.value) this.syncExport();
-    t.select();
-    if(navigator.clipboard?.writeText){
-      navigator.clipboard.writeText(t.value).then(()=>this.toast('Copiado')).catch(()=>this.toast('Não deu para copiar automaticamente — selecione e copie manualmente'));
-    } else {
-      try{ document.execCommand('copy'); this.toast('Copiado'); }
-      catch(e){ this.toast('Selecione o texto e copie manualmente'); }
-    }
-  },
-  syncImport(){
-    const raw=document.getElementById('sync-in').value.trim();
-    if(!raw) return this.toast('Cole um código antes');
-    let inc;
-    try{ inc=this.b64dec(raw); }catch(e){ return this.toast('Esse código não parece válido'); }
-
-    // visitado e pendente: se qualquer um dos dois marcou, vale
-    Object.assign(this.visited, inc.visited||{});
-    Object.entries(inc.todo||{}).forEach(([k,v])=>{ if(v) this.todo[k]=true; });
-    // notas: fica a maior
-    Object.entries(inc.ratings||{}).forEach(([k,v])=>{ if((v||0) > (this.ratings[k]||0)) this.ratings[k]=v; });
-    // ícones: o que veio de fora entra, sem apagar o que já existia e não foi tocado
-    this.icons.cats   = {...this.icons.cats,   ...(inc.icons?.cats||{})};
-    this.icons.places = {...this.icons.places, ...(inc.icons?.places||{})};
-    // lugares adicionados por vocês: junta por nome, sem duplicar
-    (inc.customPlaces||[]).forEach(cp=>{
-      if(this.places.some(p=>p.name.toLowerCase()===String(cp.name).toLowerCase())) return;
-      this.places.push({...cp, id:cp.id||(Date.now()+Math.floor(Math.random()*999))});
-    });
-
-    this.save(); set(LS.ratings,this.ratings); set(LS.visited,this.visited); set(LS.todo,this.todo); set(LS.icons,this.icons);
-    this.renderAll(); this.plot(); this.renderIconCats(); this.renderIconPicks();
-    document.getElementById('sync-in').value='';
-    this.toast('Prontinho — as duas listas foram somadas');
-  },
   exportData(){
     const blob=new Blob([JSON.stringify({places:this.places,ratings:this.ratings,visited:this.visited,todo:this.todo,icons:this.icons},null,2)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -1636,16 +1653,18 @@ LUGAR | nome | bairro ou distrito | cidade | categoria (date/praia/serra/cultura
       fr.onload=()=>{ try{ const d=JSON.parse(fr.result);
         if(d.places) this.places=d.places; this.ratings=d.ratings||{}; this.visited=d.visited||{}; this.todo=d.todo||{};
         this.icons=d.icons||{cats:{},places:{}};
-        this.save(); set(LS.ratings,this.ratings); set(LS.visited,this.visited); set(LS.todo,this.todo); set(LS.icons,this.icons);
-        this.renderAll(); this.plot(); this.renderIconCats(); this.renderIconPicks(); this.closeSheet(); this.toast('Backup restaurado');
+        this.save();
+        this.renderAll(); this.plot(); this.renderIconCats(); this.renderIconPicks(); this.closeSheet(); this.toast('Backup restaurado para todos os aparelhos');
       }catch(e){ this.toast('Arquivo inválido'); } };
       fr.readAsText(f); };
     i.click();
   },
   wipe(){
-    if(!confirm('Isso apaga lugares adicionados, notas, ícones e visitas. Continuar?')) return;
+    if(!confirm('Isso apaga lugares adicionados, notas, ícones e visitas para todos os aparelhos conectados na nuvem. Continuar?')) return;
     Object.values(LS).forEach(k=>localStorage.removeItem(k));
-    location.reload();
+    const done=()=>location.reload();
+    if(this.cloudRef) this.cloudRef.delete().then(done).catch(done);
+    else done();
   }
 };
 
