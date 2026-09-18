@@ -652,10 +652,8 @@ const App = {
   },
 
   /* ── mapa ───────────────────────────────────────────── */
-  initMap(){// CONFIGURAÇÃO DA CHAVE CARTO
-// ==========================================
-const CARTO_API_KEY = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";
-    this.map = L.map('map',{zoomControl:false,preferCanvas:false,attributionControl:true}).setView([-3.76,-38.55],11);
+  initMap(){
+    this.map = L.map('map'const CARTO_API_KEY = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";,{zoomControl:false,preferCanvas:false,attributionControl:true}).setView([-3.76,-38.55],11);
     this.swapTiles();
     this.layer     = L.layerGroup().addTo(this.map);
     this.liveLayer = L.layerGroup().addTo(this.map);
@@ -857,7 +855,7 @@ const CARTO_API_KEY = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";
   /* ── Gemini ─────────────────────────────────────────── */
   async askGemini(auto){
     if(this.aiBusy) return;
-    const key=get(LS.key,''), model=get(LS.model,'gemini-2.0-flash');
+    const key=get(LS.key,'AQ.Ab8RN6K-F02TFXs-cG9ZA0MbK72oK0Bq4jVeTi8z4hn4-3apSA'), model=get(LS.model,'gemini-2.0-flash');
     const btn=document.getElementById('btn-ai');
     this.aiBusy=true; if(btn){btn.disabled=true;btn.innerHTML='<span class="material-icons-round" style="font-size:18px">hourglass_top</span> Pensando…';}
     const done=()=>{this.aiBusy=false; if(btn){btn.disabled=false;btn.innerHTML='<span class="material-icons-round" style="font-size:18px">bolt</span> Gerar sugestões agora';}};
