@@ -109,7 +109,7 @@ body{
 }
 @keyframes twinkle{0%,100%{opacity:calc(var(--stars,1) * .45)}50%{opacity:var(--stars,1)}}
 
-#sky .orb{position:absolute;border-radius:50%;transition:opacity 3s linear, left 60s linear, top 60s linear}
+#sky .orb{position:absolute;border-radius:50%;transition:opacity 3s linear;will-change:opacity}
 #sky .sun{
   width:112px;height:112px;
   background:radial-gradient(circle at 42% 38%, #fff8e0 0%, #ffd06a 42%, #ff9a3c 70%, rgba(255,140,60,0) 74%);
@@ -230,7 +230,10 @@ html[data-theme="light"] .chip[aria-pressed="true"]{color:#fff}
 .section-head span{font-size:11.5px;color:var(--ink-3);font-weight:600}
 
 .cards{display:grid;gap:12px}
-.card{border-radius:var(--r-lg);padding:15px 16px}
+.card{border-radius:var(--r-lg);padding:15px 16px;position:relative;
+  background:linear-gradient(180deg,var(--glass-2),var(--glass));
+  border:1px solid var(--edge);box-shadow:0 10px 24px rgba(0,0,0,.20), inset 0 1px 0 var(--edge-2);
+  content-visibility:auto;contain-intrinsic-size:0 190px}
 .card-top{display:flex;gap:12px;align-items:flex-start}
 .card-emoji{width:42px;height:42px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:20px;background:var(--glass-2);border:1px solid var(--edge-2)}
 .card h3{margin:0 0 3px;font-size:15px;font-weight:700;line-height:1.25}
@@ -291,13 +294,13 @@ select.field{appearance:none;background-image:none}
 
 /* ── nav ── */
 .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;bottom:calc(18px + env(safe-area-inset-bottom));
-  width:min(92%,430px);height:var(--nav-h);border-radius:28px;display:flex;padding:8px;gap:4px;z-index:3000}
-.nav button{flex:1;border:0;background:none;cursor:pointer;border-radius:21px;color:var(--ink-3);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;font-weight:700;transition:.28s var(--ease)}
-.nav button .material-icons-round{font-size:21px}
+  width:min(94%,470px);height:var(--nav-h);border-radius:26px;display:flex;padding:7px;gap:2px;z-index:3000}
+.nav button{flex:1;min-width:0;border:0;background:none;cursor:pointer;border-radius:19px;color:var(--ink-3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9.5px;font-weight:700;transition:.28s var(--ease)}
+.nav button .material-icons-round{font-size:20px}
 .nav button[aria-current="true"]{color:var(--ink);background:var(--glass-2);box-shadow:inset 0 1px 0 var(--spec)}
 .nav button[aria-current="true"] .material-icons-round{color:var(--mar)}
-.badge{position:absolute;top:9px;transform:translateX(15px);min-width:16px;height:16px;border-radius:9px;background:var(--sol);color:#fff;
+.badge{position:absolute;top:6px;transform:translateX(13px);min-width:15px;height:15px;border-radius:8px;background:var(--sol);color:#fff;
   font-size:9px;font-weight:800;display:grid;place-items:center;padding:0 4px}
 
 /* ── sheet ── */
@@ -339,6 +342,26 @@ select.field{appearance:none;background-image:none}
 .sources{font-size:10.5px;color:var(--ink-3);line-height:1.5;margin:10px 0 0}
 .sources a{color:var(--ink-2)}
 
+/* ── ícones personalizados ── */
+.icon-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--edge-2)}
+.icon-row:last-child{border:0}
+.icon-preview{width:46px;height:46px;flex:none;border-radius:50%;display:grid;place-items:center;font-size:21px;
+  border:2px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.3);overflow:hidden;background:var(--glass-2)}
+.icon-preview img{width:100%;height:100%;object-fit:cover}
+.icon-info{flex:1;min-width:0}
+.icon-info b{display:block;font-size:13px;font-weight:700}
+.icon-info small{font-size:11px;color:var(--ink-2)}
+.icon-ctl{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.emoji-in{width:52px;height:36px;text-align:center;border-radius:11px;border:1px solid var(--edge);background:var(--glass-2);font-size:16px}
+.place-pick{display:flex;gap:8px;margin-bottom:6px}
+.place-pick input{flex:1}
+.sync-box textarea{width:100%;height:78px;border-radius:14px;padding:10px 12px;font-size:10.5px;line-height:1.4;
+  background:var(--glass-2);border:1px solid var(--edge);resize:none;margin-bottom:9px;font-family:ui-monospace,monospace}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;padding:5px 10px;border-radius:999px;
+  background:var(--glass-2);border:1px solid var(--edge-2);color:var(--ink-2)}
+.pill.ok{color:#04110f;background:var(--mar);border-color:transparent}
+.pill .material-icons-round{font-size:13px}
+
 .empty{text-align:center;padding:42px 18px;color:var(--ink-2)}
 .empty .material-icons-round{font-size:38px;color:var(--ink-3);display:block;margin-bottom:10px}
 .empty b{display:block;font-size:14px;color:var(--ink);margin-bottom:5px}
@@ -356,6 +379,25 @@ select.field{appearance:none;background-image:none}
 .pop .sec{background:var(--glass-2);color:var(--ink);border:1px solid var(--edge);margin-top:6px}
 .leaflet-control-attribution{background:var(--glass)!important;color:var(--ink-3)!important;font-size:9px!important}
 .leaflet-control-attribution a{color:var(--ink-2)!important}
+/* ────────────────────────────  MODO LEVE (mobile)  ────────────────────────────
+   Blur (backdrop-filter) e sombras grandes custam caro no Safari/Chrome de
+   celular, principalmente quando ficam empilhados atrás do céu animado.
+   Aqui reduzimos o raio do blur, encolhemos sombras e paramos animações
+   decorativas que não mudam a experiência mas pesam na GPU. */
+@media (max-width:680px), (pointer:coarse){
+  .glass, .chip, .icon-btn, .fab{
+    backdrop-filter:blur(12px) saturate(150%);
+    -webkit-backdrop-filter:blur(12px) saturate(150%);
+  }
+  .leaflet-popup-content-wrapper{backdrop-filter:blur(14px) saturate(150%)!important}
+  :root{--shadow:0 10px 22px rgba(0,0,0,.32)}
+  #sky .sun{box-shadow:0 0 60px 22px rgba(255,170,80,.22)}
+  #sky .moon{box-shadow:0 0 34px 12px rgba(200,215,255,.16)}
+  #sky .clouds{animation:none;opacity:calc(var(--clouds,0) * .6)}
+  .glass::after{display:none}
+  .card{box-shadow:0 6px 14px rgba(0,0,0,.16)}
+}
+@media (prefers-reduced-motion:reduce){#sky .stars,#sky .stars2,#sky .clouds{animation:none}}
 </style>
 </head>
 <body class="on-map">
@@ -486,12 +528,37 @@ select.field{appearance:none;background-image:none}
     </div>
   </section>
 
+  <!-- ══════════════ ÍCONES ══════════════ -->
+  <section id="view-icons" class="view">
+    <div class="topbar"><div class="topbar-in">
+      <div class="brand"><h1>Ícones</h1><small>Personalize os marcadores do mapa</small></div>
+      <button class="icon-btn" id="btn-theme-5"><span class="material-icons-round">dark_mode</span></button>
+    </div></div>
+    <div class="wrap">
+      <div class="glass panel" style="margin-top:0">
+        <h3><span class="material-icons-round" style="color:var(--duna)">category</span> Por categoria</h3>
+        <p class="lead">Vale para todos os lugares dessa categoria no mapa. Digite um emoji ou envie uma imagem — fica fixo, salvo neste aparelho.</p>
+        <div id="icon-cats"></div>
+      </div>
+
+      <div class="glass panel">
+        <h3><span class="material-icons-round" style="color:var(--hibisco)">pin_drop</span> Um lugar específico</h3>
+        <p class="lead">Dá um ícone só para aquele lugar, ignorando o da categoria.</p>
+        <div class="place-pick">
+          <input id="icon-search" class="field" placeholder="Buscar um lugar…" oninput="App.renderIconPicks()">
+        </div>
+        <div id="icon-places"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ══════════════ NAV ══════════════ -->
   <nav class="nav glass">
     <button aria-current="true" onclick="App.tab('map',this)"><span class="material-icons-round">map</span>Mapa</button>
     <button onclick="App.tab('explore',this)"><span class="material-icons-round">explore</span>Explorar</button>
     <button onclick="App.tab('todo',this)" style="position:relative"><span class="material-icons-round">bookmark</span>Pra ir<i class="badge" id="nav-badge" hidden>0</i></button>
     <button onclick="App.tab('diary',this)"><span class="material-icons-round">favorite</span>Diário</button>
+    <button onclick="App.tab('icons',this)"><span class="material-icons-round">palette</span>Ícones</button>
   </nav>
 </div>
 
@@ -534,9 +601,26 @@ select.field{appearance:none;background-image:none}
     <button class="btn primary" onclick="App.saveKey()">Salvar chave</button>
   </div>
 
+  <div style="padding:14px 0 4px" class="sync-box">
+    <b style="font-size:13px">Sincronizar com quem você quiser</b>
+    <p style="margin:4px 0 10px;font-size:11.5px;color:var(--ink-2);line-height:1.5">
+      Este arquivo não tem servidor, então o que é marcado aqui fica só neste aparelho e neste navegador —
+      é por isso que abrir o app em outro celular começa "zerado". Para juntar o progresso dos dois,
+      gere um código, mande por WhatsApp e a outra pessoa cola o código dela aqui. As duas listas se somam
+      (visitados, notas, pendentes e ícones), nada se perde.
+    </p>
+    <textarea id="sync-out" readonly placeholder="Toque em «Gerar código» para ver o código aqui"></textarea>
+    <div class="row2">
+      <button class="btn primary" onclick="App.syncExport()"><span class="material-icons-round" style="font-size:16px">qr_code_2</span> Gerar código</button>
+      <button class="btn ghost" onclick="App.syncCopy()"><span class="material-icons-round" style="font-size:16px">content_copy</span> Copiar</button>
+    </div>
+    <textarea id="sync-in" placeholder="Cole aqui o código que a outra pessoa te mandou" style="margin-top:10px"></textarea>
+    <button class="btn warm" onclick="App.syncImport()">Juntar com o meu</button>
+  </div>
+
   <div class="row2" style="margin-top:14px">
-    <button class="btn ghost" onclick="App.exportData()">Exportar dados</button>
-    <button class="btn ghost" onclick="App.importData()">Importar</button>
+    <button class="btn ghost" onclick="App.exportData()">Baixar backup (.json)</button>
+    <button class="btn ghost" onclick="App.importData()">Restaurar backup</button>
   </div>
   <button class="btn ghost" style="margin-top:9px;color:var(--hibisco)" onclick="App.wipe()">Apagar tudo e recomeçar</button>
   <p style="font-size:10.5px;color:var(--ink-3);text-align:center;margin:16px 0 0;line-height:1.5">
@@ -706,7 +790,7 @@ const GEMINI_KEY = "AQ.Ab8RN6K-F02TFXs-cG9ZA0MbK72oK0Bq4jVeTi8z4hn4-3apSA";
 const LS = {
   places:'cd2_places', ratings:'cd2_ratings', visited:'cd2_visited',
   todo:'cd2_todo', theme:'cd2_theme', key:'cd2_key', model:'cd2_model',
-  auto:'cd2_auto', lastAI:'cd2_lastai', plan:'cd2_plan', skyTheme:'cd2_skytheme'
+  auto:'cd2_auto', lastAI:'cd2_lastai', plan:'cd2_plan', skyTheme:'cd2_skytheme', icons:'cd2_icons'
 };
 
 /* fases do dia: [hora, céu topo, céu meio, céu base, estrelas, sol, lua, nuvens, brilho no horizonte] */
@@ -743,9 +827,10 @@ const App = {
     this.ratings = get(LS.ratings,{});
     this.visited = get(LS.visited,{});
     this.todo    = get(LS.todo,{});
+    this.icons   = get(LS.icons,{cats:{},places:{}});
 
     this.buildChips('chips'); this.buildChips('chips2');
-    ['btn-theme','btn-theme-2','btn-theme-3','btn-theme-4'].forEach(id=>{
+    ['btn-theme','btn-theme-2','btn-theme-3','btn-theme-4','btn-theme-5'].forEach(id=>{
       const b=document.getElementById(id); if(b) b.onclick=()=>this.toggleTheme();
     });
     document.getElementById('in-key').value   = get(LS.key,GEMINI_KEY);
@@ -756,6 +841,7 @@ const App = {
     this.sky(); setInterval(()=>this.sky(), 60000);
     this.initMap();
     this.renderAll();
+    this.renderIconCats(); this.renderIconPicks();
     this.renderPlan(get(LS.plan,null));
     this.weather();
     if(get(LS.auto,false) && Date.now()-get(LS.lastAI,0) > 20*36e5) setTimeout(()=>this.askGemini(true), 4000);
@@ -842,11 +928,18 @@ const App = {
     this.tiles.getContainer && this.tiles.on('add',()=>{});
   },
   icon(p){
-    const v=!!this.visited[p.id], c=CATS[p.cat]?.color||'#12b5a3', e=CATS[p.cat]?.emoji||'📍';
-    const bg = v ? 'linear-gradient(140deg,#f2c14e,#ff7a2f)' : c;
+    const v=!!this.visited[p.id], c=CATS[p.cat]?.color||'#12b5a3';
+    const own = this.icons.places[p.id];
+    let mark, bg;
+    if(own){ mark=own; bg=v?'linear-gradient(140deg,#f2c14e,#ff7a2f)':c; }
+    else if(v){ mark='★'; bg='linear-gradient(140deg,#f2c14e,#ff7a2f)'; }
+    else { mark = this.icons.cats[p.cat] ?? CATS[p.cat]?.emoji ?? '📍'; bg=c; }
+    const isImg = typeof mark==='string' && mark.startsWith('data:image');
     return L.divIcon({
       className:'', iconSize:[30,30], iconAnchor:[15,15], popupAnchor:[0,-14],
-      html:`<div class="pin${v?' big':''}" style="background:${bg}">${v?'★':e}</div>`
+      html:isImg
+        ? `<div class="pin${v?' big':''}" style="background:#fff;padding:0"><img src="${mark}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>`
+        : `<div class="pin${v?' big':''}" style="background:${bg}">${mark}</div>`
     });
   },
   plot(){
@@ -984,9 +1077,98 @@ const App = {
   },
   removePlace(id){
     this.places=this.places.filter(p=>p.id!==id);
-    delete this.todo[id]; delete this.visited[id]; delete this.ratings[id];
-    this.save(); set(LS.todo,this.todo); set(LS.visited,this.visited); set(LS.ratings,this.ratings);
+    delete this.todo[id]; delete this.visited[id]; delete this.ratings[id]; delete this.icons.places[id];
+    this.save(); set(LS.todo,this.todo); set(LS.visited,this.visited); set(LS.ratings,this.ratings); set(LS.icons,this.icons);
     this.renderAll(); this.plot(); this.toast('Lugar removido');
+  },
+
+  /* ── ícones personalizados ──────────────────────────── */
+  resizeImage(file,size=64,quality=.75){
+    return new Promise((res,rej)=>{
+      const img=new Image(), url=URL.createObjectURL(file);
+      img.onload=()=>{
+        const c=document.createElement('canvas'); c.width=size; c.height=size;
+        const ctx=c.getContext('2d'), side=Math.min(img.width,img.height),
+              sx=(img.width-side)/2, sy=(img.height-side)/2;
+        ctx.drawImage(img,sx,sy,side,side,0,0,size,size);
+        URL.revokeObjectURL(url);
+        res(c.toDataURL('image/jpeg',quality));
+      };
+      img.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error('imagem inválida')); };
+      img.src=url;
+    });
+  },
+  saveIcons(){ set(LS.icons,this.icons); this.plot(); this.renderAll(); },
+  setCatEmoji(cat,val){
+    val=val.trim(); if(!val) return;
+    this.icons.cats[cat]=val; this.saveIcons(); this.renderIconCats();
+    this.toast('Ícone da categoria atualizado');
+  },
+  async pickCatImage(cat){
+    const i=document.createElement('input'); i.type='file'; i.accept='image/*';
+    i.onchange=async()=>{ const f=i.files[0]; if(!f) return;
+      try{ this.icons.cats[cat]=await this.resizeImage(f); this.saveIcons(); this.renderIconCats();
+        this.toast('Imagem salva para essa categoria'); }
+      catch(e){ this.toast('Não consegui ler essa imagem'); } };
+    i.click();
+  },
+  resetCatIcon(cat){ delete this.icons.cats[cat]; this.saveIcons(); this.renderIconCats(); this.toast('Voltou ao ícone padrão'); },
+  setPlaceEmoji(id,val){
+    val=val.trim(); if(!val) return;
+    this.icons.places[id]=val; this.saveIcons(); this.renderIconPicks();
+    this.toast('Ícone salvo para esse lugar');
+  },
+  async pickPlaceImage(id){
+    const i=document.createElement('input'); i.type='file'; i.accept='image/*';
+    i.onchange=async()=>{ const f=i.files[0]; if(!f) return;
+      try{ this.icons.places[id]=await this.resizeImage(f); this.saveIcons(); this.renderIconPicks();
+        this.toast('Imagem salva para esse lugar'); }
+      catch(e){ this.toast('Não consegui ler essa imagem'); } };
+    i.click();
+  },
+  resetPlaceIcon(id){ delete this.icons.places[id]; this.saveIcons(); this.renderIconPicks(); this.toast('Voltou ao ícone padrão'); },
+  renderIconCats(){
+    const box=document.getElementById('icon-cats'); if(!box) return;
+    box.innerHTML = Object.keys(CATS).filter(c=>c!=='perto').map(c=>{
+      const cur=this.icons.cats[c]; const isImg=typeof cur==='string'&&cur.startsWith('data:image');
+      return `<div class="icon-row">
+        <div class="icon-preview" style="background:${isImg?'#fff':CATS[c].color}">${isImg?`<img src="${cur}">`:(cur||CATS[c].emoji)}</div>
+        <div class="icon-info">
+          <b>${CATS[c].label}</b><small>vale para todos os lugares desta categoria</small>
+          <div class="icon-ctl">
+            <input class="emoji-in" maxlength="4" placeholder="${CATS[c].emoji}" onchange="App.setCatEmoji('${c}',this.value)">
+            <button class="mini" onclick="App.pickCatImage('${c}')"><span class="material-icons-round">image</span>Imagem</button>
+            ${cur?`<button class="mini sq" title="Padrão" onclick="App.resetCatIcon('${c}')"><span class="material-icons-round">restart_alt</span></button>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  },
+  renderIconPicks(){
+    const box=document.getElementById('icon-places'); if(!box) return;
+    const q=(document.getElementById('icon-search')?.value||'').toLowerCase().trim();
+    let list=this.places;
+    if(q) list=list.filter(p=>(p.name+p.area+p.city).toLowerCase().includes(q));
+    else list=list.filter(p=>this.icons.places[p.id]); // sem busca: só mostra quem já tem ícone próprio
+    if(!q && !list.length){
+      box.innerHTML=`<p style="font-size:12px;color:var(--ink-2);text-align:center;padding:18px 0">Busque um lugar acima para dar um ícone só dele.</p>`;
+      return;
+    }
+    box.innerHTML = list.slice(0,30).map(p=>{
+      const cur=this.icons.places[p.id]; const isImg=typeof cur==='string'&&cur.startsWith('data:image');
+      const def = CATS[p.cat]?.emoji||'📍';
+      return `<div class="icon-row">
+        <div class="icon-preview" style="background:${isImg?'#fff':CATS[p.cat]?.color}">${isImg?`<img src="${cur}">`:(cur||def)}</div>
+        <div class="icon-info">
+          <b>${esc(p.name)}</b><small>${esc(p.area)}</small>
+          <div class="icon-ctl">
+            <input class="emoji-in" maxlength="4" placeholder="${def}" onchange="App.setPlaceEmoji(${p.id},this.value)">
+            <button class="mini" onclick="App.pickPlaceImage(${p.id})"><span class="material-icons-round">image</span>Imagem</button>
+            ${cur?`<button class="mini sq" title="Padrão" onclick="App.resetPlaceIcon(${p.id})"><span class="material-icons-round">restart_alt</span></button>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
   },
 
   /* ── clima ──────────────────────────────────────────── */
@@ -1025,32 +1207,54 @@ const App = {
     }
   },
 
-  /* ── Gemini com busca na web ────────────────────────── */
-  cutJSON(txt){
-    const s=String(txt).replace(/```json/gi,'').replace(/```/g,'').trim();
-    const i=s.search(/[\[{]/); if(i<0) return null;
-    const open=s[i], close=open==='['?']':'}';
-    const j=s.lastIndexOf(close); if(j<i) return null;
-    try{ return JSON.parse(s.slice(i,j+1)); }catch(e){ return null; }
-  },
+  /* ── Gemini com busca na web ──────────────────────────
+     Importante: quando a ferramenta de busca (google_search) está ligada,
+     o modelo tende a responder em prosa com citações — pedir "só JSON"
+     nessas condições falha silenciosamente boa parte das vezes. Por isso
+     pedimos um formato de linhas com marcadores fixos (ex: "PARADA | ...")
+     e varremos a resposta procurando essas linhas, ignorando o resto do
+     texto. É bem mais tolerante a variações do que exigir JSON estrito. */
   async gemini(prompt){
-    const key=get(LS.key,GEMINI_KEY), model=get(LS.model,'gemini-2.5-flash');
-    if(!key) throw new Error('sem chave');
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        contents:[{role:'user',parts:[{text:prompt}]}],
-        tools:[{google_search:{}}],                    // deixa o modelo pesquisar na internet
-        generationConfig:{temperature:1,topP:.95}
-      })
-    });
-    if(!res.ok) throw new Error(await res.text());
+    const key=(get(LS.key,GEMINI_KEY)||'').trim();
+    const model=get(LS.model,'gemini-2.5-flash');
+    if(!key) throw {code:'sem_chave', message:'Nenhuma chave do Gemini configurada'};
+    let res;
+    try{
+      res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          contents:[{role:'user',parts:[{text:prompt}]}],
+          tools:[{google_search:{}}],
+          generationConfig:{temperature:.9,topP:.95,maxOutputTokens:2048}
+        })
+      });
+    }catch(netErr){
+      throw {code:'rede', message:'Não consegui contatar o Gemini (rede ou bloqueio de CORS)'};
+    }
+    if(!res.ok){
+      let msg=`HTTP ${res.status}`;
+      try{ const j=await res.json(); msg = j.error?.message || msg; }catch(e){}
+      throw {code:'http_'+res.status, message:msg};
+    }
     const d=await res.json();
-    const c=d.candidates?.[0]||{};
-    const txt=(c.content?.parts||[]).map(p=>p.text||'').join('');
+    const c=d.candidates?.[0];
+    if(!c) throw {code:'sem_candidato', message:d.promptFeedback?.blockReason || 'A API não devolveu resposta'};
+    const txt=(c.content?.parts||[]).map(p=>p.text||'').join('\n');
     const src=(c.groundingMetadata?.groundingChunks||[])
       .map(g=>g.web&&{title:g.web.title,uri:g.web.uri}).filter(Boolean).slice(0,4);
-    return {txt, src, json:this.cutJSON(txt)};
+    if(!txt.trim()) throw {code:'vazio', message:`A resposta veio vazia (finishReason: ${c.finishReason||'?'})`};
+    return {txt, src};
+  },
+  /* extrai linhas "MARCADOR | campo | campo…" de um texto solto */
+  fields(txt,marker){
+    return txt.split('\n')
+      .map(l=>l.trim())
+      .filter(l=>l.toUpperCase().startsWith(marker+' |') || l.toUpperCase().startsWith(marker+'|'))
+      .map(l=>l.split('|').slice(1).map(s=>s.trim()));
+  },
+  fieldOne(txt,marker){
+    const l=txt.split('\n').map(x=>x.trim()).find(x=>x.toUpperCase().startsWith(marker+' |')||x.toUpperCase().startsWith(marker+'|'));
+    return l ? l.split('|').slice(1).join('|').trim() : '';
   },
 
   /* roteiro encadeado para a hora de agora */
@@ -1079,30 +1283,36 @@ Lugares que já estão na lista deles e podem entrar no roteiro: ${perto}.
 
 Use a busca do Google para conferir o que realmente existe, está aberto hoje e o que está acontecendo nesta semana por lá (shows, feiras, exposições, horários).
 Monte UM roteiro de 2 a 3 paradas encadeadas, que caiba nas próximas 3 ou 4 horas, com no máximo 25 km entre elas, coerente com o clima e a hora. Se couber, termine com sorvete numa loja Frosty próxima.
-No campo "texto", fale direto com o casal em 2 frases, começando pelo clima. Exemplo de tom: "Está fazendo sol e a maré está baixa: dá para caminhar na trilha do Parque do Cocó e depois tomar sorvete na Frosty do Cocó, que fica a cinco minutos."
 
-Responda SOMENTE com JSON puro, sem markdown:
-{"titulo":"até 5 palavras","texto":"duas frases","paradas":[{"name":"","area":"","city":"","cat":"date|praia|serra|cultura|frosty","hora":"ex 17h30","note":"por que essa parada, uma frase"}]}`;
+Responda EXATAMENTE neste formato de linhas, uma por linha, sem markdown, sem numeração. Pode escrever outras frases antes ou depois se precisar, mas essas linhas têm que aparecer exatamente assim, com "|" separando os campos:
+TITULO | até 5 palavras
+TEXTO | duas frases faladas direto com o casal, começando pelo clima. Exemplo: Está fazendo sol e a maré está baixa: dá para caminhar na trilha do Parque do Cocó e depois tomar sorvete na Frosty do Cocó, que fica a cinco minutos.
+PARADA | nome do lugar | bairro | cidade | categoria (date/praia/serra/cultura/frosty) | horário sugerido ex 17h30 | por que essa parada, uma frase`;
 
     try{
       const r = await this.gemini(prompt);
-      const plan = r.json;
-      if(!plan||!Array.isArray(plan.paradas)||!plan.paradas.length) throw new Error('resposta vazia');
-      for(const s of plan.paradas){
-        const known=this.places.find(p=>p.name.toLowerCase()===String(s.name).toLowerCase());
+      const titulo = this.fieldOne(r.txt,'TITULO') || 'Roteiro de agora';
+      const texto  = this.fieldOne(r.txt,'TEXTO');
+      const paradas = this.fields(r.txt,'PARADA').map(f=>({
+        name:f[0]||'', area:f[1]||'', city:f[2]||'', cat:(f[3]||'date').trim(), hora:f[4]||'', note:f[5]||''
+      })).filter(s=>s.name);
+      if(!paradas.length) throw {code:'sem_paradas', message:'A resposta não trouxe nenhuma parada no formato esperado'};
+      for(const s of paradas){
+        const known=this.places.find(p=>p.name.toLowerCase()===s.name.toLowerCase());
         if(known){ s.lat=known.lat; s.lng=known.lng; s.knownId=known.id; continue; }
         const g=await this.geocode(`${s.name}, ${s.area||''} ${s.city||'Fortaleza'}`);
         if(g){ s.lat=g.lat; s.lng=g.lng; }
         await new Promise(x=>setTimeout(x,1100));
       }
-      plan.src=r.src; plan.when=Date.now();
+      const plan={titulo,texto,paradas,src:r.src,when:Date.now()};
       set(LS.plan,plan); this.renderPlan(plan); fim();
-      this.toast('Roteiro pronto');
+      this.toast('Roteiro pronto, com fontes da web');
     }catch(e){
-      console.warn(e); fim();
+      console.warn('Gemini (roteiro):', e);
+      fim();
       const fb=this.offlinePlan();
       set(LS.plan,fb); this.renderPlan(fb);
-      this.toast('A IA não respondeu agora. Montei um roteiro com o que já está na lista.');
+      this.toast('IA indisponível agora (' + (e?.message||e||'motivo desconhecido') + '). Roteiro offline no lugar.');
     }
   },
   offlinePlan(){
@@ -1205,13 +1415,15 @@ Sugira 4 lugares REAIS e atuais para um casal visitar. Se achar algo que abriu o
 Contexto: agora são ${hora}h, tempo ${this.wx?this.wx.t+'°C':'indefinido'}, fase do dia ${this.phase||'dia'}. O casal gostou de: ${liked}.
 NÃO repita nenhum destes: ${known}.
 Varie entre restaurante/bar/café, praia, serra e cultura, e priorize lugares a até 200 km de Fortaleza.
-Responda SOMENTE um array JSON puro, sem markdown:
-[{"name":"","area":"bairro ou distrito","city":"cidade","cat":"date|praia|serra|cultura","note":"uma frase curta dizendo por que vale a pena"}]`;
+Responda EXATAMENTE com linhas neste formato, uma por lugar, sem markdown nem numeração (pode escrever texto ao redor se quiser, mas as linhas têm que aparecer assim):
+LUGAR | nome | bairro ou distrito | cidade | categoria (date/praia/serra/cultura) | uma frase curta dizendo por que vale a pena`;
         const r=await this.gemini(prompt);
-        list = Array.isArray(r.json) ? r.json : (r.json?.lugares || null);
+        const rows=this.fields(r.txt,'LUGAR');
+        list = rows.map(f=>({name:f[0]||'',area:f[1]||'',city:f[2]||'',cat:(f[3]||'date').trim(),note:f[4]||''})).filter(x=>x.name);
+        if(!list.length) throw {code:'sem_lugares', message:'A resposta não trouxe lugares no formato esperado'};
       }catch(e){
-        console.warn(e);
-        this.toast('A IA não respondeu. Usando o banco de ideias offline.');
+        console.warn('Gemini (descobrir):', e);
+        this.toast('IA indisponível agora (' + (e?.message||e||'motivo desconhecido') + '). Banco de ideias offline no lugar.');
       }
     } else if(!auto){
       this.toast('Sem chave configurada — usando o banco de ideias offline.');
@@ -1249,9 +1461,12 @@ Responda SOMENTE um array JSON puro, sem markdown:
     return pool.sort(()=>Math.random()-.5).slice(0,4);
   },
   saveKey(){
-    set(LS.key,document.getElementById('in-key').value.trim());
+    const k=document.getElementById('in-key').value.trim();
+    set(LS.key,k);
     set(LS.model,document.getElementById('in-model').value);
-    this.toast('Chave salva neste aparelho');
+    if(k && !/^[A-Za-z0-9_\-\.]{20,}$/.test(k)){
+      this.toast('Chave salva, mas o formato parece estranho — confira se copiou certo');
+    } else this.toast('Chave salva neste aparelho');
   },
 
   /* ── render ─────────────────────────────────────────── */
@@ -1271,11 +1486,14 @@ Responda SOMENTE um array JSON puro, sem markdown:
   },
   card(p,ctx){
     const r=this.ratings[p.id]||0, v=!!this.visited[p.id], t=!!this.todo[p.id];
+    const own=this.icons.places[p.id], isImg=typeof own==='string'&&own.startsWith('data:image');
+    const mark = isImg ? `<img src="${own}" style="width:100%;height:100%;object-fit:cover;border-radius:14px">`
+      : (own || this.icons.cats[p.cat] || CATS[p.cat]?.emoji || '📍');
     const stars=[1,2,3,4,5].map(n=>`<button class="star ${n<=r?'lit':''}" aria-label="${n} estrelas" onclick="App.rate(${p.id},${n})">
       <span class="material-icons-round">${n<=r?'star':'star_border'}</span></button>`).join('');
-    return `<article class="glass card">
+    return `<article class="card">
       <div class="card-top">
-        <div class="card-emoji" style="color:${CATS[p.cat]?.color}">${CATS[p.cat]?.emoji||'📍'}</div>
+        <div class="card-emoji" style="color:${CATS[p.cat]?.color};padding:0">${mark}</div>
         <div style="flex:1;min-width:0">
           <h3>${esc(p.name)}</h3>
           <span class="where">${esc(p.area)}${p.area&&p.city?' · ':''}${esc(p.city)}</span>
@@ -1316,7 +1534,7 @@ Responda SOMENTE um array JSON puro, sem markdown:
     document.getElementById('exp-count').textContent=`${list.length} lugares · ${new Set(this.places.map(p=>p.city)).size} cidades`;
     document.getElementById('list-explore').innerHTML = list.length
       ? list.map(p=>this.card(p)).join('')
-      : `<div class="glass card empty"><span class="material-icons-round">travel_explore</span><b>Nada com esse nome</b><p>Tente outra palavra ou troque o filtro lá em cima.</p></div>`;
+      : `<div class="card empty"><span class="material-icons-round">travel_explore</span><b>Nada com esse nome</b><p>Tente outra palavra ou troque o filtro lá em cima.</p></div>`;
   },
   renderTodo(){
     const list=this.places.filter(p=>this.todo[p.id]);
@@ -1325,7 +1543,7 @@ Responda SOMENTE um array JSON puro, sem markdown:
     b.hidden=!list.length; b.textContent=list.length;
     document.getElementById('list-todo').innerHTML = list.length
       ? list.map(p=>this.card(p)).join('')
-      : `<div class="glass card empty"><span class="material-icons-round">bookmark_border</span><b>A fila está vazia</b><p>Salve um lugar com o marcador nos cartões, ou peça quatro ideias novas para o Gemini aí em cima.</p></div>`;
+      : `<div class="card empty"><span class="material-icons-round">bookmark_border</span><b>A fila está vazia</b><p>Salve um lugar com o marcador nos cartões, ou peça quatro ideias novas para o Gemini aí em cima.</p></div>`;
   },
   renderDiary(){
     const total=this.places.length, vis=Object.keys(this.visited).length;
@@ -1342,7 +1560,7 @@ Responda SOMENTE um array JSON puro, sem markdown:
       .sort((a,b)=>(this.ratings[b.id]||0)-(this.ratings[a.id]||0));
     document.getElementById('list-diary').innerHTML = list.length
       ? list.map(p=>this.card(p)).join('')
-      : `<div class="glass card empty"><span class="material-icons-round">favorite_border</span><b>Nenhum lugar avaliado ainda</b><p>Dê estrelas num cartão depois do primeiro date e ele aparece aqui.</p></div>`;
+      : `<div class="card empty"><span class="material-icons-round">favorite_border</span><b>Nenhum lugar avaliado ainda</b><p>Dê estrelas num cartão depois do primeiro date e ele aparece aqui.</p></div>`;
   },
 
   /* ── navegação e utilidades ─────────────────────────── */
@@ -1360,8 +1578,55 @@ Responda SOMENTE um array JSON puro, sem markdown:
     const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
     clearTimeout(this._tt); this._tt=setTimeout(()=>t.classList.remove('on'),3200);
   },
+  b64enc(obj){ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); },
+  b64dec(str){ return JSON.parse(decodeURIComponent(escape(atob(str.trim())))); },
+  syncExport(){
+    const payload={
+      v:1, ratings:this.ratings, visited:this.visited, todo:this.todo, icons:this.icons,
+      customPlaces:this.places.filter(p=>p.custom)
+    };
+    const code=this.b64enc(payload);
+    document.getElementById('sync-out').value=code;
+    this.toast('Código gerado — copie e mande pra outra pessoa');
+  },
+  syncCopy(){
+    const t=document.getElementById('sync-out');
+    if(!t.value) this.syncExport();
+    t.select();
+    if(navigator.clipboard?.writeText){
+      navigator.clipboard.writeText(t.value).then(()=>this.toast('Copiado')).catch(()=>this.toast('Não deu para copiar automaticamente — selecione e copie manualmente'));
+    } else {
+      try{ document.execCommand('copy'); this.toast('Copiado'); }
+      catch(e){ this.toast('Selecione o texto e copie manualmente'); }
+    }
+  },
+  syncImport(){
+    const raw=document.getElementById('sync-in').value.trim();
+    if(!raw) return this.toast('Cole um código antes');
+    let inc;
+    try{ inc=this.b64dec(raw); }catch(e){ return this.toast('Esse código não parece válido'); }
+
+    // visitado e pendente: se qualquer um dos dois marcou, vale
+    Object.assign(this.visited, inc.visited||{});
+    Object.entries(inc.todo||{}).forEach(([k,v])=>{ if(v) this.todo[k]=true; });
+    // notas: fica a maior
+    Object.entries(inc.ratings||{}).forEach(([k,v])=>{ if((v||0) > (this.ratings[k]||0)) this.ratings[k]=v; });
+    // ícones: o que veio de fora entra, sem apagar o que já existia e não foi tocado
+    this.icons.cats   = {...this.icons.cats,   ...(inc.icons?.cats||{})};
+    this.icons.places = {...this.icons.places, ...(inc.icons?.places||{})};
+    // lugares adicionados por vocês: junta por nome, sem duplicar
+    (inc.customPlaces||[]).forEach(cp=>{
+      if(this.places.some(p=>p.name.toLowerCase()===String(cp.name).toLowerCase())) return;
+      this.places.push({...cp, id:cp.id||(Date.now()+Math.floor(Math.random()*999))});
+    });
+
+    this.save(); set(LS.ratings,this.ratings); set(LS.visited,this.visited); set(LS.todo,this.todo); set(LS.icons,this.icons);
+    this.renderAll(); this.plot(); this.renderIconCats(); this.renderIconPicks();
+    document.getElementById('sync-in').value='';
+    this.toast('Prontinho — as duas listas foram somadas');
+  },
   exportData(){
-    const blob=new Blob([JSON.stringify({places:this.places,ratings:this.ratings,visited:this.visited,todo:this.todo},null,2)],{type:'application/json'});
+    const blob=new Blob([JSON.stringify({places:this.places,ratings:this.ratings,visited:this.visited,todo:this.todo,icons:this.icons},null,2)],{type:'application/json'});
     const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download='ceara-a-dois.json'; a.click(); this.toast('Arquivo gerado');
   },
@@ -1370,14 +1635,15 @@ Responda SOMENTE um array JSON puro, sem markdown:
     i.onchange=()=>{ const f=i.files[0]; if(!f) return; const fr=new FileReader();
       fr.onload=()=>{ try{ const d=JSON.parse(fr.result);
         if(d.places) this.places=d.places; this.ratings=d.ratings||{}; this.visited=d.visited||{}; this.todo=d.todo||{};
-        this.save(); set(LS.ratings,this.ratings); set(LS.visited,this.visited); set(LS.todo,this.todo);
-        this.renderAll(); this.plot(); this.closeSheet(); this.toast('Dados importados');
+        this.icons=d.icons||{cats:{},places:{}};
+        this.save(); set(LS.ratings,this.ratings); set(LS.visited,this.visited); set(LS.todo,this.todo); set(LS.icons,this.icons);
+        this.renderAll(); this.plot(); this.renderIconCats(); this.renderIconPicks(); this.closeSheet(); this.toast('Backup restaurado');
       }catch(e){ this.toast('Arquivo inválido'); } };
       fr.readAsText(f); };
     i.click();
   },
   wipe(){
-    if(!confirm('Isso apaga lugares adicionados, notas e visitas. Continuar?')) return;
+    if(!confirm('Isso apaga lugares adicionados, notas, ícones e visitas. Continuar?')) return;
     Object.values(LS).forEach(k=>localStorage.removeItem(k));
     location.reload();
   }
