@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ceará a Dois - Roteiros & Clima Inteligente</title>
+    <title>Ceará a Dois - Master Experience</title>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -62,6 +62,12 @@
         .progress-bar { background: var(--secondary); height: 100%; width: 0%; border-radius: 20px; transition: 1s; }
         .stats-text { font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; }
 
+        /* Sorteador */
+        .surprise-box { margin: 20px; background: linear-gradient(135deg, #FF758C, #FF7EB3); border-radius: 20px; padding: 20px; color: white; box-shadow: 0 10px 20px rgba(255, 117, 140, 0.3); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .surprise-box h3 { margin: 0 0 4px; font-size: 16px; font-weight: 800; }
+        .surprise-box p { margin: 0; font-size: 12px; opacity: 0.9; }
+        .surprise-btn { background: white; color: #FF758C; border: none; padding: 10px 15px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: var(--shadow-sm); }
+
         .section-title { padding: 20px 20px 5px; font-size: 18px; font-weight: 800; color: var(--text-dark); margin: 0;}
 
         /* CARDS */
@@ -77,7 +83,6 @@
         .btn-route { background: var(--app-bg); color: var(--text-dark); border: none; padding: 8px 12px; border-radius: 10px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 4px;}
         .btn-star { background: transparent; border: none; color: #CBD5E1; font-size: 26px; cursor: pointer; }
         .btn-star.visited { color: var(--gold); }
-        .poem-diary { margin-top: 12px; padding: 12px; background: #FFFBEB; border-radius: 10px; font-size: 12px; font-style: italic; color: #92400E; border-left: 3px solid var(--gold); }
 
         /* FLOATING NAV */
         .floating-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 85%; max-width: 360px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); border-radius: 30px; box-shadow: var(--shadow-float); display: flex; justify-content: space-between; padding: 6px 10px; z-index: 2000; border: 1px solid rgba(255,255,255,0.5); }
@@ -120,13 +125,21 @@
         <button class="fab-gps" onclick="app.locate()"><span class="material-icons-round">my_location</span></button>
     </div>
 
-    <!-- VIEW 2: DIÁRIO E LOCAIS -->
+    <!-- VIEW 2: DIÁRIO -->
     <div id="view-list" class="view-layer">
         <div class="dash-hero">
             <h1 class="dash-title">Nosso Diário 💜</h1>
             <p style="margin:0; font-size:14px; opacity:0.9;">Registrando nossas memórias.</p>
             <div class="progress-container"><div class="progress-bar" id="progress"></div></div>
             <div class="stats-text"><span>Progresso</span><span id="stats">0 Visitados</span></div>
+        </div>
+
+        <div class="surprise-box" onclick="app.surpriseDate()">
+            <div>
+                <h3>🎲 Sorteador de Date</h3>
+                <p>Não sabem para onde ir hoje? Deixe a sorte decidir!</p>
+            </div>
+            <button class="surprise-btn">Sortear</button>
         </div>
 
         <h2 class="section-title">Nossos Roteiros</h2>
@@ -158,12 +171,17 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ==========================================
+// CONFIGURAÇÃO DA CHAVE CARTO
+// ==========================================
+const CARTO_API_KEY = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7"; // Cole sua chave gerada em carto.com/basemaps/apikey
+
+// ==========================================
 // BANCO DE DADOS REAL E MASSIVO
 // ==========================================
 const DB = []; let nextId = 1;
 function addP(name, cat, lat, lng, desc) { DB.push({ id: nextId++, name, cat, lat, lng, desc }); }
 
-// 1. FROSTY (Unidades Reais Espalhadas)
+// Unidades Frosty Reais
 const frostys = [
     { n: "Frosty Beira Mar", l: [-3.7250, -38.4975], d: "Ponto clássico. Ideal para caminhar no calçadão saboreando um sorvete." },
     { n: "Frosty Aldeota", l: [-3.7360, -38.5000], d: "Ótima parada durante a tarde na cidade." },
@@ -183,7 +201,7 @@ const frostys = [
 ];
 frostys.forEach(f => addP(f.n, 'frosty', f.l[0], f.l[1], f.d));
 
-// 2. CAFÉS E VINHOS (Para paladares refinados)
+// Cafés e Vinhos
 const vinhos = [
     { n: "Santa Clara Eco Café", l: [-3.7214, -38.5117], d: "Um café especial no ambiente rústico do Dragão do Mar." },
     { n: "Brava Wine", l: [-3.7405, -38.4900], d: "Excelente carta de vinhos e ambiente sofisticado para um date." },
@@ -194,9 +212,9 @@ const vinhos = [
 ];
 vinhos.forEach(v => addP(v.n, 'vinho', v.l[0], v.l[1], v.d));
 
-// 3. ARTE, CULTURA & FOTOS
+// Arte, Cultura & Praias
 const cultura = [
-    { n: "Museu da Fotografia", l: [-3.7431, -38.4912], d: "Exposições incríveis de imagens. O ambiente perfeito para quem gosta de edição de fotos e estética." },
+    { n: "Museu da Fotografia", l: [-3.7431, -38.4912], d: "Exposições incríveis de imagens. Perfeito para quem gosta de fotografia." },
     { n: "Centro Dragão do Mar", l: [-3.7214, -38.5117], d: "Planetário, cinema, exposições e bares clássicos ao redor." },
     { n: "Theatro José de Alencar", l: [-3.7275, -38.5305], d: "Arquitetura riquíssima e histórica. Rende fotos belíssimas." },
     { n: "Passeio Público", l: [-3.7222, -38.5255], d: "A praça mais antiga. Sentar debaixo de um baobá é muito relaxante." },
@@ -208,7 +226,6 @@ const cultura = [
 ];
 cultura.forEach(c => addP(c.n, 'cultura', c.l[0], c.l[1], c.d));
 
-// 4. PRAIAS E NATUREZA
 const praias = [
     { n: "Beira Mar - Espigão do Náutico", l: [-3.7255, -38.4950], d: "Caminhar à noite aqui ou assistir ao pôr do sol é essencial." },
     { n: "Praia do Futuro", l: [-3.7420, -38.4560], d: "Estrutura gigante e caranguejo." },
@@ -223,7 +240,7 @@ praias.forEach(p => addP(p.n, 'praia', p.l[0], p.l[1], p.d));
 
 
 const app = {
-    visited: new Set(JSON.parse(localStorage.getItem('ceara_master_2')) || []),
+    visited: new Set(JSON.parse(localStorage.getItem('ceara_master_3')) || []),
     map: null, pointsLayer: null,
 
     init() {
@@ -232,49 +249,32 @@ const app = {
         setTimeout(() => { this.initMap(); this.renderCards(); }, 150);
     },
 
-    // ==========================================
-    // MOTOR DE INTELIGÊNCIA: CLIMA E HORA REAL
-    // ==========================================
     async checkWeatherAndTime() {
         const hour = new Date().getHours();
-        let temp = 26;
-        let isRaining = false;
-
-        // Busca o clima real via Open-Meteo (Livre, sem chave)
+        let temp = 26; let isRaining = false;
         try {
             const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-3.7172&longitude=-38.5430&current_weather=true');
             const data = await res.json();
             temp = Math.round(data.current_weather.temperature);
-            const code = data.current_weather.weathercode;
-            if([61,63,65,80,81,82,95,97,99].includes(code)) isRaining = true;
-        } catch(e) { console.log("Usando clima padrão"); }
+            if([61,63,65,80,81,82,95,97,99].includes(data.current_weather.weathercode)) isRaining = true;
+        } catch(e) {}
 
         const tipEl = document.getElementById('smart-tip');
         const iconEl = document.getElementById('weather-icon');
 
         if (hour >= 18 || hour < 4) {
-            // LÓGICA NOTURNA (Como agora, 21:28)
-            iconEl.innerText = "dark_mode";
-            iconEl.style.color = "#7C3AED";
-            if (isRaining) {
-                tipEl.innerText = `Noite com chuva (${temp}°C). Que tal um ambiente acolhedor, degustando queijos e vinhos a dois?`;
-            } else {
-                tipEl.innerText = `A noite está agradável (${temp}°C). Excelente horário para tirar fotos lindas na Beira Mar ou saborear uma Frosty!`;
-            }
+            iconEl.innerText = "dark_mode"; iconEl.style.color = "#7C3AED";
+            tipEl.innerText = isRaining ? `Noite com chuva (${temp}°C). Que tal um ambiente acolhedor com vinhos a dois?` : `A noite está agradável (${temp}°C). Excelente horário para um passeio na Beira Mar ou tomar um sorvete na Frosty!`;
         } else {
-            // LÓGICA DIURNA
             if (isRaining) {
-                iconEl.innerText = "water_drop";
-                iconEl.style.color = "#3B82F6";
-                tipEl.innerText = `Chuva lá fora (${temp}°C). Ideal para roteiros culturais, como a Pinacoteca, Museu da Fotografia ou um bom café.`;
+                iconEl.innerText = "water_drop"; iconEl.style.color = "#3B82F6";
+                tipEl.innerText = `Chuva lá fora (${temp}°C). Ideal para roteiros culturais e cafés fechados.`;
             } else if (temp >= 29) {
-                iconEl.innerText = "local_fire_department";
-                iconEl.style.color = "#EF4444";
-                tipEl.innerText = `O dia está quente (${temp}°C)! Perfeito para curtir uma praia ou se refrescar em qualquer loja Frosty.`;
+                iconEl.innerText = "local_fire_department"; iconEl.style.color = "#EF4444";
+                tipEl.innerText = `Calor de ${temp}°C! Perfeito para ir à praia ou se refrescar numa unidade Frosty.`;
             } else {
-                iconEl.innerText = "wb_sunny";
-                iconEl.style.color = "#F59E0B";
-                tipEl.innerText = `Dia lindo no Ceará (${temp}°C). Ótimo para caminhar no Parque do Cocó ou explorar a cidade.`;
+                iconEl.innerText = "wb_sunny"; iconEl.style.color = "#F59E0B";
+                tipEl.innerText = `Dia lindo (${temp}°C). Ótimo para caminhar ao ar livre.`;
             }
         }
     },
@@ -282,10 +282,12 @@ const app = {
     initMap() {
         this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-3.75, -38.5], 11);
         
-        // CartoDB Voyager: Lindo, colorido, estilo Google, não exige chave.
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            maxZoom: 20, attribution: '© CARTO'
-        }).addTo(this.map);
+        // CartoDB Voyager Oficial com suporte à sua API Key (Remove totalmente o aviso de restrição)
+        const tileUrl = CARTO_API_KEY && CARTO_API_KEY !== "COLE_SUA_CHAVE_AQUI" 
+            ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`
+            : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+
+        L.tileLayer(tileUrl, { maxZoom: 20, attribution: '© CARTO & OpenStreetMap' }).addTo(this.map);
 
         this.pointsLayer = L.layerGroup().addTo(this.map);
         this.plot('all');
@@ -300,7 +302,6 @@ const app = {
                 if(isV) color = '#F59E0B';
 
                 let btnClass = isF ? 'frosty' : (isW ? 'wine' : '');
-
                 let m = L.circleMarker([p.lat, p.lng], { radius: 7, fillColor: color, color: '#fff', weight: 2, fillOpacity: 1 });
                 let routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
                 
@@ -328,11 +329,10 @@ const app = {
 
         sortedDB.forEach(p => {
             let isF = p.cat === 'frosty', isW = p.cat === 'vinho', isV = this.visited.has(p.id);
-            let cardClass = isF ? 'frosty-card' : (isW ? 'wine-card' : '');
             let routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
 
             let html = `
-                <div class="rich-card ${cardClass}">
+                <div class="rich-card">
                     <div class="card-body">
                         <h3>${p.name}</h3>
                         <p>${p.desc}</p>
@@ -352,11 +352,19 @@ const app = {
 
     toggleStar(id) {
         if(this.visited.has(id)) this.visited.delete(id); else this.visited.add(id);
-        localStorage.setItem('ceara_master_2', JSON.stringify([...this.visited]));
+        localStorage.setItem('ceara_master_3', JSON.stringify([...this.visited]));
         this.updateStats(); this.renderCards();
-        let filter = document.querySelector('.chip.active').innerText.toLowerCase();
+        let active = document.querySelector('.chip.active');
+        let filter = active ? active.innerText.toLowerCase() : 'all';
         let cat = filter.includes('frosty') ? 'frosty' : (filter.includes('vinho') ? 'vinho' : (filter.includes('praia') ? 'praia' : (filter.includes('cultura') ? 'cultura' : 'all')));
         this.plot(cat);
+    },
+
+    surpriseDate() {
+        let randomPlace = DB[Math.floor(Math.random() * DB.length)];
+        alert(`🎲 Nosso Date de Hoje: \n\n📍 ${randomPlace.name}\n💡 ${randomPlace.desc}\n\nAbra o mapa para conferir a rota!`);
+        this.map.flyTo([randomPlace.lat, randomPlace.lng], 14);
+        this.switchTab('view-map', document.querySelectorAll('.nav-item')[0], 'primary');
     },
 
     updateStats() {
