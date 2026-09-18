@@ -69,10 +69,13 @@
         .progress-bar { background: linear-gradient(90deg, var(--primary), var(--secondary)); height: 100%; width: 0%; border-radius: 20px; transition: 1s; }
         .stats-text { font-size: 11px; font-weight: 600; color: var(--text-dim); display: flex; justify-content: space-between; }
 
-        .surprise-box { margin: 20px; background: linear-gradient(135deg, rgba(157, 78, 221, 0.25), rgba(255, 71, 126, 0.25)); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; color: white; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .surprise-box h3 { margin: 0 0 4px; font-size: 15px; font-weight: 800; }
-        .surprise-box p { margin: 0; font-size: 11px; color: var(--text-dim); }
-        .surprise-btn { background: white; color: #1e1b4b; border: none; padding: 8px 14px; border-radius: 12px; font-weight: 800; font-size: 11px; cursor: pointer; }
+        /* FORMULÁRIO DE ADICIONAR LUGAR EM TEMPO REAL */
+        .add-box { margin: 20px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; padding: 18px; color: white; }
+        .add-box h3 { margin: 0 0 10px; font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+        .add-input { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); padding: 10px 14px; border-radius: 12px; color: white; font-family: inherit; font-size: 12px; margin-bottom: 10px; outline: none; }
+        .add-input::placeholder { color: var(--text-dim); }
+        .add-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 10px; border-radius: 12px; font-weight: 800; font-size: 12px; cursor: pointer; box-shadow: 0 5px 15px rgba(157, 78, 221, 0.4); transition: 0.3s; }
+        .add-btn:active { transform: scale(0.98); }
 
         .section-title { padding: 15px 20px 5px; font-size: 17px; font-weight: 800; color: white; margin: 0; }
 
@@ -136,12 +139,18 @@
             <div class="stats-text"><span>Progresso dos Date</span><span id="stats">0 Visitados</span></div>
         </div>
 
-        <div class="surprise-box" onclick="app.surpriseDate()">
-            <div>
-                <h3>🎲 Sorteador de Date</h3>
-                <p>Deixe a sorte escolher nosso próximo destino!</p>
-            </div>
-            <button class="surprise-btn">Sortear</button>
+        <!-- ADICIONAR LUGAR EM TEMPO REAL -->
+        <div class="add-box">
+            <h3><span class="material-icons-round" style="color:var(--secondary)">add_location_alt</span> Adicionar Novo Lugar (GPS Automático)</h3>
+            <input type="text" id="input-name" class="add-input" placeholder="Nome do local (ex: Restaurante Moana, Shopping... )">
+            <input type="text" id="input-address" class="add-input" placeholder="Endereço ou Bairro (ex: Aldeota, Fortaleza)">
+            <select id="input-cat" class="add-input">
+                <option value="vinho">🍷 Vinho / Café / Gastronomia</option>
+                <option value="praia">🌊 Praia / Passeio</option>
+                <option value="cultura">🏛️ Cultura / Museu</option>
+                <option value="frosty">🍦 Sorveteria / Frosty</option>
+            </select>
+            <button class="add-btn" onclick="app.addNewPlace()">Buscar no Mapa e Adicionar</button>
         </div>
 
         <h2 class="section-title">Todos os Roteiros</h2>
@@ -174,112 +183,16 @@
 <script>
 const CARTO_API_KEY = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";
 
-const DB = []; let nextId = 1;
-function addP(name, cat, lat, lng, address, neighborhood) { 
-    DB.push({ id: nextId++, name, cat, lat, lng, address, neighborhood }); 
-}
-
-// ==========================================
-// UNIDADES OFICIAIS DA FROSTY (COORDENADAS CORRIGIDAS)
-// ==========================================
-const frostyUnits = [
-    {n: "Frosty Praça Matriz", l: [-3.8344, -38.4891], a: "R. Manuel Castelo Branco, 352", b: "Messejana"},
-    {n: "Frosty Cocó", l: [-3.7445, -38.4802], a: "R. Dr. Gilberto Studart, 155", b: "Cocó"},
-    {n: "Frosty Washington Soares", l: [-3.7821, -38.4770], a: "Av. Washington Soares, 4200", b: "Edson Queiroz"},
-    {n: "Frosty Cambeba", l: [-3.7915, -38.4850], a: "Av. Washington Soares, 6180", b: "Parque Manibura"},
-    {n: "Frosty Lago Jacarey", l: [-3.7930, -38.4790], a: "Av. Viena Weyne, 540", b: "Cambeba"},
-    {n: "Frosty São João", l: [-3.7311, -38.5080], a: "Av. Santos Dumont, 1169", b: "Aldeota"},
-    {n: "Frosty Shopping Aldeota", l: [-3.7345, -38.5020], a: "Av. Dom Luís, 500", b: "Aldeota"},
-    {n: "Frosty Barão de Studart", l: [-3.7390, -38.5090], a: "Av. Barão de Studart, 771", b: "Aldeota"},
-    {n: "Frosty Pinto Madeira", l: [-3.7295, -38.5200], a: "R. Pinto Madeira, 1236", b: "Aldeota"},
-    {n: "Frosty Sargento Hermínio", l: [-3.7320, -38.5570], a: "Av. Sgt. Hermínio Sampaio, 1320", b: "Monte Castelo"},
-    {n: "Frosty Jóquei Clube", l: [-3.7480, -38.5680], a: "Av. Sen. Fernandes Távora, 820", b: "Jóquei Clube"},
-    {n: "Frosty Messejana (Frei Cirilo)", l: [-3.8410, -38.4880], a: "Av. Frei Cirilo, 3270", b: "Cajazeiras"},
-    {n: "Frosty Conjunto Ceará", l: [-3.7460, -38.6050], a: "Av. H, 986", b: "Conjunto Ceará II"},
-    {n: "Frosty Solares", l: [-3.7650, -38.5850], a: "R. Cônego de Castro, 1138", b: "Parque São José"},
-    {n: "Frosty José Walter", l: [-3.8180, -38.5350], a: "Av. João de Araújo Lima, 1092", b: "Prefeito José Walter"},
-    {n: "Frosty Mateus José Walter", l: [-3.8150, -38.5380], a: "Av. João de Araújo Lima, 280", b: "Prefeito José Walter"},
-    {n: "Frosty Maraponga", l: [-3.7870, -38.5480], a: "Av. Godofredo Maciel, 2540", b: "Maraponga"},
-    {n: "Frosty Maraponga II", l: [-3.7710, -38.5520], a: "Av. Godofredo Maciel, 4035", b: "Mondubim"},
-    {n: "Frosty Parangaba", l: [-3.7780, -38.5600], a: "Av. Godofredo Maciel, 86", b: "Parangaba"},
-    {n: "Frosty Barra do Ceará", l: [-3.7080, -38.5850], a: "Av. Pres. Castelo Branco, 5943", b: "Barra do Ceará"},
-    {n: "Frosty Cidade 2000", l: [-3.7470, -38.4700], a: "R. Andrade Furtado", b: "Papicu"},
-    {n: "Frosty Presidente Kennedy", l: [-3.7380, -38.5750], a: "Av. Cearenses, 423", b: "Presidente Kennedy"},
-    {n: "Frosty São Cristóvão", l: [-3.7550, -38.5480], a: "Av. Castelo de Castro, 371", b: "São Cristóvão"},
-    {n: "Frosty João Pessoa", l: [-3.7510, -38.5350], a: "R. Des. Praxedes, 163", b: "Damas"},
-    {n: "Frosty Itaoca Mall", l: [-3.7600, -38.5500], a: "R. 15 de Novembro, 340", b: "Itaoca"},
-    {n: "Frosty Borges de Melo", l: [-3.7560, -38.5280], a: "Av. Borges de Melo, 1287", b: "Parreão"},
-    {n: "Frosty Jacarecanga", l: [-3.7220, -38.5420], a: "Av. Francisco Sá, 2670", b: "Jacarecanga"},
-    {n: "Frosty Bom Jardim", l: [-3.7850, -38.6100], a: "Av. Oscar Araripe, 1909", b: "Bom Jardim"},
-    {n: "Frosty Pátio Castelão", l: [-3.8050, -38.5250], a: "Av. Alberto Craveiro, 1972", b: "Boa Vista / Castelão"},
-    {n: "Frosty Valparaíso", l: [-3.8550, -38.4750], a: "R. Valparaíso, 1303", b: "Jangurussu"},
-    {n: "Frosty Silas Munguba", l: [-3.7900, -38.5300], a: "Av. Dr. Silas Munguba, 4301", b: "Serrinha"},
-    {n: "Frosty Fábrica (matriz)", l: [-3.8760, -38.6250], a: "Av. Wilson Camurça, 2600", b: "Distrito Industrial, Maracanaú"},
-    {n: "Frosty Pitaguary", l: [-3.8700, -38.6200], a: "Av. Carlos Jereissati, 113", b: "Centro, Maracanaú"},
-    {n: "Frosty Pacatuba", l: [-3.9800, -38.6300], a: "Av. XVII, 404", b: "Pacatuba"},
-    {n: "Frosty Maranguape", l: [-3.8900, -38.6800], a: "R. Chicó Anísio, 200", b: "Centro, Maranguape"},
-    {n: "Frosty Sol Poente", l: [-3.6500, -38.7000], a: "Rod. CE-085, 1950", b: "Caucaia"},
-    {n: "Frosty Icaraí", l: [-3.6300, -38.7300], a: "Estrada do Cumbuco, 1031", b: "Caucaia"},
-    {n: "Frosty Jurema", l: [-3.7200, -38.6400], a: "Av. Dom Almeida Lustosa, 2702", b: "Caucaia"},
-    {n: "Frosty Palmares", l: [-3.8897, -38.4502], a: "Av. Eusébio de Queiroz, 2880", b: "Eusébio"},
-    {n: "Frosty Shopping Eusébio", l: [-3.8950, -38.4600], a: "Av. Eusébio de Queiroz, 1890", b: "Eusébio"},
-    {n: "Frosty Buena Vista", l: [-3.8900, -38.4550], a: "R. Farias Brito, s/n", b: "Eusébio"},
-    {n: "Frosty Porto das Dunas", l: [-3.8500, -38.3600], a: "Porto das Dunas", b: "Aquiraz"},
-    {n: "Frosty Aquiraz Centro", l: [-3.9000, -38.3800], a: "Av. N. Sra. de Lurdes, 77", b: "Aquiraz"},
-    {n: "Frosty Horizonte", l: [-4.1000, -38.4900], a: "R. Manoel Conrado de Sousa, 953", b: "Horizonte"},
-    {n: "Frosty Pacajus II", l: [-4.1800, -38.4700], a: "Av. Pedro Philomeno Gomes, 356", b: "Pacajus"},
-    {n: "Frosty Cascavel", l: [-4.1300, -38.2400], a: "R. Francisco Galdino de Souza, 2319", b: "Cascavel"},
-    {n: "Frosty Beberibe", l: [-4.1800, -38.1300], a: "Rua I, Lot. Sagrada Família", b: "Beberibe"},
-    {n: "Frosty Aracati", l: [-4.5600, -37.7690], a: "Av. Abelardo Gurgel Costa Lima, 1917", b: "Aracati"},
-    {n: "Frosty Fortim", l: [-4.4500, -37.7800], a: "Av. Joaquim Crisóstomo, 1395", b: "Fortim"},
-    {n: "Frosty Russas", l: [-4.9400, -37.9700], a: "R. Padre Zacarias Ramalho, 235", b: "Russas"},
-    {n: "Frosty Limoeiro do Norte", l: [-5.1500, -38.0800], a: "R. Cel. Serafim Chaves, 330", b: "Limoeiro do Norte"},
-    {n: "Frosty Quixeramobim", l: [-5.2100, -39.3000], a: "Av. Dr. Joaquim Fernandes, 798", b: "Quixeramobim"},
-    {n: "Frosty Quixadá", l: [-4.9700, -39.0100], a: "Av. Plácido Castelo, 1943", b: "Quixadá"},
-    {n: "Frosty Canindé", l: [-4.3500, -39.3100], a: "R. Joaquim Magalhães, 895 A", b: "Canindé"},
-    {n: "Frosty Iguatu", l: [-6.3580, -39.2980], a: "Av. Carlos Roberto Costa, 982", b: "Iguatu"},
-    {n: "Frosty São José", l: [-7.2307, -39.3130], a: "Av. Padre Cícero, 4255", b: "Juazeiro do Norte"},
-    {n: "Frosty Juazeiro Mall", l: [-7.2250, -39.3100], a: "Av. Padre Cícero, 2241", b: "Juazeiro do Norte"},
-    {n: "Frosty Praça do Romeiro", l: [-7.2200, -39.3200], a: "R. do Cruzeiro, 179", b: "Juazeiro do Norte"},
-    {n: "Frosty Tiradentes", l: [-7.2400, -39.3000], a: "Av. Pres. Castelo Branco, 3090", b: "Juazeiro do Norte"},
-    {n: "Frosty Barbalha", l: [-7.3100, -39.3000], a: "R. do Vidéo, 4", b: "Barbalha"},
-    {n: "Frosty Sobral", l: [-3.6894, -40.3497], a: "Av. Dr. Guarani, 1066", b: "Sobral"},
-    {n: "Frosty Tianguá", l: [-3.6700, -40.9900], a: "R. Maria de Lourdes A. de Vasconcelos, 200", b: "Tianguá"},
-    {n: "Frosty Itapipoca Centro", l: [-3.4900, -39.5800], a: "Av. Anastácio Braga, 912 A", b: "Itapipoca"},
-    {n: "Frosty Itapipoca Pinheiro", l: [-3.4950, -39.5750], a: "Av. José do Patrocínio, 1481", b: "Itapipoca"},
-    {n: "Frosty Trairi", l: [-3.2700, -39.2600], a: "Av. Padre Tomás Feliu Amengual, 191", b: "Trairi"},
-    {n: "Frosty Acaraú", l: [-2.8800, -40.1200], a: "R. Expedito Farias", b: "Acaraú"}
+// Banco de dados inicial limpo (você pode adicionar quantos quiser pelo app ou aqui)
+let defaultDB = [
+    { id: 1, name: "Centro Dragão do Mar", cat: "cultura", lat: -3.7214, lng: -38.5117, address: "Rua Almirante Jaceguai, 81 - Praia de Iracema" },
+    { id: 2, name: "Brava Wine", cat: "vinho", lat: -3.7380, lng: -38.4870, address: "Av. Desembargador Moreira - Aldeota" },
+    { id: 3, name: "Beira Mar - Espigão", cat: "praia", lat: -3.7230, lng: -38.4920, address: "Av. Beira Mar - Meireles" }
 ];
-frostyUnits.forEach(f => addP(f.n, 'frosty', f.l[0], f.l[1], `${f.a} - ${f.b}`, f.b));
-
-// Cafés & Vinhos (Coordenadas Reais Ajustadas)
-const vinhos = [
-    {n: "Santa Clara Eco Café", l: [-3.7214, -38.5117], a: "Dragão do Mar", b: "Praia de Iracema"},
-    {n: "Brava Wine", l: [-3.7380, -38.4870], a: "Av. Desembargador Moreira", b: "Aldeota"},
-    {n: "Grand Cru Vinhos", l: [-3.7330, -38.4980], a: "Rua Tibúrcio Cavalcante", b: "Aldeota"},
-    {n: "Amika Coffeehouse", l: [-3.7335, -38.4910], a: "Rua Ana Bilhar", b: "Meireles"}
-];
-vinhos.forEach(v => addP(v.n, 'vinho', v.l[0], v.l[1], `${v.a} - ${v.b}`, v.b));
-
-// Cultura & Praias (Coordenadas Reais Ajustadas)
-const cultura = [
-    {n: "Museu da Fotografia", l: [-3.7420, -38.4925], a: "Rua Frederico Borges, 545", b: "Aldeota"},
-    {n: "Centro Dragão do Mar", l: [-3.7214, -38.5117], a: "Rua Almirante Jaceguai, 81", b: "Praia de Iracema"},
-    {n: "Theatro José de Alencar", l: [-3.7275, -38.5305], a: "Praça José de Alencar", b: "Centro"},
-    {n: "Parque do Cocó", l: [-3.7483, -38.4844], a: "Av. Padre Antônio Tomás", b: "Cocó"}
-];
-cultura.forEach(c => addP(c.n, 'cultura', c.l[0], c.l[1], `${c.a} - ${c.b}`, c.b));
-
-const praias = [
-    {n: "Beira Mar - Espigão", l: [-3.7230, -38.4920], a: "Av. Beira Mar", b: "Meireles"},
-    {n: "Jericoacoara", l: [-2.7975, -40.5141], a: "Vila de Jericoacoara", b: "Jeri"},
-    {n: "Pico Alto - Guaramiranga", l: [-4.2625, -38.9328], a: "Serra de Baturité", b: "Guaramiranga"}
-];
-praias.forEach(p => addP(p.n, 'praia', p.l[0], p.l[1], `${p.a} - ${p.b}`, p.b));
-
 
 const app = {
-    visited: new Set(JSON.parse(localStorage.getItem('ceara_liquid_v8')) || []),
+    db: JSON.parse(localStorage.getItem('ceara_custom_db')) || defaultDB,
+    visited: new Set(JSON.parse(localStorage.getItem('ceara_liquid_visited')) || []),
     map: null, pointsLayer: null,
 
     init() {
@@ -304,7 +217,7 @@ const app = {
 
         if (hour >= 18 || hour < 4) {
             iconEl.innerText = "dark_mode";
-            tipEl.innerText = isRaining ? `Noite com chuva (${temp}°C). Perfeito para um vinho ou açaí aconchegante!` : `Noite linda (${temp}°C). Que tal um passeio na Beira Mar ou uma unidade Frosty?`;
+            tipEl.innerText = isRaining ? `Noite com chuva (${temp}°C). Perfeito para um vinho ou açaí aconchegante!` : `Noite linda (${temp}°C). Que tal um passeio na Beira Mar?`;
         } else {
             iconEl.innerText = temp >= 29 ? "local_fire_department" : "wb_sunny";
             tipEl.innerText = temp >= 29 ? `Calor de ${temp}°C! Ideal para praias ou um sorvete gelado.` : `Dia agradável (${temp}°C). Ótimo para caminhar ao ar livre.`;
@@ -316,7 +229,7 @@ const app = {
         const mapEl = document.getElementById('map');
         if(!mapEl) return;
 
-        this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-3.73, -38.52], 12);
+        this.map = L.map('map', { zoomControl: false, preferCanvas: true }).setView([-3.73, -38.52], 13);
         
         const tileUrl = `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`;
         L.tileLayer(tileUrl, { 
@@ -332,7 +245,7 @@ const app = {
     plot(filter) {
         if(!this.pointsLayer) return;
         this.pointsLayer.clearLayers();
-        DB.forEach(p => {
+        this.db.forEach(p => {
             if(filter === 'all' || p.cat === filter) {
                 let isF = p.cat === 'frosty', isW = p.cat === 'vinho', isV = this.visited.has(p.id);
                 
@@ -352,7 +265,6 @@ const app = {
                 m.bindPopup(`
                     <h3 style="margin:0 0 4px; font-size:15px; font-weight:800; color:${isV ? '#ffd700' : '#fff'};">${p.name} ${isV ? '⭐' : ''}</h3>
                     <span style="font-size:11px; color:#38bdf8; display:block; margin-bottom:4px;">📍 ${p.address}</span>
-                    <p style="margin:0 0 10px; font-size:12px; color:#cbd5e1;">${p.desc || 'Unidade oficial Frosty.'}</p>
                     <a href="${routeUrl}" target="_blank" class="route-btn ${btnClass}">🗺️ Rota GPS Automática</a>
                 `);
                 this.pointsLayer.addLayer(m);
@@ -366,12 +278,64 @@ const app = {
         this.plot(cat);
     },
 
+    async addNewPlace() {
+        const name = document.getElementById('input-name').value.trim();
+        const address = document.getElementById('input-address').value.trim();
+        const cat = document.getElementById('input-cat').value;
+
+        if(!name || !address) {
+            alert('Por favor, preencha o nome e o endereço/bairro.');
+            return;
+        }
+
+        alert('Buscando localização exata no mapa...');
+
+        try {
+            // Geocodificação em tempo real via OpenStreetMap Nominatim (Gratuito e sem chave)
+            const query = encodeURIComponent(`${name}, ${address}, Ceará, Brasil`);
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}&limit=1`);
+            const data = await response.json();
+
+            if(data && data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lng = parseFloat(data[0].lon);
+
+                const newPlace = {
+                    id: Date.now(),
+                    name: name,
+                    cat: cat,
+                    lat: lat,
+                    lng: lng,
+                    address: address
+                };
+
+                this.db.push(newPlace);
+                localStorage.setItem('ceara_custom_db', JSON.stringify(this.db));
+                
+                document.getElementById('input-name').value = '';
+                document.getElementById('input-address').value = '';
+
+                this.renderCards();
+                this.plot('all');
+                this.updateStats();
+                
+                alert(`Sucesso! "${name}" foi adicionado exatamente no lugar certo do mapa! 📍`);
+                this.map.flyTo([lat, lng], 15);
+                this.switchTab('view-map', document.querySelectorAll('.nav-item')[0], 'primary');
+            } else {
+                alert('Não encontramos esse endereço exato. Tente colocar o bairro ou cidade junto (ex: "Aldeota, Fortaleza").');
+            }
+        } catch(e) {
+            alert('Erro ao buscar coordenadas. Verifique sua conexão.');
+        }
+    },
+
     renderCards() {
         const l = document.getElementById('grid-list');
         const f = document.getElementById('grid-frosty');
         if(!l || !f) return;
         let htmlL = '', htmlF = ''; 
-        const sortedDB = [...DB].sort((a,b) => this.visited.has(b.id) - this.visited.has(a.id));
+        const sortedDB = [...this.db].sort((a,b) => this.visited.has(b.id) - this.visited.has(a.id));
 
         sortedDB.forEach(p => {
             let isF = p.cat === 'frosty', isW = p.cat === 'vinho', isV = this.visited.has(p.id);
@@ -383,7 +347,6 @@ const app = {
                     <div class="card-body">
                         <h3>${p.name}</h3>
                         <span class="card-sub">📍 ${p.address}</span>
-                        <p>${p.desc || 'Local mapeado para roteiro a dois.'}</p>
                         <div class="card-actions">
                             <a href="${routeUrl}" target="_blank" class="btn-route"><span class="material-icons-round" style="font-size:14px;">navigation</span> Rota GPS</a>
                             <button class="btn-star ${isV ? 'visited' : ''}" onclick="app.toggleStar(${p.id})">
@@ -400,7 +363,7 @@ const app = {
 
     toggleStar(id) {
         if(this.visited.has(id)) this.visited.delete(id); else this.visited.add(id);
-        localStorage.setItem('ceara_liquid_v8', JSON.stringify([...this.visited]));
+        localStorage.setItem('ceara_liquid_visited', JSON.stringify([...this.visited]));
         this.updateStats(); this.renderCards();
         let active = document.querySelector('.chip.active');
         let filter = active ? active.innerText.toLowerCase() : 'all';
@@ -408,19 +371,12 @@ const app = {
         this.plot(cat);
     },
 
-    surpriseDate() {
-        let randomPlace = DB[Math.floor(Math.random() * DB.length)];
-        alert(`🎲 Nosso Date de Hoje: \n\n📍 ${randomPlace.name}\n📫 ${randomPlace.address}\n\nAbra o mapa para conferir a rota!`);
-        this.map.flyTo([randomPlace.lat, randomPlace.lng], 14);
-        this.switchTab('view-map', document.querySelectorAll('.nav-item')[0], 'primary');
-    },
-
     updateStats() {
         const v = this.visited.size;
         const statsEl = document.getElementById('stats');
         const progEl = document.getElementById('progress');
         if(statsEl) statsEl.innerText = `${v} Visitados`;
-        if(progEl) progEl.style.width = `${(v/DB.length)*100}%`;
+        if(progEl) progEl.style.width = `${(v/this.db.length)*100}%`;
     },
 
     switchTab(id, btn, color) {
