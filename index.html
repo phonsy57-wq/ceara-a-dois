@@ -776,7 +776,7 @@ const App = {
   /* ── INTEGRAÇÃO IA (GEMINI) COM GOOGLE SEARCH EM TEMPO REAL ── */
   async gemini(prompt){
     const key = document.getElementById('in-key').value.trim() || get(LS.key,'');
-    if(!key) throw new Error(AQ.Ab8RN6LjIM_tLg0Qk3aRH3kEwChK4wSU_dZsA9RZ2ORSoPRvIg);
+    if(!key) throw new Error('Coloque a sua chave da API do Gemini nos Ajustes');
     
     // Atualizado para a estrutura do cURL fornecido com cabeçalho x-goog-api-key e modelo flash-latest
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`,{
