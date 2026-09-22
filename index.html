@@ -7,6 +7,8 @@
 <title>Ceará a Dois</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -378,6 +380,24 @@ select.field{appearance:none;background-image:none}
 .pop .sec{background:var(--glass-2);color:var(--ink);border:1px solid var(--edge);margin-top:6px}
 .leaflet-control-attribution{background:var(--glass)!important;color:var(--ink-3)!important;font-size:9px!important}
 .leaflet-control-attribution a{color:var(--ink-2)!important}
+/* clusters: sem blur (custam caro), só cor sólida + borda */
+.cluster-pin{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;font-weight:800;font-size:13px;
+  background:linear-gradient(135deg,var(--mar),var(--sol));border:2px solid rgba(255,255,255,.65);box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.cluster-pin.sm{width:32px;height:32px;font-size:11px}
+/* ── radar do casal ── */
+.radar{border-radius:var(--r-lg);padding:11px 14px;display:flex;gap:10px;align-items:center;margin-top:10px}
+.radar .compass{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--glass-2);border:1px solid var(--edge-2);transition:transform .4s var(--ease)}
+.radar .compass .material-icons-round{font-size:18px;color:var(--sol)}
+.radar b{display:block;font-size:12.5px}
+.radar span{font-size:11px;color:var(--ink-2)}
+
+/* ── modo leve extra: reduz o custo de blur empilhado no mobile ── */
+@media (max-width:680px), (pointer:coarse){
+  #sky .stars2{display:none}
+  #sky .clouds{display:none}
+  .sheet-bg{backdrop-filter:none}
+  .leaflet-popup-content-wrapper{backdrop-filter:none!important;background:var(--canvas-2)!important}
+}
 /* ────────────────────────────  MODO LEVE (mobile)  ────────────────────────────
    Blur (backdrop-filter) e sombras grandes custam caro no Safari/Chrome de
    celular, principalmente quando ficam empilhados atrás do céu animado.
@@ -434,6 +454,10 @@ select.field{appearance:none;background-image:none}
           </div>
         </div>
         <div class="hours" id="w-hours"></div>
+        <div class="glass radar" id="radar" hidden>
+          <div class="compass" id="radar-compass"><span class="material-icons-round">navigation</span></div>
+          <div><b id="radar-text">–</b><span id="radar-sub">Localização do casal</span></div>
+        </div>
       </div>
 
       <div class="chips" id="chips"></div>
@@ -567,6 +591,20 @@ select.field{appearance:none;background-image:none}
   <div class="grip"></div>
   <h2>Ajustes</h2>
 
+  <div style="padding:4px 0 12px">
+    <b style="font-size:13px">Seu nome</b>
+    <p style="margin:4px 0 10px;font-size:11.5px;color:var(--ink-2);line-height:1.5">
+      Usado só para o outro saber quem está a X metros de distância no mapa.
+    </p>
+    <input id="in-myname" class="field" placeholder="Ex: Ana" onchange="App.setMyName(this.value)">
+  </div>
+
+  <div class="set-row">
+    <span class="material-icons-round">social_distance</span>
+    <div><b>Compartilhar localização</b><small>Mostra a distância e direção até quem você ama, ao vivo</small></div>
+    <button class="switch" id="sw-share" role="switch" aria-checked="false" onclick="App.toggleShare()"><i></i></button>
+  </div>
+
   <div class="set-row">
     <span class="material-icons-round">contrast</span>
     <div><b>Modo claro</b><small>Segue o sistema até você escolher</small></div>
@@ -624,9 +662,17 @@ select.field{appearance:none;background-image:none}
 
 <div class="glass" id="toast"></div>
 
+<div class="sheet-bg" id="photo-bg" onclick="App.closePhotos()"></div>
+<div class="sheet glass" id="photo-sheet" style="max-height:70vh">
+  <div class="grip"></div>
+  <h2 id="photo-title">Fotos</h2>
+  <div id="photo-body" style="display:grid;gap:10px"></div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════════════
    FIREBASE — banco de dados compartilhado (substitui o localStorage
@@ -809,7 +855,8 @@ const GEMINI_KEY = "AQ.Ab8RN6K-F02TFXs-cG9ZA0MbK72oK0Bq4jVeTi8z4hn4-3apSA";
 const LS = {
   places:'cd2_places', ratings:'cd2_ratings', visited:'cd2_visited',
   todo:'cd2_todo', theme:'cd2_theme', key:'cd2_key', model:'cd2_model',
-  auto:'cd2_auto', lastAI:'cd2_lastai', plan:'cd2_plan', skyTheme:'cd2_skytheme', icons:'cd2_icons'
+  auto:'cd2_auto', lastAI:'cd2_lastai', plan:'cd2_plan', skyTheme:'cd2_skytheme', icons:'cd2_icons',
+  myname:'cd2_myname', share:'cd2_share'
 };
 
 /* fases do dia: [hora, céu topo, céu meio, céu base, estrelas, sol, lua, nuvens, brilho no horizonte] */
@@ -856,10 +903,13 @@ const App = {
     document.getElementById('in-model').value = get(LS.model,'gemini-2.5-flash');
     document.getElementById('sw-auto').setAttribute('aria-checked', get(LS.auto,false));
     document.getElementById('sw-sky').setAttribute('aria-checked', get(LS.skyTheme,false));
+    document.getElementById('in-myname').value = get(LS.myname,'');
+    document.getElementById('sw-share').setAttribute('aria-checked', get(LS.share,false));
 
     this.sky(); setInterval(()=>this.sky(), 60000);
     this.initMap();
     this.initCloud();
+    if(get(LS.share,false)) this.startSharing();
     this.renderAll();
     this.renderIconCats(); this.renderIconPicks();
     this.renderPlan(get(LS.plan,null));
@@ -976,9 +1026,15 @@ const App = {
 
   /* ── mapa ───────────────────────────────────────────── */
   initMap(){
-    this.map = L.map('map',{zoomControl:false,preferCanvas:false,attributionControl:true}).setView([-3.76,-38.55],11);
+    this.map = L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:true}).setView([-3.76,-38.55],11);
     this.swapTiles();
-    this.layer     = L.layerGroup().addTo(this.map);
+    this.layer = L.markerClusterGroup({
+      maxClusterRadius:55, spiderfyOnMaxZoom:true, disableClusteringAtZoom:15,
+      iconCreateFunction:c=>{
+        const n=c.getChildCount();
+        return L.divIcon({html:`<div class="cluster-pin${n<10?' sm':''}">${n}</div>`,className:'',iconSize:[n<10?32:40,n<10?32:40]});
+      }
+    }).addTo(this.map);
     this.liveLayer = L.layerGroup().addTo(this.map);
     this.plot();
   },
@@ -1024,6 +1080,7 @@ const App = {
       <span>${CATS[p.cat]?.emoji||''} ${esc(p.area)} · ${esc(p.city)}${r?' · '+'★'.repeat(r):''}</span>
       ${p.note?`<span style="display:block;margin-top:6px;line-height:1.4">${esc(p.note)}</span>`:''}
       <a href="${this.route(p)}" target="_blank" rel="noopener">Traçar rota</a>
+      <a href="#" class="sec" onclick="App.openPhotos('${esc(p.name).replace(/'/g,"\\'")}','${esc(p.city).replace(/'/g,"\\'")}');return false">Ver fotos</a>
       <a href="#" class="sec" onclick="App.toggleVisited(${p.id});return false">${this.visited[p.id]?'Desmarcar visita':'Marcar como visitado'}</a>
     </div>`;
   },
@@ -1046,6 +1103,74 @@ const App = {
       this.map.flyTo(c,14);
       this.toast('Achamos vocês');
     },()=>this.toast('Não deu para pegar a localização. Verifique a permissão.'),{enableHighAccuracy:true,timeout:9000});
+  },
+
+  /* ── radar do casal: onde o outro está agora ───────────
+     Cada aparelho escreve sua própria posição num documento do
+     Firestore (coleção "presenca", um doc por nome). Os dois
+     aparelhos escutam essa coleção em tempo real: quando o outro
+     nome aparece, calculamos distância (Haversine) e direção da
+     bússola e mostramos "Fulano está a 120m — siga para o Norte". */
+  setMyName(v){
+    v=v.trim(); set(LS.myname,v);
+    if(v && get(LS.share,false)) this.startSharing();
+  },
+  toggleShare(){
+    const name=(get(LS.myname,'')||'').trim();
+    if(!name){ this.toast('Escreva seu nome nos Ajustes antes de compartilhar a localização'); return; }
+    const v=!get(LS.share,false); set(LS.share,v);
+    document.getElementById('sw-share').setAttribute('aria-checked',v);
+    if(v){ this.startSharing(); this.toast('Compartilhando sua localização ao vivo'); }
+    else { this.stopSharing(); this.toast('Localização parou de ser compartilhada'); }
+  },
+  presenceRef(){
+    if(!this.cloudRef) return null;
+    return this.cloudRef.collection('presenca');
+  },
+  startSharing(){
+    const name=(get(LS.myname,'')||'').trim();
+    if(!name || !navigator.geolocation) return;
+    if(this._watchId) navigator.geolocation.clearWatch(this._watchId);
+    this._watchId = navigator.geolocation.watchPosition(pos=>{
+      this.myPos=[pos.coords.latitude,pos.coords.longitude];
+      const ref=this.presenceRef();
+      if(ref) ref.doc(name).set({lat:this.myPos[0],lng:this.myPos[1],ts:Date.now(),name}).catch(()=>{});
+    },()=>{},{enableHighAccuracy:true,maximumAge:8000,timeout:12000});
+    const ref=this.presenceRef();
+    if(ref && !this._presenceSub){
+      this._presenceSub = ref.onSnapshot(snap=>{
+        const others = snap.docs.map(d=>d.data()).filter(d=>d.name!==name);
+        this.renderRadar(others[0]||null);
+      });
+    }
+  },
+  stopSharing(){
+    if(this._watchId) navigator.geolocation.clearWatch(this._watchId);
+    if(this._presenceSub) this._presenceSub();
+    this._presenceSub=null;
+    document.getElementById('radar').hidden=true;
+  },
+  renderRadar(other){
+    const box=document.getElementById('radar');
+    if(!other || !this.myPos){ box.hidden=true; return; }
+    const stale = Date.now()-other.ts > 30*60*1000;
+    if(stale){ box.hidden=true; return; }
+    const R=6371000;
+    const [lat1,lng1]=this.myPos, lat2=other.lat, lng2=other.lng;
+    const toRad=d=>d*Math.PI/180;
+    const dLat=toRad(lat2-lat1), dLng=toRad(lng2-lng1);
+    const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+    const dist=Math.round(R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)));
+    const y=Math.sin(dLng)*Math.cos(toRad(lat2));
+    const x=Math.cos(toRad(lat1))*Math.sin(toRad(lat2))-Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dLng);
+    const bearing=(Math.atan2(y,x)*180/Math.PI+360)%360;
+    const dirs=['Norte','Nordeste','Leste','Sudeste','Sul','Sudoeste','Oeste','Noroeste'];
+    const dir=dirs[Math.round(bearing/45)%8];
+    const distTxt = dist<1000 ? `${dist}m` : `${(dist/1000).toFixed(1)}km`;
+    document.getElementById('radar-compass').style.transform=`rotate(${bearing}deg)`;
+    document.getElementById('radar-text').textContent=`${esc(other.name)} está a ${distTxt}`;
+    document.getElementById('radar-sub').textContent=`Siga para o ${dir} para encontrar`;
+    box.hidden=false;
   },
 
   /* ── lugares ao vivo (Overpass / OpenStreetMap) ─────── */
@@ -1233,6 +1358,45 @@ const App = {
         </div>
       </div>`;
     }).join('');
+  },
+
+  /* ── fotos do lugar, sem sair da tela ──────────────────
+     Usa a API pública da Wikipédia (sem chave, sem custo) para achar
+     uma foto de capa do lugar. É um resultado por lugar — não é um
+     álbum como o Google Maps, mas cobre praias, cidades e pontos
+     turísticos conhecidos sem precisar de uma chave paga do Google. */
+  photoCache:{},
+  async openPhotos(name,city){
+    document.getElementById('photo-title').textContent=name;
+    const body=document.getElementById('photo-body');
+    body.innerHTML=`<p style="font-size:12px;color:var(--ink-2)">Procurando fotos…</p>`;
+    document.getElementById('photo-sheet').classList.add('on');
+    document.getElementById('photo-bg').classList.add('on');
+    const key=name+'|'+city;
+    if(this.photoCache[key]) return this.renderPhotos(this.photoCache[key]);
+    const tryOne=async q=>{
+      try{
+        const r=await fetch(`https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);
+        if(!r.ok) return null;
+        const d=await r.json();
+        return d.thumbnail?.source ? {src:d.thumbnail.source,desc:d.extract||''} : null;
+      }catch(e){ return null; }
+    };
+    const found = await tryOne(name) || await tryOne(`${name} (${city})`) || await tryOne(city);
+    this.photoCache[key]=found;
+    this.renderPhotos(found);
+  },
+  renderPhotos(found){
+    const body=document.getElementById('photo-body');
+    body.innerHTML = found
+      ? `<img src="${found.src.replace('http:','https:')}" style="width:100%;border-radius:16px;display:block" loading="lazy">
+         ${found.desc?`<p style="font-size:12px;color:var(--ink-2);line-height:1.5">${esc(found.desc.slice(0,220))}</p>`:''}`
+      : `<div class="empty" style="padding:20px 4px"><span class="material-icons-round">photo_camera</span><b>Sem foto encontrada</b>
+         <p>Ainda não achamos uma foto de capa pra esse lugar. Publiquem fotos de vocês pela ficha do lugar assim que tiverem uma.</p></div>`;
+  },
+  closePhotos(){
+    document.getElementById('photo-sheet').classList.remove('on');
+    document.getElementById('photo-bg').classList.remove('on');
   },
 
   /* ── clima ──────────────────────────────────────────── */
@@ -1576,6 +1740,7 @@ LUGAR | nome | bairro ou distrito | cidade | categoria (date/praia/serra/cultura
           <button class="mini sq ${t?'on':''}" title="Pra ir" onclick="App.toggleTodo(${p.id})"><span class="material-icons-round">${t?'bookmark':'bookmark_border'}</span></button>
           <button class="mini sq ${v?'on':''}" title="Visitado" onclick="App.toggleVisited(${p.id})"><span class="material-icons-round">${v?'task_alt':'radio_button_unchecked'}</span></button>
           <button class="mini sq" title="Ver no mapa" onclick="App.focus(${p.id})"><span class="material-icons-round">place</span></button>
+          <button class="mini sq" title="Fotos" onclick="App.openPhotos('${esc(p.name).replace(/'/g,"\\'")}','${esc(p.city).replace(/'/g,"\\'")}')"><span class="material-icons-round">photo_camera</span></button>
           <a class="mini" href="${this.route(p)}" target="_blank" rel="noopener"><span class="material-icons-round">navigation</span>Rota</a>
           ${p.custom?`<button class="mini sq" title="Remover" onclick="App.removePlace(${p.id})"><span class="material-icons-round">delete_outline</span></button>`:''}
         </div>
