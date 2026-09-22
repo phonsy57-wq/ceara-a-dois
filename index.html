@@ -778,16 +778,24 @@ const App = {
     const key = document.getElementById('in-key').value.trim() || get(LS.key,'');
     if(!key) throw new Error('Coloque a sua chave da API do Gemini nos Ajustes');
     
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
+    // Atualizado para a estrutura do cURL fornecido com cabeçalho x-goog-api-key e modelo flash-latest
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`,{
+      method:'POST', 
+      headers:{
+        'Content-Type':'application/json',
+        'x-goog-api-key': key
+      },
       body:JSON.stringify({
         contents:[{role:'user',parts:[{text:prompt}]}],
-        tools:[{google_search:{}}], 
+        tools:[{googleSearch:{}}], 
         generationConfig:{temperature:0.7}
       })
     });
     
-    if(!res.ok) throw new Error(`Falha na API (Erro HTTP ${res.status}). Verifique a sua chave.`);
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(`Erro HTTP ${res.status}: ${err.error?.message || 'Verifique a chave'}`);
+    }
     const d = await res.json();
     const txt = (d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('\n');
     if(!txt) throw new Error('A IA não devolveu nenhuma resposta válida.');
@@ -807,7 +815,7 @@ const App = {
     const prompt = `És um guia local do Ceará. USA A PESQUISA DO GOOGLE OBRIGATORIAMENTE para ver o que existe e está aberto HOJE.
     Agora é ${hoje}, ${hora}. O casal está nas coordenadas lat ${base[0]}, lng ${base[1]}.
     Monta um roteiro romântico de 2 a 3 paradas reais, encadeadas e coerentes com a hora atual.
-    Responde EXATAMENTE no formato abaixo, uma linha para cada (sem formatação markdown nem asteriscos):
+    Responde EXATAMENTE no formato abaixo, uma linha para cada (sem formatação markdown, sem asteriscos, apenas texto puro):
     TITULO | (título curto do roteiro)
     TEXTO | (justificação curta baseada no clima ou hora atual)
     PARADA | Nome do lugar | Bairro | Cidade | date ou praia ou serra ou cultura ou frosty | horário sugerido | motivo curto`;
@@ -815,16 +823,22 @@ const App = {
     try {
       const txt = await this.gemini(prompt);
       
-      const getLine = (m) => (txt.split('\n').find(l => l.startsWith(m)) || '').split('|').slice(1).join('|').trim();
+      const cleanTxt = txt.replace(/\*/g, '').split('\n').map(l => l.trim());
+      
+      const getLine = (m) => {
+        const line = cleanTxt.find(l => l.startsWith(m));
+        return line ? line.split('|').slice(1).join('|').trim() : '';
+      };
+      
       const titulo = getLine('TITULO') || 'Date Perfeito de Hoje';
       const texto = getLine('TEXTO') || 'Baseado na vossa localização e horário atual.';
       
-      const paradas = txt.split('\n').filter(l => l.startsWith('PARADA')).map(l => {
+      const paradas = cleanTxt.filter(l => l.startsWith('PARADA')).map(l => {
         const p = l.split('|').map(s=>s.trim());
         return {name:p[1], area:p[2], city:p[3], cat:p[4], hora:p[5], note:p[6]};
       }).filter(x=>x.name);
 
-      if(!paradas.length) throw new Error('A IA não conseguiu encontrar locais abertos nesta zona.');
+      if(!paradas.length) throw new Error('A IA não respondeu no formato correto ou não encontrou locais.');
 
       b.innerHTML = `
         <p class="plan-title">${esc(titulo)}</p>
