@@ -525,7 +525,6 @@ const App = {
   map:null, layer:null, liveLayer:null, meMarker:null, filter:'all', tiles:null,
   
   init(){
-    // Verifica tema salvo
     const savedTheme = get(LS.theme, matchMedia('(prefers-color-scheme: light)').matches ? 'light':'dark');
     document.documentElement.dataset.theme = savedTheme;
     document.getElementById('sw-theme').setAttribute('aria-checked', savedTheme === 'dark');
@@ -543,7 +542,6 @@ const App = {
     this.renderAll();
     this.weather();
     
-    // Configura o céu
     this.sky(); setInterval(()=>this.sky(), 60000);
   },
   
@@ -557,7 +555,7 @@ const App = {
   /* ── MAPA DINÂMICO (CARTO API) ── */
   initMap(){
     this.map = L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:false}).setView([-3.74,-38.52],13);
-    this.swapTiles(); // Carrega os mapas dependendo do tema atual
+    this.swapTiles(); 
     
     this.layer = L.markerClusterGroup({
       maxClusterRadius:45, spiderfyOnMaxZoom:true, disableClusteringAtZoom:15,
@@ -584,7 +582,7 @@ const App = {
     document.documentElement.dataset.theme=t;
     document.getElementById('sw-theme').setAttribute('aria-checked', t==='dark');
     set(LS.theme, t);
-    if(this.map) this.swapTiles(); // Atualiza o visual do mapa na hora
+    if(this.map) this.swapTiles(); 
   },
 
   icon(p){
@@ -595,12 +593,13 @@ const App = {
       html:`<div class="pin${v?' big':''}" style="background:${bg}">${emoji}</div>`
     });
   },
+  
   plot(){
     this.layer.clearLayers();
     this.visibleOnMap = this.places.filter(p=> this.filter==='all'||p.cat===this.filter );
     this.visibleOnMap.forEach(p=>{
       L.marker([p.lat,p.lng],{icon:this.icon(p)})
-        .on('click', () => this.openPlace(p.id)) // Abre o Bottom Sheet
+        .on('click', () => this.openPlace(p.id)) 
         .addTo(this.layer);
     });
     document.getElementById('sub-count').textContent = `${this.visibleOnMap.length} lugares no mapa`;
@@ -620,7 +619,6 @@ const App = {
     const routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
     document.getElementById('ps-route').href = routeUrl;
     
-    // Configura o convite pelo WhatsApp
     const msg = `Oi! Que tal a gente ir no *${p.name}* (${p.area})? 📍 Dá uma olhada no caminho: ${routeUrl}`;
     document.getElementById('ps-share').onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
 
@@ -775,31 +773,122 @@ const App = {
     box.hidden = false;
   },
 
-  /* ── BUSCA AO VIVO (OVERPASS) ── */
-  async nearbyLive(){
-    if(!this.myPos) return this.toast('Aguardando sua localização para buscar...');
-    this.toast('Buscando o que está aberto agora...');
-    const c = this.myPos;
-    const q=`[out:json][timeout:22];(node["amenity"~"^(restaurant|cafe|ice_cream|bar|pub)$"](around:1600,${c[0]},${c[1]}); node["tourism"~"^(attraction|viewpoint|museum|artwork)$"](around:1600,${c[0]},${c[1]}););out body 40;`;
-    try{
-      const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(q)});
-      const d=await r.json();
-      const items=(d.elements||[]).filter(e=>e.tags&&e.tags.name).slice(0,40);
-      if(!items.length) return this.toast('Nada encontrado por perto.');
-      this.liveLayer.clearLayers();
-      items.forEach(e=>{
-        const t=e.tags, kind=t.amenity||t.tourism;
-        const emoji = kind==='ice_cream'?'🍦':kind==='cafe'?'☕':kind==='bar'||kind==='pub'?'🍸':kind==='restaurant'?'🍽️':'📍';
-        L.marker([e.lat,e.lon],{icon:L.divIcon({className:'',iconSize:[28,28],html:`<div class="pin pulse" style="background:#ff7a2f;">${emoji}</div>`})})
-         .bindPopup(`<div style="padding:10px"><h4 style="margin:0;font-family:'Bricolage Grotesque';font-size:16px">${esc(t.name)}</h4><p style="margin:4px 0 10px;font-size:12px;color:var(--ink-2)">Ao vivo via Maps</p><a class="btn warm" href="https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lon}" target="_blank">Traçar Rota</a></div>`)
-         .addTo(this.liveLayer);
-      });
-      this.map.setView(c,15);
-      this.toast(`${items.length} locais ao vivo encontrados.`);
-    }catch(e){ this.toast('A busca ao vivo falhou.'); }
+  /* ── INTEGRAÇÃO IA (GEMINI) COM GOOGLE SEARCH EM TEMPO REAL ── */
+  async gemini(prompt){
+    const key = document.getElementById('in-key').value.trim() || get(LS.key,'');
+    if(!key) throw new Error('Coloque a sua chave da API do Gemini nos Ajustes');
+    
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        contents:[{role:'user',parts:[{text:prompt}]}],
+        tools:[{google_search:{}}], 
+        generationConfig:{temperature:0.7}
+      })
+    });
+    
+    if(!res.ok) throw new Error(`Falha na API (Erro HTTP ${res.status}). Verifique a sua chave.`);
+    const d = await res.json();
+    const txt = (d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('\n');
+    if(!txt) throw new Error('A IA não devolveu nenhuma resposta válida.');
+    return txt;
   },
 
-  /* ── UTILIDADES ── */
+  /* ── ROTEIROS EM TEMPO REAL (SUGERIR DATE) ── */
+  async askPlan(){
+    this.tab('todo', document.querySelectorAll('.nav button')[1]);
+    const b = document.getElementById('plan-body');
+    b.innerHTML = `<p style="font-size:14px; padding:16px; line-height:1.5;"><b>${CATS['date'].emoji} A pesquisar na Web...</b><br><br>A analisar o clima, o trânsito e o que está realmente aberto agora mesmo no Ceará para sugerir o melhor date em tempo real.</p>`;
+    
+    const base = this.myPos || [-3.7319,-38.5267]; 
+    const hoje = new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
+    const hora = new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+    
+    const prompt = `És um guia local do Ceará. USA A PESQUISA DO GOOGLE OBRIGATORIAMENTE para ver o que existe e está aberto HOJE.
+    Agora é ${hoje}, ${hora}. O casal está nas coordenadas lat ${base[0]}, lng ${base[1]}.
+    Monta um roteiro romântico de 2 a 3 paradas reais, encadeadas e coerentes com a hora atual.
+    Responde EXATAMENTE no formato abaixo, uma linha para cada (sem formatação markdown nem asteriscos):
+    TITULO | (título curto do roteiro)
+    TEXTO | (justificação curta baseada no clima ou hora atual)
+    PARADA | Nome do lugar | Bairro | Cidade | date ou praia ou serra ou cultura ou frosty | horário sugerido | motivo curto`;
+
+    try {
+      const txt = await this.gemini(prompt);
+      
+      const getLine = (m) => (txt.split('\n').find(l => l.startsWith(m)) || '').split('|').slice(1).join('|').trim();
+      const titulo = getLine('TITULO') || 'Date Perfeito de Hoje';
+      const texto = getLine('TEXTO') || 'Baseado na vossa localização e horário atual.';
+      
+      const paradas = txt.split('\n').filter(l => l.startsWith('PARADA')).map(l => {
+        const p = l.split('|').map(s=>s.trim());
+        return {name:p[1], area:p[2], city:p[3], cat:p[4], hora:p[5], note:p[6]};
+      }).filter(x=>x.name);
+
+      if(!paradas.length) throw new Error('A IA não conseguiu encontrar locais abertos nesta zona.');
+
+      b.innerHTML = `
+        <p class="plan-title">${esc(titulo)}</p>
+        <p class="plan-quote">${esc(texto)}</p>
+        <div class="stops">
+          ${paradas.map(s => `
+            <div class="stop">
+              <b>${esc(s.name)} <em>·${esc(s.hora)}</em></b>
+              <span>${esc(s.area)} · ${esc(s.city)}<br>${esc(s.note)}</span>
+            </div>
+          `).join('')}
+        </div>
+        <button class="btn ghost" onclick="App.askPlan()" style="margin-top:10px">Gerar Outra Ideia</button>
+      `;
+    } catch(e) {
+      b.innerHTML = `<p style="padding:16px; color:var(--hibisco); font-size:13px"><b>Erro na IA:</b> ${e.message}</p>
+                     <button class="btn ghost" onclick="App.askPlan()">Tentar Novamente</button>`;
+    }
+  },
+
+  /* ── PESQUISA DE MAPA AO VIVO (OVERPASS API) ── */
+  async nearbyLive(){
+    if(!this.myPos) return this.toast('A aguardar a sua localização de GPS para pesquisar...');
+    this.toast('A pesquisar locais abertos perto de si (Radar ao Vivo)...');
+    
+    const c = this.myPos;
+    const q=`[out:json][timeout:15];(node["amenity"~"^(restaurant|cafe|ice_cream|bar|pub)$"](around:2500,${c[0]},${c[1]}); node["tourism"~"^(attraction|viewpoint|museum|artwork)$"](around:2500,${c[0]},${c[1]}););out body 30;`;
+    
+    try{
+      const r = await fetch('https://overpass-api.de/api/interpreter',{
+        method:'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body:'data='+encodeURIComponent(q)
+      });
+      
+      if(!r.ok) throw new Error('API do mapa indisponível');
+      const d = await r.json();
+      const items = (d.elements||[]).filter(e=>e.tags&&e.tags.name).slice(0,30);
+      
+      if(!items.length) return this.toast('Não foram encontrados locais num raio de 2,5 km.');
+      
+      this.liveLayer.clearLayers();
+      items.forEach(e=>{
+        const t = e.tags, kind = t.amenity || t.tourism;
+        const emoji = kind==='ice_cream'?'🍦':kind==='cafe'?'☕':kind==='bar'||kind==='pub'?'🍸':kind==='restaurant'?'🍽️':'📍';
+        
+        L.marker([e.lat,e.lon],{icon:L.divIcon({className:'',iconSize:[28,28],html:`<div class="pin pulse" style="background:#ff7a2f;">${emoji}</div>`})})
+         .bindPopup(`
+           <div style="padding:10px">
+             <h4 style="margin:0;font-family:'Bricolage Grotesque';font-size:16px">${esc(t.name)}</h4>
+             <p style="margin:4px 0 10px;font-size:12px;color:var(--ink-2)">📍 Ao vivo via Radar</p>
+             <a class="btn warm" href="https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lon}" target="_blank">Traçar Rota</a>
+           </div>
+         `)
+         .addTo(this.liveLayer);
+      });
+      this.map.setView(c, 14);
+      this.toast(`${items.length} locais reais encontrados à sua volta!`);
+    }catch(e){ 
+      this.toast('A pesquisa de mapa falhou por excesso de tráfego. Tente novamente.'); 
+    }
+  },
+
+  /* ── UTILIDADES GERAIS ── */
   locate(){
     if(!navigator.geolocation) return;
     this.toast('Localizando vocês...');
@@ -820,6 +909,12 @@ const App = {
   },
   save(){ set(LS.places,this.places); set(LS.visited,this.visited); set(LS.todo,this.todo); set(LS.ratings,this.ratings); },
   
+  saveKey(){
+    const k = document.getElementById('in-key').value.trim();
+    set(LS.key, k);
+    this.toast('Chave da API Gemini salva com sucesso.');
+  },
+
   weather(){ 
     const c = this.myPos || [-3.7319,-38.5267];
     fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c[0]}&longitude=${c[1]}&current=temperature_2m,weather_code,is_day&timezone=America%2FFortaleza`)
@@ -832,7 +927,7 @@ const App = {
       }).catch(e=>{});
   },
   
-  sky(){ /* Lógica do céu (mantém cor de fundo baseada na hora) */
+  sky(){ 
     const d=new Date(), t=d.getHours()+d.getMinutes()/60;
     const phase = t<6?'noite':t<18?'dia':'noite';
     this.phase = phase;
@@ -846,6 +941,7 @@ const App = {
     }).join('');
   },
   setFilter(c){ this.filter=c; this.buildChips('chips'); this.plot(); },
+  
   tab(id,btn){
     document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
     document.getElementById('view-'+id).classList.add('on');
@@ -859,25 +955,6 @@ const App = {
   toast(msg){
     const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
     clearTimeout(this._tt); this._tt=setTimeout(()=>t.classList.remove('on'),3200);
-  },
-  
-  /* ── GEMINI ROTEIROS ── */
-  askPlan(){
-    this.tab('todo', document.querySelectorAll('.nav button')[1]);
-    const b = document.getElementById('plan-body');
-    b.innerHTML = `<p style="font-size:14px; padding:16px;"><b>${CATS['date'].emoji} O Gemini está pensando...</b><br><br>Consultando a hora, o clima atual em Fortaleza e cruzando com a sua lista para sugerir o melhor date de agora.</p>`;
-    
-    // Você pode colocar a requisição real pro Gemini aqui. Exemplo simulado de resposta:
-    setTimeout(() => {
-      b.innerHTML = `
-        <p class="plan-title">Fim de Tarde na Beira Mar</p>
-        <p class="plan-quote">O clima está super agradável e não vai chover. Caminhem pela orla e comam num lugar legal depois!</p>
-        <div class="stops">
-          <div class="stop"><b>Beira Mar do Meireles</b><span>Meireles · Praia</span></div>
-          <div class="stop"><b>Pipo Restaurante</b><span>Cocó · Date</span></div>
-        </div>
-      `;
-    }, 2000);
   },
   
   renderAll(){
@@ -896,7 +973,6 @@ const App = {
                          </article>`).join('')
       : `<div class="card empty"><span class="material-icons-round">bookmark_border</span><b>A fila está vazia</b></div>`;
       
-    // Atualiza Kpis do Diário
     const vis = Object.keys(this.visited).length;
     document.getElementById('d-visited').textContent = vis;
     document.getElementById('d-total').textContent = this.places.length;
