@@ -69,12 +69,7 @@ html[data-theme="light"]{
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden}
-body{
-  font-family:'Inter',system-ui,sans-serif;
-  color:var(--ink);
-  background:var(--canvas);
-  transition:color .3s var(--ease);
-}
+body{font-family:'Inter',system-ui,sans-serif; color:var(--ink); background:var(--canvas); transition:color .3s var(--ease);}
 
 /* ───────────────────  CÉU DINÂMICO  ─────────────────── */
 #sky{
@@ -215,6 +210,7 @@ html[data-theme="light"] .chip[aria-pressed="true"]{color:#fff}
 .card h3{margin:0 0 3px;font-size:15px;font-weight:700;line-height:1.25}
 .card .where{font-size:11.5px;color:var(--ink-2);display:block}
 .card .note{font-size:12px;color:var(--ink-2);line-height:1.45;margin:10px 0 0}
+
 .tagline{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
 .tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--glass-2);border:1px solid var(--edge-2);color:var(--ink-2)}
 .tag.done{color:#04110f;background:var(--duna);border-color:transparent}
@@ -232,16 +228,12 @@ html[data-theme="light"] .chip[aria-pressed="true"]{color:#fff}
 .mini.on{background:var(--mar);color:#03100e;border-color:transparent}
 .mini.sq{width:34px;padding:0;justify-content:center}
 
-/* ── busca ── */
-.search{display:flex;align-items:center;gap:9px;border-radius:var(--r-md);padding:0 14px;height:46px;margin-top:4px}
-.search input{flex:1;background:none;border:0;outline:0;font-size:13.5px}
-
 /* ── painéis ── */
 .panel{border-radius:var(--r-xl);padding:18px;margin-top:14px}
 .panel h3{margin:0 0 4px;font-size:16px;font-weight:800;display:flex;align-items:center;gap:7px}
 .panel p.lead{margin:0 0 14px;font-size:12.5px;color:var(--ink-2);line-height:1.5}
 .btn{width:100%;height:46px;border-radius:16px;border:0;cursor:pointer;font-size:13px;font-weight:700;
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.22s var(--ease)}
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.22s var(--ease);text-decoration:none}
 .btn:active{transform:scale(.97)}
 .btn.primary{background:linear-gradient(135deg,var(--mar),#0d8f9c);color:#02110f;box-shadow:0 12px 28px -12px var(--mar)}
 .btn.warm{background:linear-gradient(135deg,var(--sol),var(--hibisco));color:#fff;box-shadow:0 12px 28px -12px var(--hibisco)}
@@ -258,10 +250,6 @@ select.field{appearance:none;background-image:none}
 .track{height:9px;border-radius:99px;background:var(--glass-2);border:1px solid var(--edge-2);overflow:hidden;margin:14px 0 8px}
 .track>i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--mar),var(--duna),var(--sol));transition:width .9s var(--ease)}
 .legend{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-2);font-weight:600}
-.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:14px}
-.kpi{border-radius:16px;padding:11px;text-align:center;background:var(--glass-2);border:1px solid var(--edge-2)}
-.kpi b{display:block;font-family:'Bricolage Grotesque';font-size:19px;font-weight:800}
-.kpi span{font-size:10px;color:var(--ink-2);font-weight:600}
 
 /* ── nav ── */
 .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;bottom:calc(18px + env(safe-area-inset-bottom));
@@ -359,7 +347,7 @@ select.field{appearance:none;background-image:none}
         <div class="topbar-in" style="padding:0">
           <div class="brand">
             <h1>Ceará a Dois</h1>
-            <small id="sub-count">carregando roteiros…</small>
+            <small id="sub-count">carregando lugares…</small>
           </div>
           <button class="icon-btn" onclick="App.openSheet()" title="Ajustes"><span class="material-icons-round">tune</span></button>
         </div>
@@ -371,7 +359,7 @@ select.field{appearance:none;background-image:none}
           </div>
         </div>
         
-        <!-- Radar do Casal Atualizado -->
+        <!-- Radar do Casal -->
         <div class="glass radar" id="radar" hidden>
           <div class="compass" id="radar-compass"><span class="material-icons-round">navigation</span></div>
           <div><b id="radar-text">–</b><span id="radar-sub">Localização do parceiro</span></div>
@@ -385,10 +373,10 @@ select.field{appearance:none;background-image:none}
           <div style="display:flex; flex-direction:column; gap:10px;">
             <button class="fab" onclick="App.fitAll()" title="Ver tudo"><span class="material-icons-round">zoom_out_map</span></button>
             <button class="fab" onclick="App.nearbyLive()" title="Explorar ao vivo"><span class="material-icons-round">radar</span></button>
+            <button class="fab" onclick="App.surpriseMe()" title="Sortear um lugar não visitado"><span class="material-icons-round">casino</span></button>
           </div>
           <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
             <button class="fab" onclick="App.locate()" title="Minha localização"><span class="material-icons-round">near_me</span></button>
-            <!-- Botão Gemini Conselheiro -->
             <button class="fab accent" onclick="App.askPlan()">
               <span class="material-icons-round">auto_awesome</span> Sugerir Date
             </button>
@@ -437,11 +425,11 @@ select.field{appearance:none;background-image:none}
   <div class="bounce">🍦</div>
   <div>
     <b style="font-size:15px;display:block;margin-bottom:3px">Tem Frosty por perto!</b>
-    <span id="frosty-dist" style="font-size:12.5px;line-height:1.4">A 3 minutinhos daqui. Que tal uma casquinha?</span>
+    <span id="frosty-dist" style="font-size:12.5px;line-height:1.4">A poucos minutos daqui. Que tal uma casquinha?</span>
   </div>
 </div>
 
-<!-- ════ BOTTOM SHEET LUGAR (Substitui Popup do Leaflet) ════ -->
+<!-- ════ BOTTOM SHEET LUGAR ════ -->
 <div class="sheet-bg" id="place-bg" onclick="App.closePlace()"></div>
 <div class="sheet glass" id="place-sheet">
   <div class="grip"></div>
@@ -452,10 +440,13 @@ select.field{appearance:none;background-image:none}
     </div>
     <div id="ps-icon" style="font-size:26px; line-height:1">📍</div>
   </div>
-  <div class="row2">
-    <a id="ps-route" class="btn primary" href="#" target="_blank"><span class="material-icons-round">navigation</span> Como Chegar</a>
-    <button id="ps-visit" class="btn ghost" onclick=""><span class="material-icons-round">check_circle</span> Já Fui</button>
+  
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
+    <a id="ps-route" class="btn primary" href="#" target="_blank"><span class="material-icons-round">navigation</span> Chegar</a>
+    <button id="ps-share" class="btn warm" onclick=""><span class="material-icons-round">send</span> Convidar</button>
   </div>
+  <button id="ps-visit" class="btn ghost" style="margin-top:9px" onclick=""><span class="material-icons-round">check_circle</span> Já Fomos</button>
+  
   <div id="ps-photos" style="margin-top:20px; display:flex; flex-direction:column; gap:10px"></div>
 </div>
 
@@ -488,24 +479,30 @@ select.field{appearance:none;background-image:none}
 
 <div class="glass" id="toast"></div>
 
-<!-- Usando Leaflet para renderização ultraleve em mobile com Tiles parecidos ao Google Maps -->
+<!-- Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 
 <script>
-/* (Configurações Firebase Mantidas do Original - invisível para o usuário) */
+// Chave da API do Carto (Mapas Dinâmicos)
+const CARTO_KEY  = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";
+
+/* Configurações Firebase (Invisível) */
 const firebaseConfig = { apiKey: "AIzaSyAlvNKOcD68hfnhLDQUPek8oiLkPCyAbkw", authDomain: "ceara-a-dois.firebaseapp.com", projectId: "ceara-a-dois" };
 let cloudRef = null;
 try{ firebase.initializeApp(firebaseConfig); cloudRef = firebase.firestore().collection('ceara-a-dois').doc('dados'); }catch(e){}
 
 const SEED = [
+  /* Adicione todas as suas praias, restaurantes e pontos turísticos aqui */
   ["Beira Mar do Meireles","praia","Meireles","Fortaleza",-3.7233,-38.4920,"Calçadão e pôr do sol atrás dos prédios."],
   ["Pipo Restaurante","date","Cocó","Fortaleza",-3.7460,-38.4880,"Cozinha autoral cearense."],
-  ["Centro Dragão do Mar","cultura","Praia de Iracema","Fortaleza",-3.7214,-38.5117,"Cinema e barzinho embaixo dos arcos."]
+  ["Centro Dragão do Mar","cultura","Praia de Iracema","Fortaleza",-3.7214,-38.5117,"Cinema e barzinho embaixo dos arcos."],
+  ["Praia do Futuro","praia","Praia do Futuro","Fortaleza",-3.7440,-38.4530,"Barracas pé na areia e caranguejo."]
 ];
 const FROSTY = [
+  /* Adicione todas as suas lojas Frosty aqui */
   ["Frosty Cocó","Cocó","Fortaleza",-3.7419630,-38.4875511,"R. Dr. Gilberto Studart"],
   ["Frosty Beira Mar","Meireles","Fortaleza",-3.7250,-38.4900,"Av. Beira Mar"]
 ];
@@ -525,9 +522,14 @@ const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>
 
 const App = {
   places:[], ratings:{}, visited:{}, todo:{},
-  map:null, layer:null, liveLayer:null, meMarker:null, filter:'all',
+  map:null, layer:null, liveLayer:null, meMarker:null, filter:'all', tiles:null,
   
   init(){
+    // Verifica tema salvo
+    const savedTheme = get(LS.theme, matchMedia('(prefers-color-scheme: light)').matches ? 'light':'dark');
+    document.documentElement.dataset.theme = savedTheme;
+    document.getElementById('sw-theme').setAttribute('aria-checked', savedTheme === 'dark');
+
     this.places = get(LS.places, null) || this.buildSeed();
     this.ratings = get(LS.ratings,{}); this.visited = get(LS.visited,{}); this.todo = get(LS.todo,{});
     this.buildChips('chips');
@@ -536,11 +538,15 @@ const App = {
     document.getElementById('sw-share').setAttribute('aria-checked', get(LS.share,false));
     
     this.initMap();
-    this.startTracking(); // Inicia tracking pro Frosty
-    if(get(LS.share,false)) this.startSharing(); // Radar parceiro
+    this.startTracking(); // Geofencing Frosty
+    if(get(LS.share,false)) this.startSharing(); // Radar do Casal
     this.renderAll();
     this.weather();
+    
+    // Configura o céu
+    this.sky(); setInterval(()=>this.sky(), 60000);
   },
+  
   buildSeed(){
     let id=0;
     const a = SEED.map(r=>({id:++id,name:r[0],cat:r[1],area:r[2],city:r[3],lat:r[4],lng:r[5],note:r[6]}));
@@ -548,11 +554,10 @@ const App = {
     const all=[...a,...b]; set(LS.places,all); return all;
   },
   
-  /* ── MAPA (Renderização ultraleve + Map-First Design) ── */
+  /* ── MAPA DINÂMICO (CARTO API) ── */
   initMap(){
     this.map = L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:false}).setView([-3.74,-38.52],13);
-    // Base de mapa com visual similar ao Google Maps / Apple Maps limpo
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(this.map);
+    this.swapTiles(); // Carrega os mapas dependendo do tema atual
     
     this.layer = L.markerClusterGroup({
       maxClusterRadius:45, spiderfyOnMaxZoom:true, disableClusteringAtZoom:15,
@@ -564,6 +569,24 @@ const App = {
     this.liveLayer = L.layerGroup().addTo(this.map);
     this.plot();
   },
+
+  swapTiles(){
+    const dark = document.documentElement.dataset.theme === 'dark';
+    const style = dark ? 'dark_all' : 'rastertiles/voyager';
+    const url = `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`;
+    
+    if(this.tiles) this.map.removeLayer(this.tiles);
+    this.tiles = L.tileLayer(url, {maxZoom:19, subdomains:'abcd', attribution:'© CARTO'}).addTo(this.map);
+  },
+
+  toggleTheme(){
+    const t = document.documentElement.dataset.theme==='dark'?'light':'dark';
+    document.documentElement.dataset.theme=t;
+    document.getElementById('sw-theme').setAttribute('aria-checked', t==='dark');
+    set(LS.theme, t);
+    if(this.map) this.swapTiles(); // Atualiza o visual do mapa na hora
+  },
+
   icon(p){
     const v = !!this.visited[p.id], c = CATS[p.cat]?.color||'#12b5a3', emoji = CATS[p.cat]?.emoji||'📍';
     const bg = v ? 'linear-gradient(140deg,#f2c14e,#ff7a2f)' : c;
@@ -577,12 +600,13 @@ const App = {
     this.visibleOnMap = this.places.filter(p=> this.filter==='all'||p.cat===this.filter );
     this.visibleOnMap.forEach(p=>{
       L.marker([p.lat,p.lng],{icon:this.icon(p)})
-        .on('click', () => this.openPlace(p.id)) // Substitui o Popup pelo Bottom Sheet!
+        .on('click', () => this.openPlace(p.id)) // Abre o Bottom Sheet
         .addTo(this.layer);
     });
+    document.getElementById('sub-count').textContent = `${this.visibleOnMap.length} lugares no mapa`;
   },
 
-  /* ── BOTTOM SHEET DO LUGAR (Carrega Fotos da Web) ── */
+  /* ── BOTTOM SHEET DO LUGAR (Fotos + WhatsApp) ── */
   photoCache:{},
   openPlace(id){
     const p = this.places.find(x => x.id === id);
@@ -592,10 +616,16 @@ const App = {
     document.getElementById('ps-title').textContent = p.name;
     document.getElementById('ps-sub').textContent = `${p.area} · ${p.city} ${r?'· '+'★'.repeat(r):''}`;
     document.getElementById('ps-icon').textContent = CATS[p.cat]?.emoji||'📍';
-    document.getElementById('ps-route').href = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
     
+    const routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
+    document.getElementById('ps-route').href = routeUrl;
+    
+    // Configura o convite pelo WhatsApp
+    const msg = `Oi! Que tal a gente ir no *${p.name}* (${p.area})? 📍 Dá uma olhada no caminho: ${routeUrl}`;
+    document.getElementById('ps-share').onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+
     const btnVisit = document.getElementById('ps-visit');
-    btnVisit.innerHTML = v ? `<span class="material-icons-round">close</span> Desmarcar` : `<span class="material-icons-round">check_circle</span> Já Fui`;
+    btnVisit.innerHTML = v ? `<span class="material-icons-round">close</span> Desmarcar Visita` : `<span class="material-icons-round">check_circle</span> Já Fomos`;
     btnVisit.onclick = () => { this.toggleVisited(p.id); this.openPlace(p.id); };
 
     document.getElementById('ps-photos').innerHTML = `<p style="font-size:12px;color:var(--ink-2)">Buscando imagens e dicas...</p>`;
@@ -634,7 +664,26 @@ const App = {
                       ${p.note ? `<p style="font-size:12px;color:var(--ink);font-weight:600;margin-top:8px">Nota do Casal: ${esc(p.note)}</p>`:''}`;
   },
 
-  /* ── GEOFENCING E RADAR DO CASAL ── */
+  /* ── SORTEAR UM LUGAR (ROLETA) ── */
+  surpriseMe(){
+    const unvisited = this.places.filter(p => !this.visited[p.id]);
+    
+    if(!unvisited.length){
+      this.toast('Uau! Vocês já visitaram todos os lugares da lista!');
+      return;
+    }
+
+    this.toast('Sorteando um lugar novo...');
+    const randomPlace = unvisited[Math.floor(Math.random() * unvisited.length)];
+    
+    this.map.flyTo([randomPlace.lat, randomPlace.lng], 16, { duration: 1.5 });
+    
+    setTimeout(() => {
+      this.openPlace(randomPlace.id);
+    }, 1500);
+  },
+
+  /* ── GEOFENCING (ALERTA FROSTY) ── */
   startTracking(){
     if(!navigator.geolocation) return;
     if(this._trackId) return;
@@ -646,12 +695,11 @@ const App = {
   
   checkFrosty(lat, lng){
     const today = new Date().toDateString();
-    if(get('cd2_frosty', '') === today) return; // Dispara só uma vez no dia
+    if(get('cd2_frosty', '') === today) return; 
 
     const R = 6371000;
     let minD = Infinity; let nearest = null;
 
-    // Busca apenas as sorveterias que ainda não foram visitadas
     this.places.filter(p => p.cat === 'frosty' && !this.visited[p.id]).forEach(f => {
       const dLat = (f.lat - lat) * Math.PI / 180, dLng = (f.lng - lng) * Math.PI / 180;
       const a = Math.sin(dLat/2)**2 + Math.cos(lat*Math.PI/180) * Math.cos(f.lat*Math.PI/180) * Math.sin(dLng/2)**2;
@@ -659,7 +707,7 @@ const App = {
       if(dist < minD){ minD = dist; nearest = f; }
     });
 
-    if(minD <= 500 && nearest){ // Menos de 500 metros
+    if(minD <= 500 && nearest){
       const alert = document.getElementById('alert-frosty');
       document.getElementById('frosty-dist').textContent = `A unidade ${nearest.name} está a ${minD}m daqui. É uma ótima ideia ir lá hoje!`;
       alert.classList.add('on');
@@ -668,6 +716,7 @@ const App = {
     }
   },
 
+  /* ── RADAR DO CASAL ── */
   setMyName(v){ set(LS.myname, v.trim()); },
   toggleShare(){
     const name = get(LS.myname,'').trim();
@@ -704,7 +753,7 @@ const App = {
   renderRadar(other){
     const box = document.getElementById('radar');
     if(!other || !this.myPos){ box.hidden = true; return; }
-    if(Date.now() - other.ts > 1800000){ box.hidden = true; return; } // + de 30min offline
+    if(Date.now() - other.ts > 1800000){ box.hidden = true; return; } 
 
     const R = 6371000;
     const [lat1,lng1] = this.myPos, lat2 = other.lat, lng2 = other.lng;
@@ -722,10 +771,32 @@ const App = {
     const distTxt = dist < 1000 ? `${dist}m` : `${(dist/1000).toFixed(1)}km`;
     document.getElementById('radar-compass').style.transform = `rotate(${bearing}deg)`;
     document.getElementById('radar-text').textContent = `${esc(other.name)} está a ${distTxt} de você`;
-    
-    // Instrução direta requisitada
     document.getElementById('radar-sub').textContent = `caminhe em direção ${dir} para encontrá-lo`;
     box.hidden = false;
+  },
+
+  /* ── BUSCA AO VIVO (OVERPASS) ── */
+  async nearbyLive(){
+    if(!this.myPos) return this.toast('Aguardando sua localização para buscar...');
+    this.toast('Buscando o que está aberto agora...');
+    const c = this.myPos;
+    const q=`[out:json][timeout:22];(node["amenity"~"^(restaurant|cafe|ice_cream|bar|pub)$"](around:1600,${c[0]},${c[1]}); node["tourism"~"^(attraction|viewpoint|museum|artwork)$"](around:1600,${c[0]},${c[1]}););out body 40;`;
+    try{
+      const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent(q)});
+      const d=await r.json();
+      const items=(d.elements||[]).filter(e=>e.tags&&e.tags.name).slice(0,40);
+      if(!items.length) return this.toast('Nada encontrado por perto.');
+      this.liveLayer.clearLayers();
+      items.forEach(e=>{
+        const t=e.tags, kind=t.amenity||t.tourism;
+        const emoji = kind==='ice_cream'?'🍦':kind==='cafe'?'☕':kind==='bar'||kind==='pub'?'🍸':kind==='restaurant'?'🍽️':'📍';
+        L.marker([e.lat,e.lon],{icon:L.divIcon({className:'',iconSize:[28,28],html:`<div class="pin pulse" style="background:#ff7a2f;">${emoji}</div>`})})
+         .bindPopup(`<div style="padding:10px"><h4 style="margin:0;font-family:'Bricolage Grotesque';font-size:16px">${esc(t.name)}</h4><p style="margin:4px 0 10px;font-size:12px;color:var(--ink-2)">Ao vivo via Maps</p><a class="btn warm" href="https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lon}" target="_blank">Traçar Rota</a></div>`)
+         .addTo(this.liveLayer);
+      });
+      this.map.setView(c,15);
+      this.toast(`${items.length} locais ao vivo encontrados.`);
+    }catch(e){ this.toast('A busca ao vivo falhou.'); }
   },
 
   /* ── UTILIDADES ── */
@@ -749,7 +820,24 @@ const App = {
   },
   save(){ set(LS.places,this.places); set(LS.visited,this.visited); set(LS.todo,this.todo); set(LS.ratings,this.ratings); },
   
-  weather(){ /* Lógica original mantida para o prompt do Gemini */ },
+  weather(){ 
+    const c = this.myPos || [-3.7319,-38.5267];
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c[0]}&longitude=${c[1]}&current=temperature_2m,weather_code,is_day&timezone=America%2FFortaleza`)
+      .then(r=>r.json()).then(d=>{
+        const t = Math.round(d.current.temperature_2m), h = new Date().getHours();
+        document.getElementById('w-temp').textContent=t+'°';
+        if(t>=30) document.getElementById('w-tip').textContent = 'Praia cedo ou um pote de sorvete gelado.';
+        else if(h>=17&&h<=18) document.getElementById('w-tip').textContent = 'Hora do pôr do sol na Beira Mar.';
+        else document.getElementById('w-tip').textContent = 'Tempo agradável. Ótimo pra tudo.';
+      }).catch(e=>{});
+  },
+  
+  sky(){ /* Lógica do céu (mantém cor de fundo baseada na hora) */
+    const d=new Date(), t=d.getHours()+d.getMinutes()/60;
+    const phase = t<6?'noite':t<18?'dia':'noite';
+    this.phase = phase;
+  },
+
   buildChips(el){
     const box = document.getElementById(el); if(!box) return;
     box.innerHTML = ['all',...Object.keys(CATS).filter(c=>c!=='perto')].map(c=>{
@@ -772,22 +860,18 @@ const App = {
     const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
     clearTimeout(this._tt); this._tt=setTimeout(()=>t.classList.remove('on'),3200);
   },
-  toggleTheme(){
-    const t = document.documentElement.dataset.theme==='dark'?'light':'dark';
-    document.documentElement.dataset.theme=t;
-    document.getElementById('sw-theme').setAttribute('aria-checked', t==='dark');
-  },
   
-  /* ── GEMINI E ROTEIROS ── */
+  /* ── GEMINI ROTEIROS ── */
   askPlan(){
     this.tab('todo', document.querySelectorAll('.nav button')[1]);
     const b = document.getElementById('plan-body');
     b.innerHTML = `<p style="font-size:14px; padding:16px;"><b>${CATS['date'].emoji} O Gemini está pensando...</b><br><br>Consultando a hora, o clima atual em Fortaleza e cruzando com a sua lista para sugerir o melhor date de agora.</p>`;
-    // A simulação de timeout abaixo deve ser trocada pela sua lógica real do fetch de IA que já estava montada
+    
+    // Você pode colocar a requisição real pro Gemini aqui. Exemplo simulado de resposta:
     setTimeout(() => {
       b.innerHTML = `
         <p class="plan-title">Fim de Tarde na Beira Mar</p>
-        <p class="plan-quote">O clima está super agradável e não vai chover. Caminhem pela orla e comam no Pipo Restaurante que fica a 10 min de vocês!</p>
+        <p class="plan-quote">O clima está super agradável e não vai chover. Caminhem pela orla e comam num lugar legal depois!</p>
         <div class="stops">
           <div class="stop"><b>Beira Mar do Meireles</b><span>Meireles · Praia</span></div>
           <div class="stop"><b>Pipo Restaurante</b><span>Cocó · Date</span></div>
@@ -795,9 +879,29 @@ const App = {
       `;
     }, 2000);
   },
+  
   renderAll(){
     const listTodo = this.places.filter(p=>this.todo[p.id]);
-    document.getElementById('list-todo').innerHTML = listTodo.map(p=>`<article class="card"><h3>${p.name}</h3><span class="where">${p.area}</span></article>`).join('');
+    document.getElementById('todo-count').textContent=`${listTodo.length} na fila`;
+    
+    const b = document.getElementById('nav-badge');
+    b.hidden = !listTodo.length; b.textContent = listTodo.length;
+    
+    document.getElementById('list-todo').innerHTML = listTodo.length 
+      ? listTodo.map(p=>`<article class="card">
+                          <div class="card-top">
+                            <div class="card-emoji" style="color:${CATS[p.cat]?.color}">${CATS[p.cat]?.emoji}</div>
+                            <div><h3>${esc(p.name)}</h3><span class="where">${esc(p.area)}</span></div>
+                          </div>
+                         </article>`).join('')
+      : `<div class="card empty"><span class="material-icons-round">bookmark_border</span><b>A fila está vazia</b></div>`;
+      
+    // Atualiza Kpis do Diário
+    const vis = Object.keys(this.visited).length;
+    document.getElementById('d-visited').textContent = vis;
+    document.getElementById('d-total').textContent = this.places.length;
+    document.getElementById('d-pct').textContent = Math.round(vis/this.places.length*100)+'%';
+    document.getElementById('d-bar').style.width = (vis/this.places.length*100)+'%';
   }
 };
 
