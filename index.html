@@ -472,7 +472,8 @@ select.field{appearance:none;background-image:none}
   </div>
   <div style="padding:16px 0 4px">
     <b style="font-size:13px">Chave da API do Gemini</b>
-    <input id="in-key" class="field" type="password" placeholder="AIza…" autocomplete="off" style="margin-top:8px">
+    <p style="margin:4px 0 10px;font-size:11.5px;color:var(--ink-2)">Opcional: sem ela, "Sugerir Date" usa um roteiro local com os lugares salvos. Com ela, a IA pesquisa na web o que está aberto agora. Pegue a sua grátis em aistudio.google.com/apikey.</p>
+    <input id="in-key" class="field" type="password" placeholder="AIza…" autocomplete="off">
     <button class="btn ghost" onclick="App.saveKey()">Salvar chave</button>
   </div>
 </div>
@@ -753,13 +754,11 @@ const App = {
     if(!other || !this.myPos){ box.hidden = true; return; }
     if(Date.now() - other.ts > 1800000){ box.hidden = true; return; } 
 
-    const R = 6371000;
     const [lat1,lng1] = this.myPos, lat2 = other.lat, lng2 = other.lng;
     const toRad = d => d * Math.PI/180;
-    const dLat = toRad(lat2-lat1), dLng = toRad(lng2-lng1);
-    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
-    const dist = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-    
+    const dLng = toRad(lng2-lng1);
+    const dist = Math.round(this.distMeters(this.myPos, [lat2,lng2]));
+
     const y = Math.sin(dLng) * Math.cos(toRad(lat2));
     const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
     const bearing = (Math.atan2(y,x) * 180 / Math.PI + 360) % 360;
@@ -774,32 +773,56 @@ const App = {
   },
 
   /* ── INTEGRAÇÃO IA (GEMINI) COM GOOGLE SEARCH EM TEMPO REAL ── */
+  // Modelos tentados nesta ordem: o principal atual e um substituto, caso o primeiro
+  // não esteja disponível para a chave/região (isso evita o erro 404 "model not found"
+  // que ocorria com o alias antigo "gemini-flash-latest", já descontinuado).
+  GEMINI_MODELS: ['gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash'],
+
   async gemini(prompt){
     const key = document.getElementById('in-key').value.trim() || get(LS.key,'');
     if(!key) throw new Error('Coloque a sua chave da API do Gemini nos Ajustes');
-    
-    // Atualizado para a estrutura do cURL fornecido com cabeçalho x-goog-api-key e modelo flash-latest
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`,{
-      method:'POST', 
-      headers:{
-        'Content-Type':'application/json',
-        'x-goog-api-key': key
-      },
-      body:JSON.stringify({
-        contents:[{role:'user',parts:[{text:prompt}]}],
-        tools:[{googleSearch:{}}], 
-        generationConfig:{temperature:0.7}
-      })
-    });
-    
-    if(!res.ok){
-      const err = await res.json().catch(()=>({}));
-      throw new Error(`Erro HTTP ${res.status}: ${err.error?.message || 'Verifique a chave'}`);
+
+    let lastErr = null;
+    for(const model of this.GEMINI_MODELS){
+      const ctrl = new AbortController();
+      const timeout = setTimeout(()=>ctrl.abort(), 20000);
+      try{
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{
+          method:'POST',
+          signal: ctrl.signal,
+          headers:{
+            'Content-Type':'application/json',
+            'x-goog-api-key': key
+          },
+          body:JSON.stringify({
+            contents:[{role:'user',parts:[{text:prompt}]}],
+            tools:[{googleSearch:{}}],
+            generationConfig:{temperature:0.7}
+          })
+        });
+        clearTimeout(timeout);
+
+        if(!res.ok){
+          const err = await res.json().catch(()=>({}));
+          const msg = err.error?.message || `Erro HTTP ${res.status}`;
+          // 404 costuma significar "este nome de modelo não existe para esta chave":
+          // tenta o próximo modelo da lista em vez de desistir na hora.
+          if(res.status === 404){ lastErr = new Error(msg); continue; }
+          if(res.status === 400 && /API key/i.test(msg)) throw new Error('Chave da API do Gemini inválida. Confira em Ajustes.');
+          throw new Error(msg);
+        }
+        const d = await res.json();
+        const txt = (d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('\n');
+        if(!txt) throw new Error('A IA não devolveu nenhuma resposta válida.');
+        return txt;
+      }catch(e){
+        clearTimeout(timeout);
+        if(e.name === 'AbortError'){ lastErr = new Error('A IA demorou demais para responder.'); continue; }
+        if(e.message && !/not found|is not supported/i.test(e.message)) throw e;
+        lastErr = e;
+      }
     }
-    const d = await res.json();
-    const txt = (d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('\n');
-    if(!txt) throw new Error('A IA não devolveu nenhuma resposta válida.');
-    return txt;
+    throw lastErr || new Error('Nenhum modelo do Gemini respondeu.');
   },
 
   /* ── ROTEIROS EM TEMPO REAL (SUGERIR DATE) ── */
@@ -820,26 +843,9 @@ const App = {
     TEXTO | (justificação curta baseada no clima ou hora atual)
     PARADA | Nome do lugar | Bairro | Cidade | date ou praia ou serra ou cultura ou frosty | horário sugerido | motivo curto`;
 
-    try {
-      const txt = await this.gemini(prompt);
-      
-      const cleanTxt = txt.replace(/\*/g, '').split('\n').map(l => l.trim());
-      
-      const getLine = (m) => {
-        const line = cleanTxt.find(l => l.startsWith(m));
-        return line ? line.split('|').slice(1).join('|').trim() : '';
-      };
-      
-      const titulo = getLine('TITULO') || 'Date Perfeito de Hoje';
-      const texto = getLine('TEXTO') || 'Baseado na vossa localização e horário atual.';
-      
-      const paradas = cleanTxt.filter(l => l.startsWith('PARADA')).map(l => {
-        const p = l.split('|').map(s=>s.trim());
-        return {name:p[1], area:p[2], city:p[3], cat:p[4], hora:p[5], note:p[6]};
-      }).filter(x=>x.name);
+    const key = document.getElementById('in-key').value.trim() || get(LS.key,'');
 
-      if(!paradas.length) throw new Error('A IA não respondeu no formato correto ou não encontrou locais.');
-
+    const renderPlan = (titulo, texto, paradas, sourceNote) => {
       b.innerHTML = `
         <p class="plan-title">${esc(titulo)}</p>
         <p class="plan-quote">${esc(texto)}</p>
@@ -851,35 +857,115 @@ const App = {
             </div>
           `).join('')}
         </div>
-        <button class="btn ghost" onclick="App.askPlan()" style="margin-top:10px">Gerar Outra Ideia</button>
+        ${sourceNote ? `<p style="font-size:11px;color:var(--ink-3);margin:0 0 10px">${esc(sourceNote)}</p>` : ''}
+        <button class="btn ghost" onclick="App.askPlan()" style="margin-top:2px">Gerar Outra Ideia</button>
       `;
+    };
+
+    // Sem chave de IA cadastrada: nem tenta a rede, vai direto para o plano local.
+    if(!key){ return renderPlan(...this.localPlan(base), 'Sugestão local · configure a chave do Gemini em Ajustes para roteiros com IA e pesquisa ao vivo.'); }
+
+    try {
+      const txt = await this.gemini(prompt);
+
+      const cleanTxt = txt.replace(/\*/g, '').split('\n').map(l => l.trim());
+
+      const getLine = (m) => {
+        const line = cleanTxt.find(l => l.startsWith(m));
+        return line ? line.split('|').slice(1).join('|').trim() : '';
+      };
+
+      const titulo = getLine('TITULO') || 'Date Perfeito de Hoje';
+      const texto = getLine('TEXTO') || 'Baseado na vossa localização e horário atual.';
+
+      const paradas = cleanTxt.filter(l => l.startsWith('PARADA')).map(l => {
+        const p = l.split('|').map(s=>s.trim());
+        return {name:p[1], area:p[2], city:p[3], cat:p[4], hora:p[5], note:p[6]};
+      }).filter(x=>x.name);
+
+      if(!paradas.length) throw new Error('A IA não respondeu no formato correto ou não encontrou locais.');
+
+      renderPlan(titulo, texto, paradas, null);
     } catch(e) {
-      b.innerHTML = `<p style="padding:16px; color:var(--hibisco); font-size:13px"><b>Erro na IA:</b> ${e.message}</p>
-                     <button class="btn ghost" onclick="App.askPlan()">Tentar Novamente</button>`;
+      // A IA falhou (sem internet, chave inválida, modelo indisponível etc.) —
+      // em vez de travar numa mensagem de erro, sempre entrega um roteiro utilizável.
+      renderPlan(...this.localPlan(base), `Roteiro local (a IA falhou: ${e.message}).`);
     }
   },
 
-  /* ── PESQUISA DE MAPA AO VIVO (OVERPASS API) ── */
+  /* ── PLANO LOCAL DE RESERVA (sem internet / sem chave / IA fora do ar) ── */
+  localPlan(base){
+    const h = new Date().getHours();
+    const periodo = h<11 ? 'manhã' : h<17 ? 'tarde' : 'noite';
+    const porPeriodo = { manhã:['praia','cultura'], tarde:['serra','cultura','date'], noite:['date','frosty'] };
+    const prefer = porPeriodo[periodo] || ['date'];
+
+    const withDist = this.places.map(p=>({...p, dist:this.distMeters(base,[p.lat,p.lng])}));
+    const candidatos = withDist
+      .filter(p=>!this.visited[p.id])
+      .sort((a,b)=>{
+        const pa = prefer.indexOf(a.cat), pb = prefer.indexOf(b.cat);
+        const wa = pa===-1?99:pa, wb = pb===-1?99:pb;
+        return wa-wb || a.dist-b.dist;
+      });
+    const pool = candidatos.length ? candidatos : withDist.sort((a,b)=>a.dist-b.dist);
+    const paradas = pool.slice(0,3).map((p,i)=>({
+      name:p.name, area:p.area, city:p.city, cat:p.cat,
+      hora: i===0 ? `agora à ${periodo}` : `+${i}h`,
+      note: p.note
+    }));
+
+    const titulo = periodo==='manhã' ? 'Comece o dia por aqui' : periodo==='tarde' ? 'Programa de tarde' : 'Date desta noite';
+    const texto = `Roteiro montado com os lugares que vocês já salvaram, priorizando o que combina com a ${periodo} e o que ainda não foi visitado.`;
+    return [titulo, texto, paradas];
+  },
+
+  distMeters(a,b){
+    const R=6371000, toRad=d=>d*Math.PI/180;
+    const dLat=toRad(b[0]-a[0]), dLng=toRad(b[1]-a[1]);
+    const s = Math.sin(dLat/2)**2 + Math.cos(toRad(a[0]))*Math.cos(toRad(b[0]))*Math.sin(dLng/2)**2;
+    return R*2*Math.atan2(Math.sqrt(s), Math.sqrt(1-s));
+  },
+
+  /* ── PESQUISA DE MAPA AO VIVO (OVERPASS API, com espelho + reserva local) ── */
+  OVERPASS_MIRRORS: [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.openstreetmap.ru/api/interpreter'
+  ],
+
+  async fetchOverpass(query, timeoutMs){
+    let lastErr = null;
+    for(const url of this.OVERPASS_MIRRORS){
+      const ctrl = new AbortController();
+      const t = setTimeout(()=>ctrl.abort(), timeoutMs);
+      try{
+        const r = await fetch(url,{
+          method:'POST', signal: ctrl.signal,
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body:'data='+encodeURIComponent(query)
+        });
+        clearTimeout(t);
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        return await r.json();
+      }catch(e){ clearTimeout(t); lastErr = e; }
+    }
+    throw lastErr || new Error('Todos os espelhos do Overpass falharam');
+  },
+
   async nearbyLive(){
     if(!this.myPos) return this.toast('A aguardar a sua localização de GPS para pesquisar...');
     this.toast('A pesquisar locais abertos perto de si (Radar ao Vivo)...');
-    
+
     const c = this.myPos;
     const q=`[out:json][timeout:15];(node["amenity"~"^(restaurant|cafe|ice_cream|bar|pub)$"](around:2500,${c[0]},${c[1]}); node["tourism"~"^(attraction|viewpoint|museum|artwork)$"](around:2500,${c[0]},${c[1]}););out body 30;`;
-    
+
     try{
-      const r = await fetch('https://overpass-api.de/api/interpreter',{
-        method:'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body:'data='+encodeURIComponent(q)
-      });
-      
-      if(!r.ok) throw new Error('API do mapa indisponível');
-      const d = await r.json();
+      const d = await this.fetchOverpass(q, 12000);
       const items = (d.elements||[]).filter(e=>e.tags&&e.tags.name).slice(0,30);
-      
+
       if(!items.length) return this.toast('Não foram encontrados locais num raio de 2,5 km.');
-      
+
       this.liveLayer.clearLayers();
       items.forEach(e=>{
         const t = e.tags, kind = t.amenity || t.tourism;
@@ -897,8 +983,25 @@ const App = {
       });
       this.map.setView(c, 14);
       this.toast(`${items.length} locais reais encontrados à sua volta!`);
-    }catch(e){ 
-      this.toast('A pesquisa de mapa falhou por excesso de tráfego. Tente novamente.'); 
+    }catch(e){
+      // Todos os espelhos do Overpass falharam (fora do ar ou sobrecarregados):
+      // mostra os lugares já salvos mais próximos, para o botão nunca ficar sem resposta.
+      const perto = this.places
+        .map(p=>({...p, dist:this.distMeters(c,[p.lat,p.lng])}))
+        .filter(p=>p.dist<=6000)
+        .sort((a,b)=>a.dist-b.dist)
+        .slice(0,10);
+
+      if(!perto.length){ this.toast('A busca ao vivo falhou e não há lugares salvos por perto.'); return; }
+
+      this.liveLayer.clearLayers();
+      perto.forEach(p=>{
+        L.marker([p.lat,p.lng],{icon:this.icon(p)})
+          .on('click', () => this.openPlace(p.id))
+          .addTo(this.liveLayer);
+      });
+      this.map.setView(c, 14);
+      this.toast(`Busca ao vivo indisponível — mostrando ${perto.length} lugares salvos por perto.`);
     }
   },
 
@@ -929,16 +1032,26 @@ const App = {
     this.toast('Chave da API Gemini salva com suceso.');
   },
 
-  weather(){ 
+  weather(){
     const c = this.myPos || [-3.7319,-38.5267];
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c[0]}&longitude=${c[1]}&current=temperature_2m,weather_code,is_day&timezone=America%2FFortaleza`)
-      .then(r=>r.json()).then(d=>{
-        const t = Math.round(d.current.temperature_2m), h = new Date().getHours();
-        document.getElementById('w-temp').textContent=t+'°';
-        if(t>=30) document.getElementById('w-tip').textContent = 'Praia cedo ou um pote de sorvete gelado.';
+    const ctrl = new AbortController();
+    const t = setTimeout(()=>ctrl.abort(), 8000);
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c[0]}&longitude=${c[1]}&current=temperature_2m,weather_code,is_day&timezone=America%2FFortaleza`,{signal:ctrl.signal})
+      .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(d=>{
+        clearTimeout(t);
+        const temp = Math.round(d.current.temperature_2m), h = new Date().getHours();
+        document.getElementById('w-temp').textContent=temp+'°';
+        document.getElementById('w-head').textContent = 'Agora em Fortaleza';
+        if(temp>=30) document.getElementById('w-tip').textContent = 'Praia cedo ou um pote de sorvete gelado.';
         else if(h>=17&&h<=18) document.getElementById('w-tip').textContent = 'Hora do pôr do sol na Beira Mar.';
         else document.getElementById('w-tip').textContent = 'Tempo agradável. Ótimo pra tudo.';
-      }).catch(e=>{});
+      }).catch(()=>{
+        clearTimeout(t);
+        document.getElementById('w-temp').textContent='–';
+        document.getElementById('w-head').textContent = 'Clima indisponível agora';
+        document.getElementById('w-tip').textContent = 'Sem conexão com o serviço de clima. Tente novamente mais tarde.';
+      });
   },
   
   sky(){ 
