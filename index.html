@@ -1,1114 +1,2601 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#060a12">
-<title>Ceará a Dois</title>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Mapa do Fluxo · Ceará Dates, Frosty & Nina Mascote</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Press+Start+2P&family=Rubik+Mono+One&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
-/* ────────────────────────────  TOKENS  ──────────────────────────── */
 :root{
-  --mar:#12b5a3;        
-  --sol:#ff7a2f;        
-  --hibisco:#ff4d7d;    
-  --duna:#f2c14e;       
-  --noite:#6c5ce7;      
-  --mata:#3fa34d;       
-
-  --r-sm:12px; --r-md:18px; --r-lg:26px; --r-xl:34px;
-  --nav-h:76px;
-  --ease:cubic-bezier(.2,.9,.25,1);
+  --roxo:#5a00e0;
+  --roxo-escuro:#1f004d;
+  --roxo-medio:#7b2cbf;
+  --lilas:#c77dff;
+  --verde:#00e676;
+  --verde-lima:#b8ff00;
+  --verde-escuro:#00994d;
+  --tinta:#14002e;
+  --fundo:#4a00b8;
+  --papel:#f3e8ff;
+  --card-bg:#ffffff;
+  --safe-top:env(safe-area-inset-top, 0px);
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
 }
-html[data-theme="dark"]{
-  --tile-op:.52;
-  --veil:rgba(4,8,18,.60);
-  --veil-map:rgba(4,8,18,.18);
-  --canvas:#060a12;
-  --canvas-2:#0d1730;
-  --canvas-3:#12102a;
-  --ink:#f2f6ff;
-  --ink-2:#93a2be;
-  --ink-3:#5d6b87;
-  --glass:rgba(255,255,255,.055);
-  --glass-2:rgba(255,255,255,.085);
-  --edge:rgba(255,255,255,.14);
-  --edge-2:rgba(255,255,255,.08);
-  --spec:rgba(255,255,255,.30);
-  --shadow:0 20px 50px rgba(0,0,0,.55);
-  --tile-filter:none;
-  --scrim:rgba(6,10,18,.78);
+[data-theme="dark"]{
+  --fundo:#160038;
+  --papel:#260854;
+  --card-bg:#1e0545;
+  --tinta:#090014;
 }
-html[data-theme="light"]{
-  --tile-op:.72;
-  --veil:rgba(244,248,252,.58);
-  --veil-map:rgba(244,248,252,.14);
-  --canvas:#e8f1f4;
-  --canvas-2:#f6ece0;
-  --canvas-3:#dfeaf3;
-  --ink:#10192b;
-  --ink-2:#4d5c73;
-  --ink-3:#8494a9;
-  --glass:rgba(255,255,255,.55);
-  --glass-2:rgba(255,255,255,.75);
-  --edge:rgba(16,25,43,.10);
-  --edge-2:rgba(16,25,43,.06);
-  --spec:rgba(255,255,255,.9);
-  --shadow:0 18px 40px rgba(31,49,74,.16);
-  --tile-filter:none;
-  --scrim:rgba(240,246,250,.82);
+[data-theme="neon"]{
+  --fundo:#2d006b;
+  --roxo:#7209b7;
+  --verde:#38b000;
+  --verde-lima:#ccff33;
+  --papel:#e9ffdb;
 }
-
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden}
-body{font-family:'Inter',system-ui,sans-serif; color:var(--ink); background:var(--canvas); transition:color .3s var(--ease);}
+body{
+  margin:0;
+  color:var(--tinta);
+  font-family:"Space Grotesk",sans-serif;
+  background:repeating-conic-gradient(from 0deg at 50% 20%, var(--fundo) 0 12deg, var(--roxo-medio) 12deg 24deg);
+  background-attachment:fixed;
+  min-height:100vh;
+  padding-top:var(--safe-top);
+  padding-bottom:calc(86px + var(--safe-bottom));
+  overflow-x:hidden;
+}
+[data-theme="dark"] body,
+[data-theme="dark"] .painel-box,
+[data-theme="dark"] .card-date,
+[data-theme="dark"] .tool-box,
+[data-theme="dark"] .frosty-card{
+  color:#f5ebff;
+}
 
-/* ───────────────────  CÉU DINÂMICO  ─────────────────── */
-#sky{
-  position:fixed;inset:0;z-index:-3;overflow:hidden;
-  background:linear-gradient(180deg, var(--sky-1,#04070f) 0%, var(--sky-2,#0a1028) 52%, var(--sky-3,#121a3e) 100%);
-  transition:background 3s linear;
+/* Marquee superior */
+.faixa{
+  background:var(--verde);
+  color:var(--tinta);
+  border-bottom:4px solid var(--tinta);
+  overflow:hidden;
+  white-space:nowrap;
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:11px;
+  padding:5px 0;
+  position:sticky;
+  top:0;
+  z-index:1000;
 }
-#sky .stars, #sky .stars2{
-  position:absolute;inset:-10% -10% 30%;opacity:var(--stars,1);transition:opacity 3s linear;
-}
-#sky .stars{
-  background-image: radial-gradient(1.6px 1.6px at 12% 18%, #fff, transparent), radial-gradient(1.4px 1.4px at 28% 42%, #dfe9ff, transparent), radial-gradient(1.8px 1.8px at 44% 12%, #fff, transparent), radial-gradient(1.2px 1.2px at 61% 33%, #cfe0ff, transparent), radial-gradient(1.7px 1.7px at 76% 9%,  #fff, transparent), radial-gradient(1.3px 1.3px at 88% 38%, #e6eeff, transparent), radial-gradient(1.5px 1.5px at 8%  56%, #fff, transparent), radial-gradient(1.2px 1.2px at 35% 62%, #d6e3ff, transparent), radial-gradient(1.6px 1.6px at 69% 58%, #fff, transparent), radial-gradient(1.3px 1.3px at 93% 64%, #e9f0ff, transparent);
-  animation:twinkle 5.5s ease-in-out infinite;
-}
-#sky .stars2{
-  background-image: radial-gradient(1px 1px at 19% 27%, #fff, transparent), radial-gradient(1px 1px at 52% 21%, #fff, transparent), radial-gradient(1px 1px at 66% 44%, #fff, transparent), radial-gradient(1px 1px at 82% 25%, #fff, transparent), radial-gradient(1px 1px at 41% 51%, #fff, transparent), radial-gradient(1px 1px at 24% 68%, #fff, transparent);
-  animation:twinkle 8s ease-in-out infinite reverse;
-}
-@keyframes twinkle{0%,100%{opacity:calc(var(--stars,1) * .45)}50%{opacity:var(--stars,1)}}
+.faixa span{display:inline-block;padding-left:100%;animation:corre 28s linear infinite}
+@keyframes corre{to{transform:translateX(-100%)}}
 
-#sky .orb{position:absolute;border-radius:50%;transition:opacity 3s linear;will-change:opacity}
-#sky .sun{
-  width:112px;height:112px;
-  background:radial-gradient(circle at 42% 38%, #fff8e0 0%, #ffd06a 42%, #ff9a3c 70%, rgba(255,140,60,0) 74%);
-  box-shadow:0 0 140px 60px rgba(255,170,80,.30);
-  opacity:var(--sun,0);
+/* Header */
+header{
+  text-align:center;
+  padding:14px 12px 10px;
 }
-#sky .moon{
-  width:64px;height:64px;background:radial-gradient(circle at 36% 34%, #ffffff 0%, #e6ecff 55%, #b9c6e8 100%);
-  box-shadow:0 0 70px 26px rgba(200,215,255,.22), inset -14px -8px 0 -6px rgba(120,140,190,.35);
-  opacity:var(--moon,0);
+h1{
+  margin:0;
+  font-family:"Rubik Mono One",Impact,sans-serif;
+  font-size:clamp(28px,6.5vw,66px);
+  line-height:1;
+  color:var(--verde-lima);
+  -webkit-text-stroke:2.5px var(--tinta);
+  paint-order:stroke fill;
+  text-shadow:4px 4px 0 var(--tinta),8px 8px 0 var(--roxo);
 }
-#sky .haze{
-  position:absolute;left:-20%;right:-20%;bottom:-12%;height:62%;
-  background:radial-gradient(60% 100% at 50% 100%, var(--glow,rgba(255,150,80,0)) 0%, transparent 72%);
-  transition:background 3s linear;
+h1 span{display:inline-block}
+.sub-bar{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;
 }
-#sky .clouds{
-  position:absolute;inset:0;opacity:var(--clouds,0);transition:opacity 3s linear;
-  background: radial-gradient(38% 16% at 22% 26%, rgba(255,255,255,.30), transparent 70%), radial-gradient(30% 12% at 68% 17%, rgba(255,255,255,.22), transparent 70%), radial-gradient(44% 18% at 86% 40%, rgba(255,255,255,.16), transparent 70%);
-  animation:drift 90s linear infinite alternate;
+.badge-live{
+  background:var(--lilas);
+  color:var(--tinta);
+  border:3px solid var(--tinta);
+  padding:4px 10px;
+  font-family:"Bangers",cursive;
+  font-size:16px;
+  letter-spacing:1px;
+  box-shadow:3px 3px 0 var(--tinta);
+  transform:rotate(-1deg);
 }
-@keyframes drift{from{transform:translateX(-4%)}to{transform:translateX(4%)}}
+.clima-pill{
+  background:var(--verde);
+  color:var(--tinta);
+  border:3px solid var(--tinta);
+  padding:4px 10px;
+  font-weight:700;
+  font-size:12px;
+  box-shadow:3px 3px 0 var(--tinta);
+  cursor:pointer;
+}
 
-#veil{position:fixed;inset:0;z-index:-2;background:var(--veil);transition:background .6s var(--ease)}
-body.on-map #veil{background:var(--veil-map)}
+/* Mini Player Rádio Y2K + Spotify Bar */
+.radio-bar{
+  max-width:1280px;
+  margin:8px auto 10px;
+  padding:0 12px;
+}
+.radio-box{
+  background:linear-gradient(90deg, #1f004d 0%, #4a00b8 55%, #007f3f 100%);
+  color:#fff;
+  border:4px solid var(--tinta);
+  border-radius:14px;
+  box-shadow:6px 6px 0 var(--tinta);
+  padding:10px 14px;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.radio-info{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:1;
+  min-width:220px;
+}
+.equalizer{
+  display:flex;
+  align-items:flex-end;
+  gap:3px;
+  height:22px;
+  width:26px;
+}
+.equalizer span{
+  display:block;
+  width:4px;
+  height:6px;
+  background:var(--verde-lima);
+  border-radius:2px;
+  transition:height .15s;
+}
+.equalizer.playing span:nth-child(1){animation:eq .45s infinite alternate}
+.equalizer.playing span:nth-child(2){animation:eq .3s infinite alternate .1s}
+.equalizer.playing span:nth-child(3){animation:eq .5s infinite alternate .2s}
+.equalizer.playing span:nth-child(4){animation:eq .35s infinite alternate .05s}
+@keyframes eq{from{height:4px}to{height:22px}}
 
-.leaflet-container{background:transparent!important; font-family:'Inter', sans-serif;}
-.leaflet-tile-pane{opacity:var(--tile-op);transition:opacity .6s var(--ease)}
-h1,h2,h3,.display{font-family:'Bricolage Grotesque','Inter',sans-serif;letter-spacing:-.02em}
-button,input,select,textarea{font-family:inherit;color:inherit}
-::selection{background:var(--mar);color:#04110f}
-:focus-visible{outline:2px solid var(--mar);outline-offset:3px;border-radius:8px}
+.radio-controles{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  align-items:center;
+}
+.radio-btn{
+  background:var(--verde);
+  color:var(--tinta);
+  border:2.5px solid var(--tinta);
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:10px;
+  padding:6px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  box-shadow:2px 2px 0 var(--tinta);
+}
+.radio-btn.roxo{background:var(--lilas);color:var(--tinta)}
+.radio-btn.spotify{background:#1DB954;color:#000}
+.radio-btn:active{transform:translate(1px,1px)}
 
-/* ────────────────────────────  GLASS  ──────────────────────────── */
-.glass{
-  position:relative;
-  background:var(--glass);
-  backdrop-filter:blur(26px) saturate(180%);
-  -webkit-backdrop-filter:blur(26px) saturate(180%);
-  border:1px solid var(--edge);
-  box-shadow:var(--shadow), inset 0 1px 0 var(--spec), inset 0 -1px 0 var(--edge-2);
+/* Navegação Desktop & Tabs Principais */
+.nav-tabs{
+  max-width:1280px;
+  margin:8px auto 12px;
+  padding:0 12px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.tab-btn{
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:10px;
+  padding:10px 13px;
+  border:4px solid var(--tinta);
+  background:var(--papel);
+  color:var(--tinta);
+  cursor:pointer;
+  box-shadow:4px 4px 0 var(--tinta);
+  transition:transform .1s;
+}
+.tab-btn.active{
+  background:var(--verde);
+  color:var(--tinta);
+  transform:translateY(-2px);
+}
+.tab-btn.nina-tab{
+  background:#ffffff;
+  color:var(--tinta);
+  border-color:var(--tinta);
+}
+.tab-btn.nina-tab.active{
+  background:var(--verde-lima);
+  color:var(--tinta);
+}
+.tab-btn.frosty-tab{
+  background:var(--lilas);
+  color:var(--tinta);
+}
+.tab-btn.frosty-tab.active{
+  background:var(--verde-lima);
+  color:var(--tinta);
+}
+
+/* Layout Principal */
+.container{
+  max-width:1280px;
+  margin:0 auto;
+  padding:0 12px 24px;
+}
+.view-section{display:none}
+.view-section.active{display:block}
+
+.grid-mapa{
+  display:grid;
+  grid-template-columns:1.35fr 1fr;
+  gap:20px;
+  align-items:start;
+}
+@media(max-width:920px){
+  .grid-mapa{grid-template-columns:1fr}
+}
+
+/* Janela do Google Maps */
+.tela{
+  background:var(--roxo);
+  border:5px solid var(--tinta);
+  border-radius:16px;
+  box-shadow:8px 8px 0 var(--tinta);
   overflow:hidden;
 }
-.glass::after{
-  content:'';position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(145deg,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 38%,rgba(255,255,255,0) 68%,rgba(255,255,255,.07) 100%);
+.barra{
+  background:var(--roxo-escuro);
+  color:var(--verde-lima);
+  border-bottom:4px solid var(--tinta);
+  font-family:"Bangers",cursive;
+  letter-spacing:1.5px;
+  font-size:18px;
+  padding:6px 10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:6px;
 }
-html[data-theme="light"] .glass::after{background:linear-gradient(145deg,rgba(255,255,255,.7) 0%,rgba(255,255,255,0) 45%)}
+.barra-tools{display:flex;gap:5px;flex-wrap:wrap}
+.mini-btn{
+  background:var(--lilas);
+  color:var(--tinta);
+  border:2px solid var(--tinta);
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:9px;
+  padding:4px 7px;
+  cursor:pointer;
+  box-shadow:2px 2px 0 var(--tinta);
+}
+.mini-btn.on{background:var(--verde);color:var(--tinta)}
 
-/* ────────────────────────────  LAYOUT  ──────────────────────────── */
-#app{height:100%;position:relative;overflow:hidden}
-.view{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;display:none;padding-bottom:calc(var(--nav-h) + 40px)}
-.view.on{display:block}
-.view.on>*{animation:rise .42s var(--ease) both}
-@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+/* Barra de Filtros Rápidos no Mapa */
+.filtros-mapa{
+  background:var(--papel);
+  border-bottom:4px solid var(--tinta);
+  padding:8px 10px;
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.filtros-mapa::-webkit-scrollbar{display:none}
+.chip{
+  white-space:nowrap;
+  border:2.5px solid var(--tinta);
+  background:#fff;
+  color:var(--tinta);
+  padding:4px 10px;
+  font-weight:700;
+  font-size:12px;
+  border-radius:20px;
+  cursor:pointer;
+  box-shadow:2px 2px 0 var(--tinta);
+}
+.chip.active{background:var(--roxo);color:#fff}
 
-.wrap{max-width:720px;margin:0 auto;padding:0 16px}
+#google-map{
+  width:100%;
+  height:520px;
+  background:#240054;
+}
+@media(max-width:640px){
+  #google-map{height:380px}
+}
 
-/* ── topo ── */
-.topbar{position:sticky;top:0;z-index:50;padding:14px 16px 10px;background:linear-gradient(to bottom,var(--scrim) 55%,transparent);backdrop-filter:blur(6px)}
-.topbar-in{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:10px}
-.brand{flex:1;min-width:0}
-.brand h1{margin:0;font-size:23px;font-weight:800;line-height:1.05}
-.brand small{display:block;font-size:11px;color:var(--ink-2);font-weight:500;margin-top:2px}
-.icon-btn{width:42px;height:42px;flex:none;border-radius:14px;display:grid;place-items:center;cursor:pointer;background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(18px);color:var(--ink);transition:.25s var(--ease)}
-.icon-btn:active{transform:scale(.92)}
-.icon-btn .material-icons-round{font-size:20px}
-
-/* ── mapa ── */
-#view-map{padding-bottom:0;overflow:hidden}
-#map{position:absolute;inset:0;z-index:1}
-#map .leaflet-tile-pane{filter:var(--tile-filter)}
-.map-ui{position:absolute;inset:0;z-index:600;pointer-events:none;display:flex;flex-direction:column}
-.map-ui>*{pointer-events:auto}
-.map-top{padding:14px 16px 0}
-.weather-strip{border-radius:var(--r-lg);padding:12px 14px;display:flex;gap:12px;align-items:center;margin-top:10px}
-.weather-temp{font-family:'Bricolage Grotesque';font-size:30px;font-weight:800;line-height:1}
-.weather-body{flex:1;min-width:0}
-.weather-body b{display:block;font-size:12.5px;font-weight:600}
-.weather-body span{font-size:11.5px;color:var(--ink-2);line-height:1.35;display:block;margin-top:2px}
-
-.chips{display:flex;gap:7px;padding:12px 16px 0;overflow-x:auto;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chip{flex:none;cursor:pointer;border-radius:999px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--ink-2);
-  background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(20px);transition:.25s var(--ease);white-space:nowrap}
-.chip[aria-pressed="true"]{color:#03100e;background:var(--c,var(--mar));border-color:transparent;box-shadow:0 8px 22px -6px var(--c,var(--mar))}
-html[data-theme="light"] .chip[aria-pressed="true"]{color:#fff}
-.chip[data-c="praia"]{--c:var(--mar)} .chip[data-c="cultura"]{--c:var(--noite)}
-.chip[data-c="serra"]{--c:var(--mata)} .chip[data-c="date"]{--c:var(--hibisco)}
-.chip[data-c="frosty"]{--c:var(--duna)} .chip[data-c="perto"]{--c:var(--sol)}
-
-.map-bottom{margin-top:auto;padding:0 16px calc(var(--nav-h) + 16px);display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-.fab{width:50px;height:50px;border-radius:18px;display:grid;place-items:center;cursor:pointer;background:var(--glass);border:1px solid var(--edge);backdrop-filter:blur(22px);box-shadow:var(--shadow);color:var(--ink);transition:.25s var(--ease)}
-.fab:active{transform:scale(.9)}
-.fab.accent{background:linear-gradient(140deg,var(--mar),#0d8f9c);color:#02110f;border-color:transparent; width:auto; padding:0 20px; font-weight:700; font-size:14px; gap:8px}
-
-/* marcadores */
-.pin{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:2px solid #fff;
-  box-shadow:0 6px 16px rgba(0,0,0,.45);font-size:15px; cursor:pointer;}
-.pin.big{width:36px;height:36px;font-size:18px}
-.pin.me{background:#2e8bff;box-shadow:0 0 0 8px rgba(46,139,255,.22)}
-.pulse{animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 6px rgba(255,122,47,.25)}50%{box-shadow:0 0 0 14px rgba(255,122,47,0)}}
-
-/* ── cards ── */
-.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:22px 0 10px}
-.section-head h2{margin:0;font-size:18px;font-weight:800}
-.section-head span{font-size:11.5px;color:var(--ink-3);font-weight:600}
-
-.cards{display:grid;gap:12px}
-.card{border-radius:var(--r-lg);padding:15px 16px;position:relative;
-  background:linear-gradient(180deg,var(--glass-2),var(--glass));
-  border:1px solid var(--edge);box-shadow:0 10px 24px rgba(0,0,0,.20), inset 0 1px 0 var(--edge-2);
-  content-visibility:auto;contain-intrinsic-size:0 190px}
-.card-top{display:flex;gap:12px;align-items:flex-start}
-.card-emoji{width:42px;height:42px;flex:none;border-radius:14px;display:grid;place-items:center;font-size:20px;background:var(--glass-2);border:1px solid var(--edge-2)}
-.card h3{margin:0 0 3px;font-size:15px;font-weight:700;line-height:1.25}
-.card .where{font-size:11.5px;color:var(--ink-2);display:block}
-.card .note{font-size:12px;color:var(--ink-2);line-height:1.45;margin:10px 0 0}
-
-.tagline{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
-.tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--glass-2);border:1px solid var(--edge-2);color:var(--ink-2)}
-.tag.done{color:#04110f;background:var(--duna);border-color:transparent}
-
-.card-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:13px;padding-top:12px;border-top:1px solid var(--edge-2)}
-.stars{display:flex;gap:1px}
-.star{background:none;border:0;padding:2px;cursor:pointer;color:var(--ink-3);line-height:0;transition:.15s}
-.star .material-icons-round{font-size:19px}
-.star.lit{color:var(--duna)}
-.acts{display:flex;gap:7px}
-.mini{height:34px;padding:0 12px;border-radius:12px;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;
-  cursor:pointer;text-decoration:none;color:var(--ink);background:var(--glass-2);border:1px solid var(--edge);transition:.2s var(--ease)}
-.mini .material-icons-round{font-size:15px}
-.mini:active{transform:scale(.94)}
-.mini.on{background:var(--mar);color:#03100e;border-color:transparent}
-.mini.sq{width:34px;padding:0;justify-content:center}
-
-/* ── painéis ── */
-.panel{border-radius:var(--r-xl);padding:18px;margin-top:14px}
-.panel h3{margin:0 0 4px;font-size:16px;font-weight:800;display:flex;align-items:center;gap:7px}
-.panel p.lead{margin:0 0 14px;font-size:12.5px;color:var(--ink-2);line-height:1.5}
-.btn{width:100%;height:46px;border-radius:16px;border:0;cursor:pointer;font-size:13px;font-weight:700;
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:.22s var(--ease);text-decoration:none}
-.btn:active{transform:scale(.97)}
-.btn.primary{background:linear-gradient(135deg,var(--mar),#0d8f9c);color:#02110f;box-shadow:0 12px 28px -12px var(--mar)}
-.btn.warm{background:linear-gradient(135deg,var(--sol),var(--hibisco));color:#fff;box-shadow:0 12px 28px -12px var(--hibisco)}
-.btn.ghost{background:var(--glass-2);border:1px solid var(--edge);color:var(--ink)}
-.field{width:100%;height:46px;border-radius:14px;padding:0 14px;margin-bottom:9px;font-size:13px;
-  background:var(--glass-2);border:1px solid var(--edge);outline:0}
-select.field{appearance:none;background-image:none}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-
-/* progresso */
-.hero{border-radius:var(--r-xl);padding:20px;margin-top:4px}
-.hero .big{font-family:'Bricolage Grotesque';font-size:44px;font-weight:800;line-height:.95}
-.hero .big small{font-size:15px;font-weight:600;color:var(--ink-2)}
-.track{height:9px;border-radius:99px;background:var(--glass-2);border:1px solid var(--edge-2);overflow:hidden;margin:14px 0 8px}
-.track>i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--mar),var(--duna),var(--sol));transition:width .9s var(--ease)}
-.legend{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-2);font-weight:600}
-
-/* ── nav ── */
-.nav{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;bottom:calc(18px + env(safe-area-inset-bottom));
-  width:min(94%,470px);height:var(--nav-h);border-radius:26px;display:flex;padding:7px;gap:2px;z-index:3000}
-.nav button{flex:1;min-width:0;border:0;background:none;cursor:pointer;border-radius:19px;color:var(--ink-3);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9.5px;font-weight:700;transition:.28s var(--ease)}
-.nav button .material-icons-round{font-size:20px}
-.nav button[aria-current="true"]{color:var(--ink);background:var(--glass-2);box-shadow:inset 0 1px 0 var(--spec)}
-.nav button[aria-current="true"] .material-icons-round{color:var(--mar)}
-.badge{position:absolute;top:6px;transform:translateX(13px);min-width:15px;height:15px;border-radius:8px;background:var(--sol);color:#fff;
-  font-size:9px;font-weight:800;display:grid;place-items:center;padding:0 4px}
-
-/* ── sheets (Design Map-First) ── */
-.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);z-index:4000;opacity:0;pointer-events:none;transition:.3s}
-.sheet-bg.on{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,102%);width:min(100%,560px);max-height:88vh;overflow-y:auto;
-  border-radius:var(--r-xl) var(--r-xl) 0 0;padding:10px 18px calc(28px + env(safe-area-inset-bottom));z-index:4001;transition:transform .42s var(--ease)}
-.sheet.on{transform:translate(-50%,0)}
-.grip{width:44px;height:4px;border-radius:9px;background:var(--edge);margin:4px auto 16px}
-.sheet h2{margin:0 0 14px;font-size:19px;font-weight:800}
-.set-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--edge-2)}
-.set-row div{flex:1;min-width:0}
-.set-row b{display:block;font-size:13px;font-weight:600}
-.set-row small{font-size:11px;color:var(--ink-2)}
-.switch{width:52px;height:30px;border-radius:99px;border:1px solid var(--edge);background:var(--glass-2);position:relative;cursor:pointer;flex:none}
-.switch i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:var(--ink-3);transition:.3s var(--ease)}
-.switch[aria-checked="true"]{background:var(--mar);border-color:transparent}
-.switch[aria-checked="true"] i{left:25px;background:#fff}
-
-/* toast */
-#toast{position:fixed;left:50%;transform:translate(-50%,22px);bottom:calc(var(--nav-h) + 34px);z-index:5000;
-  border-radius:16px;padding:11px 16px;font-size:12.5px;font-weight:600;max-width:88%;opacity:0;pointer-events:none;transition:.32s var(--ease)}
-#toast.on{opacity:1;transform:translate(-50%,0)}
-
-/* ── Alerta Frosty (Geofencing Animado) ── */
-#alert-frosty {
-  position:fixed; top:-100px; left:50%; transform:translateX(-50%); z-index:6000;
-  width:min(90%,400px); background:linear-gradient(135deg, var(--duna), #ff9a3c);
-  color:#000; border-radius:var(--r-lg); padding:14px 18px;
-  display:flex; gap:14px; align-items:center;
-  box-shadow:0 14px 32px rgba(242,193,78,.4); transition:top .5s cubic-bezier(.2,.9,.25,1);
+/* =========================================================================
+   MASCOTE FLUTUANTE NINA EM PIXEL ART + BALÃO DE FALA POR TODO O SITE
+   ========================================================================= */
+.nina-flutuante-wrap{
+  position:fixed;
+  bottom:calc(74px + var(--safe-bottom));
+  right:14px;
+  z-index:2500;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
   pointer-events:none;
+  max-width:290px;
 }
-#alert-frosty.on { top:20px; pointer-events:auto; }
-#alert-frosty .bounce { font-size:32px; animation:bounce 1s infinite; }
-@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-
-/* ── Radar do casal ── */
-.radar{border-radius:var(--r-lg);padding:11px 14px;display:flex;gap:10px;align-items:center;margin-top:10px}
-.radar .compass{width:34px;height:34px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--glass-2);border:1px solid var(--edge-2);transition:transform .4s var(--ease)}
-.radar .compass .material-icons-round{font-size:18px;color:var(--sol)}
-.radar b{display:block;font-size:12.5px}
-.radar span{font-size:11px;color:var(--ink-2)}
-
-/* clusters (sólidos sem blur para rodar suave no mobile) */
-.cluster-pin{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;font-weight:800;font-size:13px;
-  background:linear-gradient(135deg,var(--mar),var(--sol));border:2px solid rgba(255,255,255,.65);box-shadow:0 6px 16px rgba(0,0,0,.4)}
-.cluster-pin.sm{width:32px;height:32px;font-size:11px}
-
-/* roteiro */
-.plan-quote{font-size:14px;line-height:1.55;margin:2px 0 14px;font-weight:500}
-.plan-title{font-family:'Bricolage Grotesque';font-size:17px;font-weight:800;margin:0 0 6px}
-.stops{position:relative;margin:0 0 14px;padding-left:22px}
-.stops::before{content:'';position:absolute;left:6px;top:8px;bottom:8px;width:2px;border-radius:2px;background:linear-gradient(var(--sol),var(--hibisco),var(--mar))}
-.stop{position:relative;padding:9px 0}
-.stop::before{content:'';position:absolute;left:-21px;top:14px;width:12px;height:12px;border-radius:50%;background:var(--sol);border:2px solid var(--canvas);box-shadow:0 0 0 2px var(--sol)}
-.stop b{display:block;font-size:13.5px;font-weight:700}
-.stop span{display:block;font-size:11.5px;color:var(--ink-2);line-height:1.45;margin-top:3px}
-
-/* Modo leve mobile */
-@media (max-width:680px), (pointer:coarse){
-  .glass, .chip, .icon-btn, .fab{backdrop-filter:blur(12px) saturate(150%);-webkit-backdrop-filter:blur(12px) saturate(150%)}
-  #sky .stars2, #sky .clouds{display:none}
-  .sheet-bg{backdrop-filter:none}
-  .glass::after{display:none}
+.nina-balao{
+  pointer-events:auto;
+  background:#ffffff;
+  color:#14002e;
+  border:4px solid #14002e;
+  border-radius:14px;
+  padding:10px 12px;
+  font-size:12px;
+  font-weight:700;
+  line-height:1.35;
+  box-shadow:5px 5px 0 #14002e;
+  margin-bottom:8px;
+  position:relative;
+  animation:popIn .25s ease-out;
 }
-@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important} #sky .stars{animation:none}}
+.nina-balao::after{
+  content:"";
+  position:absolute;
+  bottom:-12px;
+  right:28px;
+  border-width:12px 10px 0;
+  border-style:solid;
+  border-color:#14002e transparent transparent;
+}
+.nina-balao-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-family:"Press Start 2P",monospace;
+  font-size:9px;
+  color:var(--roxo);
+  margin-bottom:5px;
+}
+.nina-balao-close{
+  background:none;
+  border:none;
+  font-weight:900;
+  cursor:pointer;
+  color:#14002e;
+  font-size:13px;
+  padding:0 2px;
+}
+.nina-avatar-btn{
+  pointer-events:auto;
+  background:var(--verde-lima);
+  border:4px solid #14002e;
+  border-radius:18px;
+  padding:6px;
+  box-shadow:5px 5px 0 #14002e;
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  transition:transform .15s;
+}
+.nina-avatar-btn:hover{transform:scale(1.06)}
+.nina-avatar-btn:active{transform:scale(0.95)}
+.nina-tag-mini{
+  font-family:"Press Start 2P",monospace;
+  font-size:8px;
+  background:#14002e;
+  color:var(--verde-lima);
+  padding:2px 6px;
+  border-radius:4px;
+  margin-top:3px;
+}
+.pixel-svg{
+  image-rendering:pixelated;
+  shape-rendering:crispEdges;
+  display:block;
+}
+@keyframes popIn{
+  from{opacity:0;transform:translateY(8px) scale(0.92)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes ninaPulo{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+.nina-pulando{animation:ninaPulo .45s ease-in-out 2}
+
+/* =========================================================================
+   QUARTO INTERATIVO DA NINA (ABA CUIDAR, BRINCAR, COMIDA E BANHO)
+   ========================================================================= */
+.nina-quarto-grid{
+  display:grid;
+  grid-template-columns:1.1fr 1fr;
+  gap:20px;
+}
+@media(max-width:860px){
+  .nina-quarto-grid{grid-template-columns:1fr}
+}
+.nina-palco{
+  background:linear-gradient(180deg, #e0c3fc 0%, #c77dff 68%, #00b862 68%, #00994d 100%);
+  border:5px solid var(--tinta);
+  border-radius:16px;
+  box-shadow:8px 8px 0 var(--tinta);
+  padding:20px;
+  text-align:center;
+  position:relative;
+  min-height:340px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  align-items:center;
+  overflow:hidden;
+}
+.nina-fala-quarto{
+  background:#fff;
+  color:#14002e;
+  border:4px solid #14002e;
+  border-radius:14px;
+  padding:12px 14px;
+  font-weight:700;
+  font-size:14px;
+  box-shadow:4px 4px 0 #14002e;
+  max-width:92%;
+  z-index:2;
+}
+.nina-stage-pet{
+  position:relative;
+  cursor:pointer;
+  margin:10px 0;
+  z-index:2;
+}
+.particula-efeito{
+  position:absolute;
+  font-size:24px;
+  pointer-events:none;
+  animation:subirParticula 1.1s ease-out forwards;
+}
+@keyframes subirParticula{
+  0%{opacity:1;transform:translateY(0) scale(0.8)}
+  100%{opacity:0;transform:translateY(-65px) scale(1.35)}
+}
+.stats-nina{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:8px;
+  width:100%;
+  background:rgba(20,0,46,0.88);
+  padding:10px;
+  border-radius:12px;
+  border:3px solid #14002e;
+  color:#fff;
+}
+.stat-item{text-align:left;font-size:11px;font-weight:700}
+.stat-bar{
+  width:100%;height:12px;
+  background:#2d006b;
+  border:2px solid #fff;
+  border-radius:6px;
+  overflow:hidden;
+  margin-top:4px;
+}
+.stat-fill{height:100%;transition:width .3s}
+
+/* Card de Detalhes do Date / Local */
+.card-date{
+  background:var(--papel);
+  border:5px solid var(--tinta);
+  box-shadow:8px 8px 0 var(--tinta);
+  border-radius:14px;
+  overflow:hidden;
+}
+.foto-real-box{
+  position:relative;
+  width:100%;
+  height:210px;
+  background:#1f004d;
+  border-bottom:4px solid var(--tinta);
+  overflow:hidden;
+}
+.foto-real-box img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+  transition:opacity .3s;
+}
+.foto-badge{
+  position:absolute;
+  top:10px;left:10px;
+  background:rgba(31,0,77,0.9);
+  color:var(--verde-lima);
+  border:2px solid var(--verde-lima);
+  padding:3px 8px;
+  font-size:11px;
+  font-weight:700;
+  border-radius:6px;
+}
+.foto-fonte{
+  position:absolute;
+  bottom:8px;right:8px;
+  background:var(--verde);
+  color:var(--tinta);
+  border:2px solid var(--tinta);
+  padding:2px 7px;
+  font-size:10px;
+  font-weight:700;
+}
+.card-body{padding:16px}
+.tags-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.tag-info{
+  background:var(--lilas);
+  color:var(--tinta);
+  border:2.5px solid var(--tinta);
+  padding:2px 8px;
+  font-size:11px;
+  font-weight:700;
+}
+.tag-custo{background:var(--verde)}
+.tag-vibe{background:var(--verde-lima)}
+.card-body h2{
+  margin:4px 0 6px;
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:clamp(18px,3vw,24px);
+  color:var(--roxo);
+  -webkit-text-stroke:1px var(--tinta);
+  paint-order:stroke fill;
+  line-height:1.15;
+}
+[data-theme="dark"] .card-body h2{color:var(--verde-lima)}
+.card-desc{
+  margin:8px 0 12px;
+  font-size:15px;
+  line-height:1.45;
+  font-weight:500;
+}
+.dica-casal{
+  background:var(--card-bg);
+  border:3px dashed var(--roxo);
+  padding:8px 10px;
+  font-size:13px;
+  margin-bottom:12px;
+  border-radius:8px;
+}
+.ia-live-box{
+  background:linear-gradient(135deg, #1f004d, #3b008c);
+  color:#fff;
+  border:3px solid var(--verde);
+  border-radius:10px;
+  padding:10px;
+  margin-bottom:12px;
+  font-size:13px;
+}
+.card-actions{
+  display:grid;
+  grid-template-columns:repeat(2, 1fr);
+  gap:8px;
+}
+.btn-acao{
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:10px;
+  padding:10px 8px;
+  border:3px solid var(--tinta);
+  background:var(--verde);
+  color:var(--tinta);
+  cursor:pointer;
+  box-shadow:3px 3px 0 var(--tinta);
+  text-align:center;
+  text-decoration:none;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+}
+.btn-acao:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--tinta)}
+.btn-acao.sec{background:var(--lilas);color:var(--tinta)}
+.btn-acao.roxo{background:var(--roxo);color:#fff}
+.btn-acao.lima{background:var(--verde-lima);color:var(--tinta)}
+
+/* Painéis */
+.painel-box{
+  background:var(--papel);
+  border:5px solid var(--tinta);
+  box-shadow:8px 8px 0 var(--tinta);
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:18px;
+}
+.painel-titulo{
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:clamp(17px,3.5vw,24px);
+  color:var(--roxo);
+  margin:0 0 12px;
+}
+[data-theme="dark"] .painel-titulo{color:var(--verde-lima)}
+.filtros-sorteio{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
+  gap:10px;
+  margin-bottom:14px;
+}
+.campo-grupo label{
+  display:block;
+  font-weight:700;
+  font-size:12px;
+  margin-bottom:4px;
+}
+.campo-grupo select, .campo-grupo input, .campo-grupo textarea{
+  width:100%;
+  padding:9px 10px;
+  border:3px solid var(--tinta);
+  background:#fff;
+  color:#14002e;
+  font-family:"Space Grotesk",sans-serif;
+  font-weight:700;
+  font-size:13px;
+  border-radius:8px;
+}
+.btn-gigante{
+  width:100%;
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:clamp(13px,3vw,17px);
+  padding:15px;
+  background:var(--verde);
+  color:var(--tinta);
+  border:4px solid var(--tinta);
+  box-shadow:6px 6px 0 var(--tinta);
+  cursor:pointer;
+  border-radius:12px;
+}
+.btn-gigante.roxo{background:var(--roxo);color:#fff}
+.btn-gigante:active{transform:translate(3px,3px);box-shadow:3px 3px 0 var(--tinta)}
+
+/* Aba Especial Frosty Sorvetes Ceará */
+.frosty-banner{
+  background:linear-gradient(135deg, #4a00b8 0%, #00b862 100%);
+  color:#fff;
+  border:5px solid var(--tinta);
+  box-shadow:8px 8px 0 var(--tinta);
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:18px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+}
+.frosty-banner h2{
+  margin:0;
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:clamp(19px,4vw,30px);
+  text-shadow:3px 3px 0 var(--tinta);
+}
+.frosty-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(270px, 1fr));
+  gap:14px;
+}
+.frosty-card{
+  background:var(--card-bg);
+  border:4px solid var(--tinta);
+  box-shadow:5px 5px 0 var(--tinta);
+  border-radius:12px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:10px;
+}
+.frosty-card.visitada{
+  background:#d8ffea;
+  border-color:var(--verde-escuro);
+  color:#14002e;
+}
+.frosty-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:8px;
+}
+.frosty-bairro{
+  background:var(--lilas);
+  color:var(--tinta);
+  border:2px solid var(--tinta);
+  padding:2px 7px;
+  font-size:11px;
+  font-weight:700;
+}
+
+/* Grid de Funções / Ferramentas de Casal */
+.tools-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(290px, 1fr));
+  gap:16px;
+}
+.tool-box{
+  background:var(--card-bg);
+  border:4px solid var(--tinta);
+  box-shadow:5px 5px 0 var(--tinta);
+  border-radius:12px;
+  padding:14px;
+}
+.tool-box h3{
+  margin:0 0 8px;
+  font-family:"Rubik Mono One",sans-serif;
+  font-size:12px;
+  color:var(--roxo);
+}
+[data-theme="dark"] .tool-box h3{color:var(--verde-lima)}
+
+/* Concierge Nina Resposta Box */
+.concierge-output{
+  background:#14002e;
+  color:#e8ffef;
+  border:3px solid var(--verde);
+  border-radius:10px;
+  padding:14px;
+  margin-top:12px;
+  font-size:14px;
+  line-height:1.55;
+  white-space:pre-wrap;
+}
+
+/* Barra Inferior Mobile (App Mode) */
+.mobile-nav{
+  position:fixed;
+  bottom:0;left:0;right:0;
+  background:var(--roxo-escuro);
+  border-top:4px solid var(--tinta);
+  display:grid;
+  grid-template-columns:repeat(6, 1fr);
+  padding-bottom:var(--safe-bottom);
+  z-index:2000;
+}
+.mob-item{
+  border:none;
+  border-right:2px solid var(--tinta);
+  background:transparent;
+  padding:7px 2px;
+  font-family:"Bangers",cursive;
+  font-size:13px;
+  letter-spacing:.4px;
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  cursor:pointer;
+}
+.mob-item:last-child{border-right:none}
+.mob-item.active{background:var(--verde);color:var(--tinta)}
+.mob-item span.ico{font-size:17px}
+
+/* Toast */
+.toast{
+  position:fixed;
+  top:46px;left:50%;
+  transform:translateX(-50%);
+  background:var(--tinta);
+  color:var(--verde-lima);
+  border:3px solid var(--verde);
+  padding:10px 18px;
+  font-weight:700;
+  font-size:13px;
+  border-radius:30px;
+  z-index:3000;
+  box-shadow:0 6px 20px rgba(0,0,0,0.4);
+  display:none;
+}
+.progress-bar{
+  width:100%;height:18px;
+  background:#fff;border:3px solid var(--tinta);
+  border-radius:10px;overflow:hidden;
+}
+.progress-fill{
+  height:100%;background:var(--verde);width:0%;transition:width .3s;
+}
+.lista-lugares-chips{
+  display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;
+}
+.lugar-pill{
+  font-size:11px;font-weight:700;
+  padding:5px 9px;border:2.5px solid var(--tinta);
+  background:var(--lilas);color:var(--tinta);cursor:pointer;border-radius:6px;
+}
+.lugar-pill.on{background:var(--verde);color:var(--tinta)}
+.lugar-pill.done{text-decoration:line-through;background:var(--verde-lima)}
 </style>
 </head>
-<body class="on-map">
+<body>
 
-<div id="sky" aria-hidden="true">
-  <div class="stars"></div><div class="stars2"></div><div class="clouds"></div>
-  <div class="orb sun" id="sun"></div><div class="orb moon" id="moon"></div>
-  <div class="haze"></div>
+<div class="faixa">
+  <span>★ MAPA DO FLUXO CEARÁ ★ CONCIERGE & MASCOTE NINA EM PIXEL ART ★ GOOGLE MAPS AO VIVO ★ TODAS AS UNIDADES FROSTY DO CEARÁ ★ RÁDIO Y2K & SPOTIFY PLAYLIST ★</span>
 </div>
-<div id="veil" aria-hidden="true"></div>
 
-<div id="app">
-  <!-- ════ MAPA PRINCIPAL ════ -->
-  <section id="view-map" class="view on">
-    <div id="map"></div>
-    <div class="map-ui">
-      <div class="map-top">
-        <div class="topbar-in" style="padding:0">
-          <div class="brand">
-            <h1>Ceará a Dois</h1>
-            <small id="sub-count">carregando lugares…</small>
+<header>
+  <h1 id="tit">MAPA DO FLUXO</h1>
+  <div class="sub-bar">
+    <span class="badge-live">🐶 NINA CONCIERGE · GOOGLE MAPS CEARÁ</span>
+    <span class="clima-pill" id="clima-widget" title="Atualizar clima ao vivo">☀️ Carregando clima...</span>
+    <span class="clima-pill" id="relogio-vivo">🕒 --:--:--</span>
+    <span class="clima-pill" id="xp-casal">🏆 Nível 1 · 0 Check-ins</span>
+  </div>
+</header>
+
+<!-- RÁDIO AO VIVO Y2K + INTEGRAÇÃO SPOTIFY -->
+<div class="radio-bar">
+  <div class="radio-box">
+    <div class="radio-info">
+      <div class="equalizer" id="eq-anim"><span></span><span></span><span></span><span></span></div>
+      <div>
+        <div style="font-family:'Rubik Mono One',sans-serif;font-size:11px;color:var(--verde-lima)" id="radio-status">📻 RÁDIO FLUXO Y2K · PRONTA PARA TOCAR</div>
+        <div style="font-size:12px;opacity:.9" id="radio-faixa">Trilha nostálgica anos 2000 + lo-fi romântico ou conecte sua playlist Spotify</div>
+      </div>
+    </div>
+    <div class="radio-controles">
+      <button class="radio-btn" id="btn-radio-toggle">▶️ TOCAR RÁDIO</button>
+      <button class="radio-btn roxo" id="btn-radio-estacao">⏭️ ESTAÇÃO</button>
+      <button class="radio-btn spotify" id="btn-abrir-spotify">🎧 SPOTIFY PLAYLIST</button>
+    </div>
+  </div>
+  <!-- Drawer Spotify Embed -->
+  <div id="spotify-drawer" style="display:none;margin-top:8px;background:#14002e;border:4px solid var(--tinta);border-radius:12px;padding:10px">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+      <input type="text" id="spotify-url-input" placeholder="Cole o link da sua Playlist/Álbum do Spotify (ex: https://open.spotify.com/playlist/...)" style="flex:1;min-width:220px;padding:8px;border:2px solid var(--verde);border-radius:6px;font-weight:700">
+      <button class="radio-btn spotify" id="btn-carregar-spotify">CARREGAR PLAYLIST</button>
+      <button class="radio-btn roxo" onclick="document.getElementById('spotify-drawer').style.display='none'">FECHAR</button>
+    </div>
+    <iframe id="spotify-iframe" style="border-radius:10px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+  </div>
+</div>
+
+<nav class="nav-tabs" aria-label="Navegação principal">
+  <button class="tab-btn active" data-tab="sec-mapa">🗺️ GOOGLE MAPS & FOTOS</button>
+  <button class="tab-btn nina-tab" data-tab="sec-nina">🐶 NINA · CUIDAR & CONCIERGE</button>
+  <button class="tab-btn" data-tab="sec-sorteio">🎲 SORTEAR DATE</button>
+  <button class="tab-btn frosty-tab" data-tab="sec-frosty">🍦 FROSTY CEARÁ (TODAS)</button>
+  <button class="tab-btn" data-tab="sec-ferramentas">🧰 +35 FUNÇÕES CASAL</button>
+  <button class="tab-btn" data-tab="sec-diario">📸 DIÁRIO & NOVO LOCAL</button>
+</nav>
+
+<main class="container">
+
+  <!-- SEÇÃO 1: GOOGLE MAPS REAL + FOTOS EM TEMPO REAL -->
+  <section id="sec-mapa" class="view-section active">
+    <div class="grid-mapa">
+      <div>
+        <div class="tela">
+          <div class="barra">
+            <span>GOOGLE_MAPS_CEARA_LIVE.EXE</span>
+            <div class="barra-tools">
+              <button class="mini-btn" id="btn-gps">📍 MEU GPS</button>
+              <button class="mini-btn" id="btn-transito">🚦 TRÂNSITO AO VIVO</button>
+              <button class="mini-btn on" id="btn-rota">💜 ROTA DATE</button>
+              <button class="mini-btn" id="btn-maptype">🛰️ SATÉLITE</button>
+              <button class="mini-btn" id="btn-reset">🔄 FORTAL</button>
+            </div>
           </div>
-          <button class="icon-btn" onclick="App.openSheet()" title="Ajustes"><span class="material-icons-round">tune</span></button>
+          <div class="filtros-mapa" id="filtros-cat">
+            <button class="chip active" data-cat="todos">✨ Todos</button>
+            <button class="chip" data-cat="orla">🌊 Orla & Pôr do Sol</button>
+            <button class="chip" data-cat="cultura">🎭 Cultura & Arte</button>
+            <button class="chip" data-cat="gastronomia">🍕 Comer & Café</button>
+            <button class="chip" data-cat="natureza">🌳 Parques & Lagoas</button>
+            <button class="chip" data-cat="gratis">💸 0800 / Baratinho</button>
+            <button class="chip" data-cat="frosty">🍦 Frosty Ceará</button>
+          </div>
+          <div id="google-map"></div>
         </div>
-        <div class="glass weather-strip" id="weather">
-          <div class="weather-temp" id="w-temp">–</div>
-          <div class="weather-body">
-            <b id="w-head">Buscando o clima de agora…</b>
-            <span id="w-tip">Vamos sugerir o tipo de programa certo para esta hora.</span>
+        <div class="lista-lugares-chips" id="lista-rapida"></div>
+      </div>
+
+      <aside>
+        <article class="card-date" id="card-detalhe">
+          <div class="foto-real-box">
+            <img id="lugar-img" src="" alt="Foto real do local" loading="lazy">
+            <span class="foto-badge" id="lugar-status">🟢 AO VIVO · CEARÁ</span>
+            <span class="foto-fonte" id="lugar-fonte">📡 Foto Real · Wikimedia Live</span>
+          </div>
+          <div class="card-body">
+            <div class="tags-row">
+              <span class="tag-info" id="lugar-bairro">BAIRRO</span>
+              <span class="tag-info tag-custo" id="lugar-custo">R$</span>
+              <span class="tag-info tag-vibe" id="lugar-horario">⏰ HORÁRIO</span>
+              <span class="tag-info" id="lugar-dist">📏 -- km</span>
+            </div>
+            <h2 id="lugar-titulo">Carregando...</h2>
+            <p class="card-desc" id="lugar-desc"></p>
+            <div class="dica-casal" id="lugar-dica"></div>
+
+            <!-- Insight rápido da Nina Concierge no Card -->
+            <div class="ia-live-box" id="card-nina-insight">
+              <strong>🐶 Nina Concierge ao Vivo:</strong>
+              <span id="card-nina-texto">Clique em "Nina Analisar Agora" para buscar dados reais de clima, movimento, trânsito e eventos!</span>
+            </div>
+
+            <div class="card-actions">
+              <button class="btn-acao roxo" id="btn-analisar-local-nina">🐶 NINA ANALISAR AGORA</button>
+              <button class="btn-acao" id="btn-checkin">✅ MARCAR VISITADO</button>
+              <button class="btn-acao sec" id="btn-fav">💜 FAVORITAR</button>
+              <a class="btn-acao lima" id="btn-uber" target="_blank" rel="noopener">🚗 ABRIR NO GOOGLE MAPS</a>
+              <button class="btn-acao sec" id="btn-trocar-foto">🔄 NOVA FOTO LIVE</button>
+              <button class="btn-acao" id="btn-zap">💬 CONVIDAR NO ZAP</button>
+            </div>
+          </div>
+        </article>
+      </aside>
+    </div>
+  </section>
+
+  <!-- SEÇÃO 2: ABA PRÓPRIA DA NINA (MASCOTE VIRTUAL + CONCIERGE DE DATES AO VIVO) -->
+  <section id="sec-nina" class="view-section">
+    <div class="nina-quarto-grid">
+      <!-- LADO ESQUERDO: QUARTO DA NINA (CUIDAR, BRINCAR, COMIDA, BANHO) -->
+      <div>
+        <div class="nina-palco" id="nina-palco">
+          <div class="nina-fala-quarto" id="nina-fala-quarto">
+            Au au! Oi, eu sou a Nina! Clique em mim para fazer carinho ou cuide de mim enquanto planejamos o date de vocês! 🐾
+          </div>
+
+          <div class="nina-stage-pet" id="nina-stage-pet" title="Clique para fazer carinho na Nina!">
+            <div id="nina-quarto-sprite"></div>
+          </div>
+
+          <div class="stats-nina">
+            <div class="stat-item">
+              🍖 Fome: <span id="stat-fome-txt">85%</span>
+              <div class="stat-bar"><div class="stat-fill" id="stat-fome-bar" style="width:85%;background:#00e676"></div></div>
+            </div>
+            <div class="stat-item">
+              🎾 Diversão: <span id="stat-diversao-txt">90%</span>
+              <div class="stat-bar"><div class="stat-fill" id="stat-diversao-bar" style="width:90%;background:#b8ff00"></div></div>
+            </div>
+            <div class="stat-item">
+              🧼 Limpeza: <span id="stat-limpeza-txt">95%</span>
+              <div class="stat-bar"><div class="stat-fill" id="stat-limpeza-bar" style="width:95%;background:#00e5ff"></div></div>
+            </div>
           </div>
         </div>
-        
-        <!-- Radar do Casal -->
-        <div class="glass radar" id="radar" hidden>
-          <div class="compass" id="radar-compass"><span class="material-icons-round">navigation</span></div>
-          <div><b id="radar-text">–</b><span id="radar-sub">Localização do parceiro</span></div>
+
+        <div class="painel-box" style="margin-top:14px">
+          <h3 style="margin:0 0 10px;font-family:'Rubik Mono One',sans-serif;font-size:13px">🐾 CUIDAR DA NINA</h3>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+            <button class="btn-acao" id="btn-nina-comer">🍖 DAR RAÇÃO / PETISCO</button>
+            <button class="btn-acao lima" id="btn-nina-brincar">🎾 BRINCAR DE BOLINHA</button>
+            <button class="btn-acao sec" id="btn-nina-banho">🛁 DAR BANHO DE ESPUMA</button>
+            <button class="btn-acao roxo" id="btn-nina-sorvete">🍦 DAR PICOLÉ PET FROSTY</button>
+          </div>
         </div>
       </div>
 
-      <div class="chips" id="chips"></div>
+      <!-- LADO DIREITO: NINA CONCIERGE DE DATES COM BUSCA REAL NA INTERNET -->
+      <div class="painel-box">
+        <h2 class="painel-titulo">🐶 NINA CONCIERGE · BUSCA AO VIVO</h2>
+        <p style="margin-top:0;font-weight:700;font-size:14px">A Nina consulta clima em tempo real (Open-Meteo), artigos e eventos ao vivo (Wikipedia & OpenStreetMap/Nominatim) e monta o orçamento do date para vocês!</p>
 
-      <div class="map-bottom">
-        <div style="display:flex; width:100%; justify-content:space-between; align-items:flex-end;">
-          <div style="display:flex; flex-direction:column; gap:10px;">
-            <button class="fab" onclick="App.fitAll()" title="Ver tudo"><span class="material-icons-round">zoom_out_map</span></button>
-            <button class="fab" onclick="App.nearbyLive()" title="Explorar ao vivo"><span class="material-icons-round">radar</span></button>
-            <button class="fab" onclick="App.surpriseMe()" title="Sortear um lugar não visitado"><span class="material-icons-round">casino</span></button>
+        <div class="filtros-sorteio">
+          <div class="campo-grupo">
+            <label>🏙️ Cidade no Ceará</label>
+            <select id="nina-cidade">
+              <option value="Fortaleza" data-lat="-3.7172" data-lng="-38.5433">Fortaleza (Capital)</option>
+              <option value="Caucaia" data-lat="-3.7365" data-lng="-38.6562">Caucaia & Cumbuco</option>
+              <option value="Aquiraz" data-lat="-3.9015" data-lng="-38.3912">Aquiraz & Porto das Dunas</option>
+              <option value="Maracanaú" data-lat="-3.8768" data-lng="-38.6258">Maracanaú</option>
+              <option value="Eusébio" data-lat="-3.8902" data-lng="-38.4515">Eusébio</option>
+              <option value="Sobral" data-lat="-3.6882" data-lng="-40.3495">Sobral</option>
+              <option value="Juazeiro do Norte" data-lat="-7.2131" data-lng="-39.3153">Juazeiro do Norte</option>
+              <option value="Guaramiranga" data-lat="-4.2633" data-lng="-38.9333">Guaramiranga (Serra)</option>
+              <option value="Aracati" data-lat="-4.5615" data-lng="-37.7695">Canoa Quebrada / Aracati</option>
+              <option value="Jijoca de Jericoacoara" data-lat="-2.7966" data-lng="-40.5122">Jericoacoara</option>
+            </select>
           </div>
-          <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px;">
-            <button class="fab" onclick="App.locate()" title="Minha localização"><span class="material-icons-round">near_me</span></button>
-            <button class="fab accent" onclick="App.askPlan()">
-              <span class="material-icons-round">auto_awesome</span> Sugerir Date
-            </button>
+          <div class="campo-grupo">
+            <label>💵 Orçamento do Casal (R$)</label>
+            <input type="number" id="nina-orcamento" value="80" min="0" step="10">
+          </div>
+          <div class="campo-grupo">
+            <label>🎯 Consulta ao Vivo</label>
+            <select id="nina-tipo">
+              <option value="completo">Tudo: Clima + Horário + Trânsito + Eventos + Orçamento</option>
+              <option value="eventos">Eventos, Museus e Pontos Culturais</option>
+              <option value="transito">Horário de Pico & Trânsito Agora</option>
+              <option value="orcamento">Divisão de Orçamento + Frosty</option>
+            </select>
           </div>
         </div>
+
+        <button class="btn-gigante roxo" id="btn-nina-buscar-web">🌐 NINA BUSCAR INFORMAÇÕES AO VIVO</button>
+        <div id="nina-concierge-resultado" class="concierge-output" style="display:none"></div>
+        <button class="btn-acao" id="btn-nina-zap" style="display:none;margin-top:10px;width:100%">📲 ENVIAR ROTEIRO DA NINA NO WHATSAPP</button>
       </div>
     </div>
   </section>
 
-  <!-- ════ LISTA DE DESEJOS ════ -->
-  <section id="view-todo" class="view">
-    <div class="topbar"><div class="topbar-in"><div class="brand"><h1>Pra ir</h1><small>Lista de desejos do casal</small></div></div></div>
-    <div class="wrap">
-      <div class="glass panel plan" id="plan-card" style="margin-top:0">
-        <div id="plan-body"></div>
+  <!-- SEÇÃO 3: SORTEADOR INTELIGENTE DE DATES -->
+  <section id="sec-sorteio" class="view-section">
+    <div class="painel-box">
+      <h2 class="painel-titulo">🎲 SORTEADOR DE DATE NO CEARÁ</h2>
+      <p style="margin-top:0;font-weight:700">Filtre pelo humor do casal, orçamento e horário — a Nina sorteia o rolê completo e indica a Frosty mais próxima!</p>
+      <div class="filtros-sorteio">
+        <div class="campo-grupo">
+          <label>💰 Orçamento do Date</label>
+          <select id="f-custo">
+            <option value="todos">Qualquer valor</option>
+            <option value="gratis">Grátis / 0800 (Só passeio)</option>
+            <option value="economico">Econômico (Até R$ 50 o casal)</option>
+            <option value="medio">Moderado (R$ 50 a R$ 130)</option>
+            <option value="especial">Date Especial (+R$ 130)</option>
+          </select>
+        </div>
+        <div class="campo-grupo">
+          <label>✨ Vibe / Estilo</label>
+          <select id="f-vibe">
+            <option value="todos">Qualquer vibe</option>
+            <option value="orla">Praia & Pôr do Sol</option>
+            <option value="cultura">Cultura, Museu & Cinema</option>
+            <option value="gastronomia">Comidinhas & Cafés</option>
+            <option value="natureza">Ar livre & Parques</option>
+          </select>
+        </div>
+        <div class="campo-grupo">
+          <label>🕒 Turno</label>
+          <select id="f-turno">
+            <option value="todos">Manhã, Tarde ou Noite</option>
+            <option value="dia">Dia / Manhã</option>
+            <option value="tarde">Fim de Tarde (Golden Hour)</option>
+            <option value="noite">Noite</option>
+          </select>
+        </div>
+        <div class="campo-grupo">
+          <label>🆕 Regra de Ineditismo</label>
+          <select id="f-inedito">
+            <option value="todos">Todos os lugares</option>
+            <option value="nao-visitado">Apenas lugares NÃO visitados ainda</option>
+          </select>
+        </div>
       </div>
-      <div class="section-head"><h2>Fila de Dates</h2><span id="todo-count"></span></div>
-      <div class="cards" id="list-todo"></div>
+      <button class="btn-gigante" id="btn-rodar-sorteio">💜 SORTEAR DATE AGORA!</button>
+    </div>
+
+    <div class="painel-box" id="resultado-sorteio-box" style="display:none">
+      <h3 style="margin-top:0;font-family:'Rubik Mono One',sans-serif;color:var(--roxo)">🎉 COMBO SORTEADO PELA NINA:</h3>
+      <div id="combo-detalhes" style="font-size:15px;line-height:1.5"></div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-acao roxo" id="btn-ver-no-mapa">🗺️ VER LOCAL NO GOOGLE MAPS</button>
+        <button class="btn-acao" id="btn-combo-zap">📲 ENVIAR CONVITE PRONTO</button>
+      </div>
     </div>
   </section>
 
-  <!-- ════ DIÁRIO ════ -->
-  <section id="view-diary" class="view">
-    <div class="topbar"><div class="topbar-in"><div class="brand"><h1>Nosso diário</h1><small>O que já foi vivido</small></div></div></div>
-    <div class="wrap">
-      <div class="glass hero">
-        <div class="big"><span id="d-visited">0</span><small> de <span id="d-total">0</span> lugares</small></div>
-        <div class="track"><i id="d-bar"></i></div>
-        <div class="legend"><span>Ceará descoberto a dois</span><span id="d-pct">0%</span></div>
+  <!-- SEÇÃO 4: ABA ESPECIAL FROSTY SORVETES TODO O CEARÁ -->
+  <section id="sec-frosty" class="view-section">
+    <div class="frosty-banner">
+      <div>
+        <h2>🍦 ROTA FROSTY · TODO O CEARÁ</h2>
+        <p style="margin:6px 0 0;font-weight:700">Unidades Frosty Sorvetes em Fortaleza, Região Metropolitana e Interior do Ceará! Marque as lojas que o casal já visitou.</p>
       </div>
-      <div class="section-head"><h2>Melhores notas</h2><span>ordenado por estrelas</span></div>
-      <div class="cards" id="list-diary"></div>
+      <div style="min-width:220px;background:rgba(20,0,46,0.35);padding:10px;border-radius:10px;border:3px solid #14002e">
+        <div style="font-weight:700;font-size:13px;margin-bottom:4px" id="frosty-contador">0 / 0 Unidades Visitadas</div>
+        <div class="progress-bar"><div class="progress-fill" id="frosty-progresso"></div></div>
+        <button class="mini-btn on" style="margin-top:8px;width:100%" id="btn-sortear-frosty">🎲 SORTEAR UMA FROSTY NO CEARÁ</button>
+      </div>
+    </div>
+
+    <div class="painel-box" style="padding:12px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="text" id="busca-frosty" placeholder="🔍 Buscar por cidade, bairro ou avenida..." style="flex:1;min-width:220px;padding:9px;border:3px solid var(--tinta);border-radius:8px;font-weight:700">
+        <select id="filtro-cidade-frosty" style="padding:9px;border:3px solid var(--tinta);border-radius:8px;font-weight:700">
+          <option value="todas">🌎 Todas as Cidades do Ceará</option>
+          <option value="Fortaleza">Fortaleza</option>
+          <option value="Caucaia">Caucaia</option>
+          <option value="Maracanaú">Maracanaú</option>
+          <option value="Eusébio">Eusébio</option>
+          <option value="Aquiraz">Aquiraz</option>
+          <option value="Pacatuba">Pacatuba</option>
+          <option value="Horizonte">Horizonte</option>
+          <option value="Sobral">Sobral</option>
+          <option value="Juazeiro do Norte">Juazeiro do Norte</option>
+          <option value="Crato">Crato</option>
+          <option value="Barbalha">Barbalha</option>
+          <option value="Iguatu">Iguatu</option>
+          <option value="Quixadá">Quixadá</option>
+          <option value="Russas">Russas</option>
+          <option value="Aracati">Aracati</option>
+          <option value="Itapipoca">Itapipoca</option>
+          <option value="Tianguá">Tianguá</option>
+          <option value="Crateús">Crateús</option>
+          <option value="Canindé">Canindé</option>
+        </select>
+        <button class="btn-acao sec" id="btn-frosty-perto">📍 FROSTY MAIS PRÓXIMA</button>
+        <button class="btn-acao" id="btn-ver-todas-frosty-mapa">🗺️ VER TODAS NO MAPA</button>
+      </div>
+    </div>
+
+    <div class="frosty-grid" id="grid-frosty"></div>
+  </section>
+
+  <!-- SEÇÃO 5: +35 FUNÇÕES INTERATIVAS PARA O CASAL -->
+  <section id="sec-ferramentas" class="view-section">
+    <div class="painel-box">
+      <h2 class="painel-titulo">🧰 CENTRAL DE +35 FUNÇÕES DO CASAL</h2>
+      <p style="margin:0;font-weight:700">Ferramentas completas para planejar, decidir, calcular gastos e registrar memórias pelo Ceará.</p>
+    </div>
+
+    <div class="tools-grid">
+      <div class="tool-box">
+        <h3>1. 📸 MISSÃO FOTO DO DATE</h3>
+        <p id="missao-foto-txt" style="font-size:13px">Sorteie um desafio fotográfico criativo para fazerem no local!</p>
+        <button class="btn-acao lima" onclick="gerarMissaoFoto()">SORTEAR DESAFIO</button>
+      </div>
+
+      <div class="tool-box">
+        <h3>2. 💬 PERGUNTA QUEBRA-GELO</h3>
+        <p id="pergunta-casal-txt" style="font-size:13px">Perguntas profundas ou divertidas para conversar tomando Frosty.</p>
+        <button class="btn-acao roxo" onclick="gerarPergunta()">NOVA PERGUNTA</button>
+      </div>
+
+      <div class="tool-box">
+        <h3>3. 🪙 MOEDA DO DESTINO</h3>
+        <p id="decisor-txt" style="font-size:13px">Não sabem quem escolhe o próximo rolê? Jogue a moeda!</p>
+        <button class="btn-acao sec" onclick="jogarMoeda()">JOGAR MOEDA</button>
+      </div>
+
+      <div class="tool-box">
+        <h3>4. 💸 CALCULADORA DE RACHA / ORÇAMENTO</h3>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input type="number" id="calc-total" placeholder="Total R$" style="width:50%;padding:6px;border:2px solid #000">
+          <input type="number" id="calc-pct" value="50" placeholder="% Você" style="width:50%;padding:6px;border:2px solid #000">
+        </div>
+        <div id="calc-res" style="font-size:12px;font-weight:700;margin-bottom:6px">Digite o valor para dividir</div>
+        <button class="btn-acao" onclick="calcularDate()">CALCULAR DIVISÃO</button>
+      </div>
+
+      <div class="tool-box">
+        <h3>5. 🎒 CHECKLIST DE MOCHILA CEARÁ</h3>
+        <div style="font-size:12px;display:grid;gap:4px">
+          <label><input type="checkbox"> Protetor solar / Óculos escuros</label>
+          <label><input type="checkbox"> Cartão Bilhete Único / Pix</label>
+          <label><input type="checkbox"> Powerbank & Cabo carregados</label>
+          <label><input type="checkbox"> Guarda-chuva compacto</label>
+          <label><input type="checkbox"> Garrafa de água gelada</label>
+        </div>
+      </div>
+
+      <div class="tool-box">
+        <h3>6. 💜 CONTADOR DE DIAS JUNTOS</h3>
+        <input type="date" id="data-inicio-namoro" style="width:100%;padding:6px;border:2px solid #000;margin-bottom:6px">
+        <div id="dias-juntos-res" style="font-size:13px;font-weight:700;margin-bottom:6px">Selecione a data especial</div>
+        <button class="btn-acao roxo" onclick="salvarDataNamoro()">SALVAR DATA</button>
+      </div>
+
+      <div class="tool-box">
+        <h3>7. 🗓️ MARATONA TARDE + FROSTY + NOITE</h3>
+        <p id="roteiro-completo-txt" style="font-size:12px">Gera um roteiro completo com 3 paradas conectadas.</p>
+        <button class="btn-acao lima" onclick="gerarRoteiroDia()">MONTAR MARATONA</button>
+      </div>
+
+      <div class="tool-box">
+        <h3>8. 🍧 SORTEADOR DE SABOR FROSTY</h3>
+        <p id="sabor-frosty-txt" style="font-size:13px">Sorteia o sabor do picolé ou pote para vocês provarem!</p>
+        <button class="btn-acao sec" onclick="sortearSaborFrosty()">SORTEAR SABOR</button>
+      </div>
+
+      <div class="tool-box">
+        <h3>9. 🎨 TEMAS ROXO & VERDE</h3>
+        <div style="display:flex;gap:6px">
+          <button class="btn-acao lima" onclick="mudarTema('default')">ROXO & VERDE</button>
+          <button class="btn-acao roxo" onclick="mudarTema('dark')">NOTURNO</button>
+          <button class="btn-acao" onclick="mudarTema('neon')">CYBER LIMA</button>
+        </div>
+      </div>
+
+      <div class="tool-box">
+        <h3>10. 💾 BACKUP DE MEMÓRIAS (JSON)</h3>
+        <p style="font-size:12px">Exporte todos os check-ins, lojas Frosty visitadas e status da Nina.</p>
+        <button class="btn-acao" onclick="exportarDados()">BAIXAR BACKUP</button>
+      </div>
     </div>
   </section>
 
-  <!-- ════ NAV ════ -->
-  <nav class="nav glass">
-    <button aria-current="true" onclick="App.tab('map',this)"><span class="material-icons-round">map</span>Mapa</button>
-    <button onclick="App.tab('todo',this)" style="position:relative"><span class="material-icons-round">bookmark</span>Pra ir<i class="badge" id="nav-badge" hidden>0</i></button>
-    <button onclick="App.tab('diary',this)"><span class="material-icons-round">favorite</span>Diário</button>
-  </nav>
-</div>
+  <!-- SEÇÃO 6: DIÁRIO DO CASAL & ADICIONAR NOVO LOCAL -->
+  <section id="sec-diario" class="view-section">
+    <div class="grid-mapa">
+      <div class="painel-box">
+        <h2 class="painel-titulo">➕ CADASTRAR NOVO PONTO NO MAPA</h2>
+        <div style="display:grid;gap:10px">
+          <div class="campo-grupo">
+            <label>Nome do Lugar</label>
+            <input type="text" id="novo-nome" placeholder="Ex: Pôr do Sol na Ponte Metálica">
+          </div>
+          <div class="campo-grupo">
+            <label>Bairro / Cidade</label>
+            <input type="text" id="novo-bairro" placeholder="Ex: Praia de Iracema, Fortaleza">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="campo-grupo">
+              <label>Latitude</label>
+              <input type="number" step="any" id="novo-lat" value="-3.7200">
+            </div>
+            <div class="campo-grupo">
+              <label>Longitude</label>
+              <input type="number" step="any" id="novo-lng" value="-38.5220">
+            </div>
+          </div>
+          <div class="campo-grupo">
+            <label>Categoria</label>
+            <select id="novo-cat">
+              <option value="orla">Orla & Pôr do Sol</option>
+              <option value="cultura">Cultura & Arte</option>
+              <option value="gastronomia">Comer & Café</option>
+              <option value="natureza">Parques & Lagoas</option>
+              <option value="gratis">0800 / Baratinho</option>
+            </select>
+          </div>
+          <div class="campo-grupo">
+            <label>Descrição / Ideia do Date</label>
+            <textarea id="novo-desc" rows="2" placeholder="O que fazer lá a dois..."></textarea>
+          </div>
+          <button class="btn-gigante" id="btn-salvar-local">📌 ADICIONAR AO GOOGLE MAPS</button>
+        </div>
+      </div>
 
-<!-- ════ ALERTA FROSTY GEOFENCING ════ -->
-<div id="alert-frosty">
-  <div class="bounce">🍦</div>
-  <div>
-    <b style="font-size:15px;display:block;margin-bottom:3px">Tem Frosty por perto!</b>
-    <span id="frosty-dist" style="font-size:12.5px;line-height:1.4">A poucos minutos daqui. Que tal uma casquinha?</span>
-  </div>
-</div>
-
-<!-- ════ BOTTOM SHEET LUGAR ════ -->
-<div class="sheet-bg" id="place-bg" onclick="App.closePlace()"></div>
-<div class="sheet glass" id="place-sheet">
-  <div class="grip"></div>
-  <div style="display:flex; justify-content:space-between; align-items:flex-start">
-    <div>
-      <h2 id="ps-title" style="margin:0 0 4px">Nome do Lugar</h2>
-      <span id="ps-sub" style="display:block;font-size:12px;color:var(--ink-2);margin-bottom:16px">Bairro · Estrelas</span>
+      <div class="painel-box">
+        <h2 class="painel-titulo">📖 HISTÓRICO & NOTAS DOS DATES</h2>
+        <div id="lista-diario" style="display:grid;gap:10px;max-height:460px;overflow-y:auto"></div>
+      </div>
     </div>
-    <div id="ps-icon" style="font-size:26px; line-height:1">📍</div>
+  </section>
+
+</main>
+
+<!-- MASCOTE FLUTUANTE NINA EM PIXEL ART POR TODO O SITE -->
+<div class="nina-flutuante-wrap" id="nina-flutuante-wrap">
+  <div class="nina-balao" id="nina-balao">
+    <div class="nina-balao-header">
+      <span>🐶 NINA DIZ:</span>
+      <button class="nina-balao-close" id="btn-fechar-balao" title="Minimizar fala">✕</button>
+    </div>
+    <div id="nina-balao-texto">O clima tá bão pra um sorvetinho da Frosty ein! 🍦🐾</div>
   </div>
-  
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px;">
-    <a id="ps-route" class="btn primary" href="#" target="_blank"><span class="material-icons-round">navigation</span> Chegar</a>
-    <button id="ps-share" class="btn warm" onclick=""><span class="material-icons-round">send</span> Convidar</button>
-  </div>
-  <button id="ps-visit" class="btn ghost" style="margin-top:9px" onclick=""><span class="material-icons-round">check_circle</span> Já Fomos</button>
-  
-  <div id="ps-photos" style="margin-top:20px; display:flex; flex-direction:column; gap:10px"></div>
+  <button class="nina-avatar-btn" id="btn-nina-flutuante" title="Clique na Nina para dica ao vivo ou abrir o quarto dela!">
+    <div id="nina-mini-sprite"></div>
+    <span class="nina-tag-mini">NINA · PET</span>
+  </button>
 </div>
 
-<!-- ════ SHEET CONFIGURAÇÕES ════ -->
-<div class="sheet-bg" id="sheet-bg" onclick="App.closeSheet()"></div>
-<div class="sheet glass" id="sheet">
-  <div class="grip"></div>
-  <h2>Ajustes</h2>
-  <div style="padding:4px 0 12px">
-    <b style="font-size:13px">Seu nome</b>
-    <p style="margin:4px 0 10px;font-size:11.5px;color:var(--ink-2)">Necessário para compartilhar localização no mapa com parceiro(a).</p>
-    <input id="in-myname" class="field" placeholder="Ex: Ana" onchange="App.setMyName(this.value)">
-  </div>
-  <div class="set-row">
-    <span class="material-icons-round">social_distance</span>
-    <div><b>Compartilhar localização</b><small>Mostra distância e direção até seu par ao vivo</small></div>
-    <button class="switch" id="sw-share" role="switch" aria-checked="false" onclick="App.toggleShare()"><i></i></button>
-  </div>
-  <div class="set-row">
-    <span class="material-icons-round">contrast</span>
-    <div><b>Tema Escuro</b></div>
-    <button class="switch" id="sw-theme" role="switch" aria-checked="true" onclick="App.toggleTheme()"><i></i></button>
-  </div>
-  <div style="padding:16px 0 4px">
-    <b style="font-size:13px">Chave da API do Gemini</b>
-    <p style="margin:4px 0 10px;font-size:11.5px;color:var(--ink-2)">Opcional: sem ela, "Sugerir Date" usa um roteiro local com os lugares salvos. Com ela, a IA pesquisa na web o que está aberto agora. Pegue a sua grátis em aistudio.google.com/apikey.</p>
-    <input id="in-key" class="field" type="password" placeholder="AIza…" autocomplete="off">
-    <button class="btn ghost" onclick="App.saveKey()">Salvar chave</button>
-  </div>
-</div>
+<!-- Navegação Mobile Fixa -->
+<nav class="mobile-nav" aria-label="Menu Mobile">
+  <button class="mob-item active" data-tab="sec-mapa"><span class="ico">🗺️</span>Mapa</button>
+  <button class="mob-item" data-tab="sec-nina"><span class="ico">🐶</span>Nina</button>
+  <button class="mob-item" data-tab="sec-sorteio"><span class="ico">🎲</span>Sortear</button>
+  <button class="mob-item" data-tab="sec-frosty"><span class="ico">🍦</span>Frosty</button>
+  <button class="mob-item" data-tab="sec-ferramentas"><span class="ico">🧰</span>Funções</button>
+  <button class="mob-item" data-tab="sec-diario"><span class="ico">📸</span>Diário</button>
+</nav>
 
-<div class="glass" id="toast"></div>
-
-<!-- Scripts -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<div class="toast" id="toast"></div>
 
 <script>
-// Chave da API do Carto (Mapas Dinâmicos)
-const CARTO_KEY  = "cb1_3p83_1_16cfc8b9338dd6586a50e7b7";
+// =========================================================================
+// 0. CHAVE DO GOOGLE MAPS
+// =========================================================================
+const GOOGLE_MAPS_API_KEY = "AIzaSyCwjDvM8knlJhF3gbe97QmDsM2W9oQWU9w";
 
-/* Configurações Firebase (Invisível) */
-const firebaseConfig = { apiKey: "AIzaSyAlvNKOcD68hfnhLDQUPek8oiLkPCyAbkw", authDomain: "ceara-a-dois.firebaseapp.com", projectId: "ceara-a-dois" };
-let cloudRef = null;
-try{ firebase.initializeApp(firebaseConfig); cloudRef = firebase.firestore().collection('ceara-a-dois').doc('dados'); }catch(e){}
+// =========================================================================
+// 1. SPRITE PIXEL ART DA NINA (CACHORRINHA BRANCA COM MANCHAS PRETAS TIPO VAQUINHA)
+// =========================================================================
+function criarSVGPixelNina(tamanhoPx = 68, estado = "normal") {
+  // Matriz 20x20 fiel à silhueta da imagem enviada, adaptada para pelagem branca com manchas pretas de vaquinha e coleira roxa/verde!
+  // Legenda de cores:
+  // . = transparente
+  // K = contorno preto (#14002e)
+  // W = pelo branco (#ffffff)
+  // S = sombra cinza claro (#dcd6f7)
+  // B = mancha preta de vaquinha (#1c1c28)
+  // P = coleira roxa (#7b2cbf)
+  // G = medalhinha verde lima (#b8ff00)
+  // E = brilho do olho (#ffffff)
+  // T = língua / bochecha rosa (#ff758f)
+  const grid = [
+    "......KKKKKK........",
+    "....KKWWWWWWKK......",
+    "...KBBWWWWWWBBK.....",
+    "..KBBBWWWWWWBBBK....",
+    ".KBBBBWWWWWWBBBBK...",
+    ".KBBBKWWWWWWKBBBK...",
+    ".KBBKWWKKKKWWKBBK...",
+    ".KBBKWKEKKWWWKBBK...",
+    ".KBBKWKKKKWWWKBBK...",
+    ".KBBKWWWWKKWWKBBK...",
+    "..KKWWWWWWWWWWKK....",
+    ".K..KWWWWKKKKWKK....",
+    "KWK..KPPPPPPPPK.....",
+    "KBWK.KWWGWWBBWK.....",
+    "KBBWKKWWWWBBBWK.....",
+    ".KBBBKWWWWBBBWK.....",
+    "..KKKKWWWWWWWWK.....",
+    ".....KWWKKKKWWK.....",
+    ".....KSSK..KSSK.....",
+    ".....KKKK..KKKK....."
+  ];
 
-const SEED = [
-  /* Adicione todas as suas praias, restaurantes e pontos turísticos aqui */
-  ["Beira Mar do Meireles","praia","Meireles","Fortaleza",-3.7233,-38.4920,"Calçadão e pôr do sol atrás dos prédios."],
-  ["Pipo Restaurante","date","Cocó","Fortaleza",-3.7460,-38.4880,"Cozinha autoral cearense."],
-  ["Centro Dragão do Mar","cultura","Praia de Iracema","Fortaleza",-3.7214,-38.5117,"Cinema e barzinho embaixo dos arcos."],
-  ["Praia do Futuro","praia","Praia do Futuro","Fortaleza",-3.7440,-38.4530,"Barracas pé na areia e caranguejo."]
+  let rects = "";
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[y].length; x++) {
+      const ch = grid[y][x];
+      if (ch === ".") continue;
+      let fill = "#14002e";
+      if (ch === "W") fill = "#ffffff";
+      else if (ch === "S") fill = "#d8d0f0";
+      else if (ch === "B") fill = "#1b1b26";
+      else if (ch === "P") fill = "#7b2cbf";
+      else if (ch === "G") fill = "#b8ff00";
+      else if (ch === "E") fill = "#ffffff";
+      rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${fill}"/>`;
+    }
+  }
+
+  // Detalhe extra se estiver feliz/brincando (coraçãozinho pixelado ao lado)
+  let extra = "";
+  if (estado === "feliz") {
+    extra = `<rect x="16" y="2" width="1" height="1" fill="#00e676"/><rect x="18" y="2" width="1" height="1" fill="#00e676"/>
+             <rect x="15" y="3" width="5" height="1" fill="#00e676"/><rect x="16" y="4" width="3" height="1" fill="#00e676"/>
+             <rect x="17" y="5" width="1" height="1" fill="#00e676"/>`;
+  }
+
+  return `<svg class="pixel-svg" width="${tamanhoPx}" height="${tamanhoPx}" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">${rects}${extra}</svg>`;
+}
+
+// =========================================================================
+// 2. BANCO DE DADOS DE DATES NO CEARÁ
+// =========================================================================
+const lugaresBase = [
+  {
+    id: "dragao",
+    nome: "Centro Dragão do Mar & Praia de Iracema",
+    bairro: "Praia de Iracema · Fortaleza",
+    lat: -3.7215, lng: -38.5204,
+    cat: "cultura",
+    custo: "gratis",
+    custoLabel: "Grátis / R$ 20 (Cinema)",
+    turno: "tarde",
+    horario: "14h às 22h",
+    wikiQuery: "Centro Dragão do Mar de Arte e Cultura",
+    fallbackImg: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?auto=format&fit=crop&w=900&q=80",
+    desc: "Passarela vermelha icônica, exposições gratuitas, planetário e cinema alternativo seguido de caminhada até a Estátua de Iracema Guardiã.",
+    dica: "💡 Pôr do sol na Ponte dos Ingleses + picolé na Frosty da Monsenhor Tabosa."
+  },
+  {
+    id: "beiramar",
+    nome: "Calçadão da Beira-Mar & Espigão",
+    bairro: "Meireles · Fortaleza",
+    lat: -3.7258, lng: -38.4922,
+    cat: "orla",
+    custo: "gratis",
+    custoLabel: "Grátis / Água de Coco R$ 8",
+    turno: "tarde",
+    horario: "24h (Melhor 16h30–21h)",
+    wikiQuery: "Avenida Beira Mar Fortaleza",
+    fallbackImg: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80",
+    desc: "Caminhada na orla renovada, feirinha de artesanato, água de coco no Espigão do Náutico e vista iluminada da enseada.",
+    dica: "💡 Sentem na ponta do Espigão da Rui Barbosa às 17h15 para o pôr do sol."
+  },
+  {
+    id: "coco",
+    nome: "Parque Estadual do Cocó",
+    bairro: "Cocó · Fortaleza",
+    lat: -3.7456, lng: -38.4852,
+    cat: "natureza",
+    custo: "gratis",
+    custoLabel: "Grátis / Barco R$ 15",
+    turno: "dia",
+    horario: "05h30 às 22h",
+    wikiQuery: "Parque Estadual do Cocó",
+    fallbackImg: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=900&q=80",
+    desc: "Trilhas ecológicas sombreadas no coração de Fortaleza, passeio de barco pelo rio Cocó e gramado para piquenique.",
+    dica: "💡 Levem toalha xadrez, frutas e passem na Frosty da Eng. Santana Júnior."
+  },
+  {
+    id: "pinacoteca",
+    nome: "Pinacoteca do Ceará & Estação das Artes",
+    bairro: "Centro · Fortaleza",
+    lat: -3.7239, lng: -38.5322,
+    cat: "cultura",
+    custo: "gratis",
+    custoLabel: "Entrada Gratuita",
+    turno: "tarde",
+    horario: "Qua a Dom · 10h às 18h",
+    wikiQuery: "Estação das Artes Fortaleza",
+    fallbackImg: "https://images.unsplash.com/photo-1536924940846-227afb31e2a5?auto=format&fit=crop&w=900&q=80",
+    desc: "Complexo cultural gigantesco com exposições interativas, feiras gastronômicas e shows gratuitos ao ar livre.",
+    dica: "💡 Ótimo para fotos criativas juntos nas instalações de arte."
+  },
+  {
+    id: "jardim_japones",
+    nome: "Jardim Japonês de Fortaleza",
+    bairro: "Meireles · Fortaleza",
+    lat: -3.7279, lng: -38.4841,
+    cat: "orla",
+    custo: "gratis",
+    custoLabel: "Entrada Gratuita",
+    turno: "tarde",
+    horario: "06h às 22h",
+    wikiQuery: "Jardim Japonês de Fortaleza",
+    fallbackImg: "https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=900&q=80",
+    desc: "Lago com carpas, pontes de madeira estilo oriental, bambuzal e brisa do mar.",
+    dica: "💡 Clima super romântico ao entardecer com iluminação baixa."
+  },
+  {
+    id: "benfica",
+    nome: "Gentilândia & Mercado dos Pinhões",
+    bairro: "Benfica · Fortaleza",
+    lat: -3.7418, lng: -38.5385,
+    cat: "gastronomia",
+    custo: "economico",
+    custoLabel: "R$ 35 a R$ 80 o casal",
+    turno: "noite",
+    horario: "17h às 23h30",
+    wikiQuery: "Mercado dos Pinhões",
+    fallbackImg: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=900&q=80",
+    desc: "Clima boêmio universitário, mesas na calçada, petiscos cearenses e música ao vivo.",
+    dica: "💡 Perfeito para conversar horas sem pressa."
+  },
+  {
+    id: "sabiaguaba",
+    nome: "Complexo da Sabiaguaba & Dunas",
+    bairro: "Sabiaguaba · Fortaleza",
+    lat: -3.7845, lng: -38.4312,
+    cat: "orla",
+    custo: "gratis",
+    custoLabel: "Grátis / Tapioca R$ 12",
+    turno: "tarde",
+    horario: "07h às 19h",
+    wikiQuery: "Sabiaguaba Fortaleza",
+    fallbackImg: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=900&q=80",
+    desc: "Encontro do Rio Pacoti com o mar, dunas preservadas e polo gastronômico com tapioca vendo o pôr do sol.",
+    dica: "💡 Um dos pores do sol mais bonitos de Fortaleza."
+  },
+  {
+    id: "messejana",
+    nome: "Lagoa da Messejana & Estátua de Iracema",
+    bairro: "Messejana · Fortaleza",
+    lat: -3.8315, lng: -38.4932,
+    cat: "natureza",
+    custo: "gratis",
+    custoLabel: "Grátis / Lanches R$ 20",
+    turno: "tarde",
+    horario: "24h",
+    wikiQuery: "Lagoa de Messejana",
+    fallbackImg: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=900&q=80",
+    desc: "Calçadão extenso ao redor da lagoa, monumento gigante de Iracema e lanches.",
+    dica: "💡 Caminhada no fim de tarde seguida de picolé na Frosty da Frei Cirilo."
+  },
+  {
+    id: "varjota",
+    nome: "Polo Gastronômico da Varjota",
+    bairro: "Varjota · Fortaleza",
+    lat: -3.7336, lng: -38.4862,
+    cat: "gastronomia",
+    custo: "especial",
+    custoLabel: "R$ 90 a R$ 180 o casal",
+    turno: "noite",
+    horario: "18h às 00h",
+    wikiQuery: "Varjota Fortaleza",
+    fallbackImg: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
+    desc: "Ruas iluminadas com dezenas de restaurantes, hamburguerias artesanais, massas e sushi.",
+    dica: "💡 Ideal para comemorações especiais."
+  },
+  {
+    id: "cumbuco",
+    nome: "Lagoa do Banana & Praia do Cumbuco",
+    bairro: "Caucaia · Região Metropolitana",
+    lat: -3.6285, lng: -38.7265,
+    cat: "orla",
+    custo: "medio",
+    custoLabel: "R$ 60 a R$ 120 o casal",
+    turno: "dia",
+    horario: "09h às 17h",
+    wikiQuery: "Praia do Cumbuco",
+    fallbackImg: "https://images.unsplash.com/photo-1519046904884-53103b34b206?auto=format&fit=crop&w=900&q=80",
+    desc: "Dunas, lagoas de água doce e clima de praia a poucos minutos de Fortaleza.",
+    dica: "💡 Na volta, parem na Frosty de Caucaia!"
+  }
 ];
-const FROSTY = [
-  /* Adicione todas as suas lojas Frosty aqui */
-  ["Frosty Cocó","Cocó","Fortaleza",-3.7419630,-38.4875511,"R. Dr. Gilberto Studart"],
-  ["Frosty Beira Mar","Meireles","Fortaleza",-3.7250,-38.4900,"Av. Beira Mar"]
+
+// =========================================================================
+// 3. TODAS AS UNIDADES FROSTY SORVETES DO CEARÁ (46 UNIDADES)
+// =========================================================================
+const unidadesFrosty = [
+  { id: "fr1", cidade: "Fortaleza", nome: "Frosty Aldeota (Santos Dumont)", bairro: "Aldeota", end: "Av. Santos Dumont, 3000 - Aldeota", lat: -3.7362, lng: -38.4985, horario: "09h às 21h" },
+  { id: "fr2", cidade: "Fortaleza", nome: "Frosty Bezerra de Menezes", bairro: "São Gerardo", end: "Av. Bezerra de Menezes, 1650 - São Gerardo", lat: -3.7341, lng: -38.5562, horario: "09h às 21h" },
+  { id: "fr3", cidade: "Fortaleza", nome: "Frosty Parquelândia (Jovita Feitosa)", bairro: "Parquelândia", end: "Rua Jovita Feitosa, 2340 - Parquelândia", lat: -3.7405, lng: -38.5621, horario: "09h às 21h" },
+  { id: "fr4", cidade: "Fortaleza", nome: "Frosty Messejana (Frei Cirilo)", bairro: "Messejana", end: "Av. Frei Cirilo, 4290 - Messejana", lat: -3.8255, lng: -38.4945, horario: "09h às 21h" },
+  { id: "fr5", cidade: "Fortaleza", nome: "Frosty Parangaba (Godofredo Maciel)", bairro: "Parangaba", end: "Av. Godofredo Maciel, 280 - Parangaba", lat: -3.7795, lng: -38.5635, horario: "09h às 21h" },
+  { id: "fr6", cidade: "Fortaleza", nome: "Frosty Maraponga", bairro: "Maraponga", end: "Av. Godofredo Maciel, 3190 - Maraponga", lat: -3.7975, lng: -38.5682, horario: "09h às 21h" },
+  { id: "fr7", cidade: "Fortaleza", nome: "Frosty Montese (Gomes de Matos)", bairro: "Montese", end: "Av. Prof. Gomes de Matos, 1180 - Montese", lat: -3.7582, lng: -38.5498, horario: "09h às 21h" },
+  { id: "fr8", cidade: "Fortaleza", nome: "Frosty Benfica (13 de Maio)", bairro: "Benfica", end: "Av. Treze de Maio, 2150 - Benfica", lat: -3.7445, lng: -38.5365, horario: "09h às 21h" },
+  { id: "fr9", cidade: "Fortaleza", nome: "Frosty Cidade dos Funcionários", bairro: "Cidade dos Funcionários", end: "Av. Oliveira Paiva, 1620", lat: -3.7912, lng: -38.4915, horario: "09h às 21h" },
+  { id: "fr10", cidade: "Fortaleza", nome: "Frosty Água Fria (Washington Soares)", bairro: "Água Fria", end: "Av. Washington Soares, 4300", lat: -3.7712, lng: -38.4815, horario: "09h às 21h" },
+  { id: "fr11", cidade: "Fortaleza", nome: "Frosty Eng. Santana Júnior", bairro: "Cocó", end: "Av. Eng. Santana Júnior, 2450", lat: -3.7495, lng: -38.4835, horario: "09h às 21h" },
+  { id: "fr12", cidade: "Fortaleza", nome: "Frosty Papicu (Santos Dumont)", bairro: "Papicu", end: "Av. Santos Dumont, 6700", lat: -3.7418, lng: -38.4712, horario: "09h às 21h" },
+  { id: "fr13", cidade: "Fortaleza", nome: "Frosty Varjota (Abolição)", bairro: "Varjota", end: "Av. da Abolição, 3850", lat: -3.7275, lng: -38.4852, horario: "09h às 21h" },
+  { id: "fr14", cidade: "Fortaleza", nome: "Frosty Centro (Barão do Rio Branco)", bairro: "Centro", end: "Rua Barão do Rio Branco, 1280", lat: -3.7285, lng: -38.5288, horario: "08h30 às 19h" },
+  { id: "fr15", cidade: "Fortaleza", nome: "Frosty Monsenhor Tabosa", bairro: "Praia de Iracema", end: "Av. Monsenhor Tabosa, 950", lat: -3.7242, lng: -38.5135, horario: "09h às 20h" },
+  { id: "fr16", cidade: "Fortaleza", nome: "Frosty Barra do Ceará", bairro: "Barra do Ceará", end: "Av. Pres. Castelo Branco, 4800", lat: -3.7025, lng: -38.5745, horario: "09h às 21h" },
+  { id: "fr17", cidade: "Fortaleza", nome: "Frosty Carlito Pamplona", bairro: "Carlito Pamplona", end: "Av. Francisco Sá, 3420", lat: -3.7195, lng: -38.5585, horario: "09h às 21h" },
+  { id: "fr18", cidade: "Fortaleza", nome: "Frosty Antônio Bezerra", bairro: "Antônio Bezerra", end: "Rua Demétrio Menezes, 3850", lat: -3.7385, lng: -38.5875, horario: "09h às 21h" },
+  { id: "fr19", cidade: "Fortaleza", nome: "Frosty Conjunto Ceará", bairro: "Conjunto Ceará", end: "Av. C, 840 - Conjunto Ceará", lat: -3.7685, lng: -38.6025, horario: "09h às 21h" },
+  { id: "fr20", cidade: "Fortaleza", nome: "Frosty Henrique Jorge", bairro: "Henrique Jorge", end: "Rua Porto Alegre, 920", lat: -3.7585, lng: -38.5795, horario: "09h às 21h" },
+  { id: "fr21", cidade: "Fortaleza", nome: "Frosty Mondubim", bairro: "Mondubim", end: "Av. Pres. Costa e Silva, 2900", lat: -3.8115, lng: -38.5715, horario: "09h às 21h" },
+  { id: "fr22", cidade: "Fortaleza", nome: "Frosty José Walter", bairro: "José Walter", end: "Av. João de Araújo Lima, 1120", lat: -3.8285, lng: -38.5545, horario: "09h às 21h" },
+  { id: "fr23", cidade: "Fortaleza", nome: "Frosty Dionísio Torres", bairro: "Dionísio Torres", end: "Av. Pontes Vieira, 1890", lat: -3.7485, lng: -38.5045, horario: "09h às 21h" },
+  { id: "fr24", cidade: "Fortaleza", nome: "Frosty Bairro de Fátima", bairro: "Fátima", end: "Av. Treze de Maio, 1120", lat: -3.7492, lng: -38.5265, horario: "09h às 21h" },
+  { id: "fr25", cidade: "Caucaia", nome: "Frosty Caucaia Centro", bairro: "Centro · Caucaia", end: "Rua Coronel Correia, 1450 - Caucaia", lat: -3.7365, lng: -38.6562, horario: "09h às 21h" },
+  { id: "fr26", cidade: "Caucaia", nome: "Frosty Icaraí / Jurema", bairro: "Jurema · Caucaia", end: "Av. Dom Almeida Lustosa, 2600 - Caucaia", lat: -3.7662, lng: -38.6345, horario: "09h às 21h" },
+  { id: "fr27", cidade: "Maracanaú", nome: "Frosty Maracanaú Centro (Fábrica/Loja)", bairro: "Centro · Maracanaú", end: "Av. Senador Carlos Jereissati, 450 - Maracanaú", lat: -3.8768, lng: -38.6258, horario: "08h30 às 21h" },
+  { id: "fr28", cidade: "Maracanaú", nome: "Frosty Pajuçara", bairro: "Pajuçara · Maracanaú", end: "Rod. Dr. Mendel Steinbruch, 6800 - Maracanaú", lat: -3.8542, lng: -38.6115, horario: "09h às 21h" },
+  { id: "fr29", cidade: "Eusébio", nome: "Frosty Eusébio (CE-040)", bairro: "Centro · Eusébio", end: "Av. Eusébio de Queiroz, 3200 - Eusébio", lat: -3.8902, lng: -38.4515, horario: "09h às 21h" },
+  { id: "fr30", cidade: "Aquiraz", nome: "Frosty Aquiraz Centro", bairro: "Centro · Aquiraz", end: "Rua Tibúrcio Targino, 410 - Aquiraz", lat: -3.9015, lng: -38.3912, horario: "09h às 21h" },
+  { id: "fr31", cidade: "Pacatuba", nome: "Frosty Pacatuba", bairro: "Centro · Pacatuba", end: "Av. Marginal Nordeste, 510 - Pacatuba", lat: -3.9842, lng: -38.6205, horario: "09h às 20h" },
+  { id: "fr32", cidade: "Horizonte", nome: "Frosty Horizonte", bairro: "Centro · Horizonte", end: "Av. Presidente Castelo Branco, 4200 - Horizonte", lat: -4.0995, lng: -38.4955, horario: "09h às 21h" },
+  { id: "fr33", cidade: "Sobral", nome: "Frosty Sobral Centro", bairro: "Centro · Sobral", end: "Rua Coronel Mont'Alverne, 520 - Sobral", lat: -3.6882, lng: -40.3495, horario: "09h às 21h" },
+  { id: "fr34", cidade: "Sobral", nome: "Frosty Sobral Junco", bairro: "Junco · Sobral", end: "Av. John Sanford, 1850 - Sobral", lat: -3.6795, lng: -40.3585, horario: "09h às 21h" },
+  { id: "fr35", cidade: "Juazeiro do Norte", nome: "Frosty Juazeiro do Norte (Lagoa Seca)", bairro: "Lagoa Seca · Juazeiro", end: "Av. Leão Sampaio, 1980 - Juazeiro do Norte", lat: -7.2345, lng: -39.3225, horario: "09h às 22h" },
+  { id: "fr36", cidade: "Juazeiro do Norte", nome: "Frosty Juazeiro Centro", bairro: "Centro · Juazeiro", end: "Rua São Pedro, 940 - Juazeiro do Norte", lat: -7.2042, lng: -39.3155, horario: "09h às 21h" },
+  { id: "fr37", cidade: "Crato", nome: "Frosty Crato", bairro: "Centro · Crato", end: "Rua Dr. João Pessoa, 480 - Crato", lat: -7.2342, lng: -39.4095, horario: "09h às 21h" },
+  { id: "fr38", cidade: "Barbalha", nome: "Frosty Barbalha", bairro: "Centro · Barbalha", end: "Av. Coronel João Coelho, 310 - Barbalha", lat: -7.3112, lng: -39.3042, horario: "09h às 21h" },
+  { id: "fr39", cidade: "Iguatu", nome: "Frosty Iguatu", bairro: "Centro · Iguatu", end: "Rua Floriano Peixoto, 610 - Iguatu", lat: -6.3595, lng: -39.2985, horario: "09h às 21h" },
+  { id: "fr40", cidade: "Quixadá", nome: "Frosty Quixadá", bairro: "Centro · Quixadá", end: "Av. Plácido Castelo, 1780 - Quixadá", lat: -4.9715, lng: -39.0155, horario: "09h às 21h" },
+  { id: "fr41", cidade: "Russas", nome: "Frosty Russas", bairro: "Centro · Russas", end: "Av. Dom Lino, 920 - Russas", lat: -4.9402, lng: -37.9755, horario: "09h às 21h" },
+  { id: "fr42", cidade: "Aracati", nome: "Frosty Aracati", bairro: "Centro · Aracati", end: "Rua Coronel Alexanzito, 890 - Aracati", lat: -4.5615, lng: -37.7695, horario: "09h às 21h" },
+  { id: "fr43", cidade: "Itapipoca", nome: "Frosty Itapipoca", bairro: "Centro · Itapipoca", end: "Av. Monsenhor Tabosa, 2410 - Itapipoca", lat: -3.4945, lng: -39.5785, horario: "09h às 21h" },
+  { id: "fr44", cidade: "Tianguá", nome: "Frosty Tianguá (Serra da Ibiapaba)", bairro: "Centro · Tianguá", end: "Av. Prefeito Jaques Nunes, 1340 - Tianguá", lat: -3.7322, lng: -40.9915, horario: "09h às 21h" },
+  { id: "fr45", cidade: "Crateús", nome: "Frosty Crateús", bairro: "Centro · Crateús", end: "Rua Dr. Moura Fé, 780 - Crateús", lat: -5.1782, lng: -40.6775, horario: "09h às 21h" },
+  { id: "fr46", cidade: "Canindé", nome: "Frosty Canindé", bairro: "Centro · Canindé", end: "Rua Joaquim Magalhães, 540 - Canindé", lat: -4.3585, lng: -39.3115, horario: "09h às 21h" }
 ];
 
-const CATS = {
-  praia:{label:"Praias", emoji:"🌊", color:"#12b5a3"},
-  serra:{label:"Serra", emoji:"⛰️", color:"#3fa34d"},
-  cultura:{label:"Cultura", emoji:"🏛️", color:"#6c5ce7"},
-  date:{label:"Date", emoji:"🍷", color:"#ff4d7d"},
-  frosty:{label:"Frosty", emoji:"🍦", color:"#f2c14e"}
+// =========================================================================
+// 4. ESTADO PERSISTENTE & UTILITÁRIOS
+// =========================================================================
+let state = JSON.parse(localStorage.getItem("mapa_fluxo_nina_v4") || "null") || {
+  visitados: [],
+  favoritos: [],
+  frostyVisitadas: [],
+  lugaresExtras: [],
+  diario: [],
+  dataNamoro: "",
+  tema: "default",
+  nina: { fome: 85, diversao: 90, limpeza: 95 }
 };
 
-const LS = { places:'cd2_places', ratings:'cd2_ratings', visited:'cd2_visited', todo:'cd2_todo', theme:'cd2_theme', key:'cd2_key', myname:'cd2_myname', share:'cd2_share' };
-const get = (k,f)=>{ try{ const v=localStorage.getItem(k); return v===null?f:JSON.parse(v);}catch(e){return f;} };
-const set = (k,v)=>{ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} };
-const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let climaAtualCache = { temp: 29, vento: 18, desc: "Sol & brisa do litoral" };
 
-const App = {
-  places:[], ratings:{}, visited:{}, todo:{},
-  map:null, layer:null, liveLayer:null, meMarker:null, filter:'all', tiles:null,
-  
-  init(){
-    const savedTheme = get(LS.theme, matchMedia('(prefers-color-scheme: light)').matches ? 'light':'dark');
-    document.documentElement.dataset.theme = savedTheme;
-    document.getElementById('sw-theme').setAttribute('aria-checked', savedTheme === 'dark');
+function salvarState() {
+  localStorage.setItem("mapa_fluxo_nina_v4", JSON.stringify(state));
+  atualizarGamificacao();
+}
 
-    this.places = get(LS.places, null) || this.buildSeed();
-    this.ratings = get(LS.ratings,{}); this.visited = get(LS.visited,{}); this.todo = get(LS.todo,{});
-    this.buildChips('chips');
-    document.getElementById('in-key').value = get(LS.key,'');
-    document.getElementById('in-myname').value = get(LS.myname,'');
-    document.getElementById('sw-share').setAttribute('aria-checked', get(LS.share,false));
-    
-    this.initMap();
-    this.startTracking(); // Geofencing Frosty
-    if(get(LS.share,false)) this.startSharing(); // Radar do Casal
-    this.renderAll();
-    this.weather();
-    
-    this.sky(); setInterval(()=>this.sky(), 60000);
-  },
-  
-  buildSeed(){
-    let id=0;
-    const a = SEED.map(r=>({id:++id,name:r[0],cat:r[1],area:r[2],city:r[3],lat:r[4],lng:r[5],note:r[6]}));
-    const b = FROSTY.map(r=>({id:++id,name:r[0],cat:'frosty',area:r[1],city:r[2],lat:r[3],lng:r[4],note:r[5]}));
-    const all=[...a,...b]; set(LS.places,all); return all;
-  },
-  
-  /* ── MAPA DINÂMICO (CARTO API) ── */
-  initMap(){
-    this.map = L.map('map',{zoomControl:false,preferCanvas:true,attributionControl:false}).setView([-3.74,-38.52],13);
-    this.swapTiles(); 
-    
-    this.layer = L.markerClusterGroup({
-      maxClusterRadius:45, spiderfyOnMaxZoom:true, disableClusteringAtZoom:15,
-      iconCreateFunction:c=>{
-        const n=c.getChildCount();
-        return L.divIcon({html:`<div class="cluster-pin${n<10?' sm':''}">${n}</div>`,className:'',iconSize:[n<10?32:40,n<10?32:40]});
-      }
-    }).addTo(this.map);
-    this.liveLayer = L.layerGroup().addTo(this.map);
-    this.plot();
-  },
+function mostrarToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.style.display = "none", 2700);
+}
 
-  swapTiles(){
-    const dark = document.documentElement.dataset.theme === 'dark';
-    const style = dark ? 'dark_all' : 'rastertiles/voyager';
-    const url = `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png?key=${CARTO_KEY}`;
-    
-    if(this.tiles) this.map.removeLayer(this.tiles);
-    this.tiles = L.tileLayer(url, {maxZoom:19, subdomains:'abcd', attribution:'© CARTO'}).addTo(this.map);
-  },
+function getTodosLugares() {
+  return [...lugaresBase, ...state.lugaresExtras];
+}
 
-  toggleTheme(){
-    const t = document.documentElement.dataset.theme==='dark'?'light':'dark';
-    document.documentElement.dataset.theme=t;
-    document.getElementById('sw-theme').setAttribute('aria-checked', t==='dark');
-    set(LS.theme, t);
-    if(this.map) this.swapTiles(); 
-  },
+// =========================================================================
+// 5. SISTEMA DA MASCOTE NINA (CUIDADOS, BALÃO DE FALA E CONCIERGE WEB)
+// =========================================================================
+function atualizarSpritesNina(estado = "normal") {
+  document.getElementById("nina-mini-sprite").innerHTML = criarSVGPixelNina(54, estado);
+  document.getElementById("nina-quarto-sprite").innerHTML = criarSVGPixelNina(156, estado);
+}
 
-  icon(p){
-    const v = !!this.visited[p.id], c = CATS[p.cat]?.color||'#12b5a3', emoji = CATS[p.cat]?.emoji||'📍';
-    const bg = v ? 'linear-gradient(140deg,#f2c14e,#ff7a2f)' : c;
-    return L.divIcon({
-      className:'', iconSize:[30,30], iconAnchor:[15,15],
-      html:`<div class="pin${v?' big':''}" style="background:${bg}">${emoji}</div>`
-    });
-  },
-  
-  plot(){
-    this.layer.clearLayers();
-    this.visibleOnMap = this.places.filter(p=> this.filter==='all'||p.cat===this.filter );
-    this.visibleOnMap.forEach(p=>{
-      L.marker([p.lat,p.lng],{icon:this.icon(p)})
-        .on('click', () => this.openPlace(p.id)) 
-        .addTo(this.layer);
-    });
-    document.getElementById('sub-count').textContent = `${this.visibleOnMap.length} lugares no mapa`;
-  },
+function atualizarBarrasNina() {
+  const { fome, diversao, limpeza } = state.nina;
+  document.getElementById("stat-fome-txt").textContent = fome + "%";
+  document.getElementById("stat-fome-bar").style.width = fome + "%";
+  document.getElementById("stat-diversao-txt").textContent = diversao + "%";
+  document.getElementById("stat-diversao-bar").style.width = diversao + "%";
+  document.getElementById("stat-limpeza-txt").textContent = limpeza + "%";
+  document.getElementById("stat-limpeza-bar").style.width = limpeza + "%";
+}
 
-  /* ── BOTTOM SHEET DO LUGAR (Fotos + WhatsApp) ── */
-  photoCache:{},
-  openPlace(id){
-    const p = this.places.find(x => x.id === id);
-    if(!p) return;
-    const v = !!this.visited[p.id], r = this.ratings[p.id]||0;
-    
-    document.getElementById('ps-title').textContent = p.name;
-    document.getElementById('ps-sub').textContent = `${p.area} · ${p.city} ${r?'· '+'★'.repeat(r):''}`;
-    document.getElementById('ps-icon').textContent = CATS[p.cat]?.emoji||'📍';
-    
-    const routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
-    document.getElementById('ps-route').href = routeUrl;
-    
-    const msg = `Oi! Que tal a gente ir no *${p.name}* (${p.area})? 📍 Dá uma olhada no caminho: ${routeUrl}`;
-    document.getElementById('ps-share').onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`);
+function soltarParticulaNina(emoji) {
+  const stage = document.getElementById("nina-stage-pet");
+  const sp = document.createElement("span");
+  sp.className = "particula-efeito";
+  sp.textContent = emoji;
+  sp.style.left = (30 + Math.random() * 80) + "px";
+  sp.style.top = "20px";
+  stage.appendChild(sp);
+  setTimeout(() => sp.remove(), 1100);
+}
 
-    const btnVisit = document.getElementById('ps-visit');
-    btnVisit.innerHTML = v ? `<span class="material-icons-round">close</span> Desmarcar Visita` : `<span class="material-icons-round">check_circle</span> Já Fomos`;
-    btnVisit.onclick = () => { this.toggleVisited(p.id); this.openPlace(p.id); };
+function ninaFalarFlutuante(texto) {
+  const balao = document.getElementById("nina-balao");
+  const txtEl = document.getElementById("nina-balao-texto");
+  const btn = document.getElementById("btn-nina-flutuante");
+  balao.style.display = "block";
+  txtEl.textContent = texto;
+  btn.classList.remove("nina-pulando");
+  void btn.offsetWidth;
+  btn.classList.add("nina-pulando");
+}
 
-    document.getElementById('ps-photos').innerHTML = `<p style="font-size:12px;color:var(--ink-2)">Buscando imagens e dicas...</p>`;
-    document.getElementById('place-sheet').classList.add('on');
-    document.getElementById('place-bg').classList.add('on');
-    
-    this.fetchPlacePhotos(p);
-  },
-  closePlace(){ document.getElementById('place-sheet').classList.remove('on'); document.getElementById('place-bg').classList.remove('on'); },
-  
-  async fetchPlacePhotos(p){
-    const key = p.name + '|' + p.city;
-    let found = this.photoCache[key];
-    
-    if(!found) {
-      const tryOne = async (q) => {
-        try {
-          const r = await fetch(`https://pt.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(q)}`);
-          if(!r.ok) return null; const d = await r.json();
-          return d.thumbnail?.source ? { src: d.thumbnail.source, desc: d.extract || '' } : null;
-        } catch(e) { return null; }
-      };
-      found = await tryOne(p.name) || await tryOne(`${p.name} (${p.city})`) || await tryOne(p.city);
-      this.photoCache[key] = found;
+function gerarFraseDinamicaNina() {
+  const hora = new Date().getHours();
+  const temp = climaAtualCache.temp;
+  const frases = [
+    `Agora faz ${temp}°C em Fortal! O clima tá bão pra tomar um picolé na Frosty ein! 🍦🐾`,
+    hora >= 16 && hora <= 18
+      ? "Olha a hora! Tá na Golden Hour perfeita pra ver o pôr do sol no Espigão ou na Ponte dos Ingleses! 🌅"
+      : "Au au! Já sortearam o date de hoje? Clica em Sortear que eu escolho um rolê massa!",
+    state.nina.fome < 60
+      ? "Minha barriguinha roncando... me dá um petisco na aba Nina antes de vocês saírem! 🍖"
+      : "Sabia que a Frosty tem 46 unidades espalhadas pelo Ceará? Bora zerar o passaporte! 🍦",
+    `Vento soprando a ${climaAtualCache.vento} km/h em Fortaleza! Ótimo pra caminhar na Beira-Mar de mãos dadas! 💜`
+  ];
+  return frases[Math.floor(Math.random() * frases.length)];
+}
+
+// Ações no Quarto da Nina
+document.getElementById("nina-stage-pet").onclick = () => {
+  state.nina.diversao = Math.min(100, state.nina.diversao + 5);
+  salvarState();
+  atualizarBarrasNina();
+  atualizarSpritesNina("feliz");
+  soltarParticulaNina("💜");
+  document.getElementById("nina-fala-quarto").textContent = "Au au! Amei o carinho! Tô super animada pro date de vocês! 🐾💜";
+  setTimeout(() => atualizarSpritesNina("normal"), 1500);
+};
+
+document.getElementById("btn-nina-comer").onclick = () => {
+  state.nina.fome = Math.min(100, state.nina.fome + 20);
+  salvarState();
+  atualizarBarrasNina();
+  atualizarSpritesNina("feliz");
+  soltarParticulaNina("🍖");
+  document.getElementById("nina-fala-quarto").textContent = "Nhac nhac! Que ração gostosa! Agora tenho energia pra farejar os melhores dates! 🐶";
+  ninaFalarFlutuante("Obrigada pelo rango! Já tô de barriga cheia! 🍖🐾");
+  setTimeout(() => atualizarSpritesNina("normal"), 1600);
+};
+
+document.getElementById("btn-nina-brincar").onclick = () => {
+  state.nina.diversao = Math.min(100, state.nina.diversao + 20);
+  state.nina.fome = Math.max(10, state.nina.fome - 5);
+  salvarState();
+  atualizarBarrasNina();
+  atualizarSpritesNina("feliz");
+  soltarParticulaNina("🎾");
+  document.getElementById("nina-fala-quarto").textContent = "Peguei a bolinha!! Au au! Brincar com vocês é melhor que passeio na Praia de Iracema! 🎾";
+  ninaFalarFlutuante("Uhuul! Joga a bolinha de novo! 🎾🐶");
+  setTimeout(() => atualizarSpritesNina("normal"), 1600);
+};
+
+document.getElementById("btn-nina-banho").onclick = () => {
+  state.nina.limpeza = 100;
+  salvarState();
+  atualizarBarrasNina();
+  atualizarSpritesNina("feliz");
+  soltarParticulaNina("🫧");
+  document.getElementById("nina-fala-quarto").textContent = "Cheirosinha e com as manchas pretas brilhando! Pronta pra sair na foto do date! 🛁✨";
+  ninaFalarFlutuante("Tô limpinha e cheirosa! ✨🫧");
+  setTimeout(() => atualizarSpritesNina("normal"), 1600);
+};
+
+document.getElementById("btn-nina-sorvete").onclick = () => {
+  state.nina.fome = Math.min(100, state.nina.fome + 15);
+  state.nina.diversao = Math.min(100, state.nina.diversao + 15);
+  salvarState();
+  atualizarBarrasNina();
+  atualizarSpritesNina("feliz");
+  soltarParticulaNina("🍦");
+  document.getElementById("nina-fala-quarto").textContent = "Hummm picolé geladinho! O clima de Fortal pede Frosty demais! 🍦🐶";
+  ninaFalarFlutuante("O clima tá bão pra sorvete ein! 🍦🐾");
+  setTimeout(() => atualizarSpritesNina("normal"), 1600);
+};
+
+// Controles da Nina Flutuante
+document.getElementById("btn-fechar-balao").onclick = () => {
+  document.getElementById("nina-balao").style.display = "none";
+};
+document.getElementById("btn-nina-flutuante").onclick = () => {
+  const frase = gerarFraseDinamicaNina();
+  ninaFalarFlutuante(frase);
+};
+
+// Timer automático para a Nina aparecer com dicas espontâneas
+setInterval(() => {
+  ninaFalarFlutuante(gerarFraseDinamicaNina());
+}, 28000);
+
+// =========================================================================
+// 6. ASSISTENTE CONCIERGE NINA (BUSCA REAL NA INTERNET: OPEN-METEO + WIKIPEDIA + OVERPASS)
+// =========================================================================
+async function consultarConciergeNinaAoVivo(cidade, lat, lng, orcamento, tipo, localEspecifico = null) {
+  // 1. Busca clima real da cidade escolhida via Open-Meteo
+  let climaTexto = "29°C, brisa leve";
+  try {
+    const rClima = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=America%2FFortaleza`);
+    const dClima = await rClima.json();
+    const t = Math.round(dClima.current.temperature_2m);
+    const u = dClima.current.relative_humidity_2m;
+    const v = Math.round(dClima.current.wind_speed_10m);
+    const code = dClima.current.weather_code;
+    const cond = code >= 51 ? "possibilidade de chuva" : (code >= 1 && code <= 3 ? "parcialmente nublado" : "céu aberto e ensolarado");
+    climaTexto = `${t}°C (${cond}), umidade ${u}% e vento a ${v} km/h`;
+  } catch (e) {}
+
+  // 2. Busca contexto cultural/turístico real na Wikipedia em Português
+  let resumoWiki = "";
+  try {
+    const termoBusca = localEspecifico ? `${localEspecifico.nome} ${cidade}` : `${cidade} Ceará turismo cultura`;
+    const rWiki = await fetch(`https://pt.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(termoBusca)}&srlimit=3&format=json&origin=*`);
+    const dWiki = await rWiki.json();
+    const hits = dWiki?.query?.search || [];
+    if (hits.length) {
+      resumoWiki = hits.map(h => `• ${h.title}: ${h.snippet.replace(/<[^>]*>?/gm, "")}...`).join("\n");
     }
-    
-    const body = document.getElementById('ps-photos');
-    if(!found) {
-      body.innerHTML = `<div style="padding:16px;text-align:center;background:var(--glass-2);border-radius:12px;">
-                          <p style="font-size:12px;color:var(--ink-2);margin:0">${p.note||'Lugar pronto para ser explorado!'}</p>
-                        </div>`;
-      return;
-    }
-    body.innerHTML = `<img src="${found.src.replace('http:','https:')}" style="width:100%;height:180px;object-fit:cover;border-radius:14px;">
-                      ${found.desc ? `<p style="font-size:12.5px;color:var(--ink-2);line-height:1.4">${esc(found.desc.slice(0,180))}...</p>` : ''}
-                      ${p.note ? `<p style="font-size:12px;color:var(--ink);font-weight:600;margin-top:8px">Nota do Casal: ${esc(p.note)}</p>`:''}`;
-  },
+  } catch (e) {}
 
-  /* ── SORTEAR UM LUGAR (ROLETA) ── */
-  surpriseMe(){
-    const unvisited = this.places.filter(p => !this.visited[p.id]);
-    
-    if(!unvisited.length){
-      this.toast('Uau! Vocês já visitaram todos os lugares da lista!');
-      return;
-    }
+  // 3. Análise de horário e trânsito local em tempo real
+  const agora = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Fortaleza" }));
+  const hora = agora.getHours();
+  const diaSemana = agora.getDay(); // 0 = Dom, 6 = Sab
+  const horaFormatada = agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
-    this.toast('Sorteando um lugar novo...');
-    const randomPlace = unvisited[Math.floor(Math.random() * unvisited.length)];
-    
-    this.map.flyTo([randomPlace.lat, randomPlace.lng], 16, { duration: 1.5 });
-    
-    setTimeout(() => {
-      this.openPlace(randomPlace.id);
-    }, 1500);
-  },
+  let statusTransito = "🟢 Fluxo livre nas principais avenidas (Beira-Mar, Washington Soares, Santos Dumont e Aguanambi).";
+  if (diaSemana >= 1 && diaSemana <= 5 && ((hora >= 7 && hora <= 9) || (hora >= 17 && hora <= 19))) {
+    statusTransito = "🟡 Horário de pico! Evitem corredores como Av. Aguanambi, Pontes Vieira e Humberto Monte; prefiram ir pela orla ou sair 20 min antes.";
+  } else if ((diaSemana === 5 || diaSemana === 6) && hora >= 19 && hora <= 23) {
+    statusTransito = "🟡 Movimento intenso próximo à Praia de Iracema, Dragão do Mar e polos gastronômicos da Varjota/Benfica.";
+  }
 
-  /* ── GEOFENCING (ALERTA FROSTY) ── */
-  startTracking(){
-    if(!navigator.geolocation) return;
-    if(this._trackId) return;
-    this._trackId = navigator.geolocation.watchPosition(pos=>{
-      this.myPos = [pos.coords.latitude, pos.coords.longitude];
-      this.checkFrosty(this.myPos[0], this.myPos[1]);
-    }, ()=>{}, {enableHighAccuracy:true, maximumAge:10000});
-  },
-  
-  checkFrosty(lat, lng){
-    const today = new Date().toDateString();
-    if(get('cd2_frosty', '') === today) return; 
+  let statusHorario = "🟢 Excelente horário para passeios ao ar livre, cafés e sorveterias!";
+  if (hora >= 11 && hora <= 15) statusHorario = "☀️ Sol forte agora! A Nina recomenda locais arborizados (Parque do Cocó), museus climatizados ou parada imediata na Frosty.";
+  else if (hora >= 16 && hora <= 18) statusHorario = "🌅 Golden Hour! Momento perfeito para ver o pôr do sol na orla ou nas lagoas.";
+  else if (hora >= 22 || hora <= 5) statusHorario = "🌙 Horário noturno: priorizem polos movimentados como Beira-Mar, Varjota ou delivery de pote Frosty em casa.";
 
-    const R = 6371000;
-    let minD = Infinity; let nearest = null;
+  // 4. Encontra a Frosty mais próxima das coordenadas
+  let frostyPerto = unidadesFrosty[0];
+  let menorKm = 9999;
+  unidadesFrosty.forEach(u => {
+    const d = parseFloat(calcularKm(lat, lng, u.lat, u.lng));
+    if (d < menorKm) { menorKm = d; frostyPerto = u; }
+  });
 
-    this.places.filter(p => p.cat === 'frosty' && !this.visited[p.id]).forEach(f => {
-      const dLat = (f.lat - lat) * Math.PI / 180, dLng = (f.lng - lng) * Math.PI / 180;
-      const a = Math.sin(dLat/2)**2 + Math.cos(lat*Math.PI/180) * Math.cos(f.lat*Math.PI/180) * Math.sin(dLng/2)**2;
-      const dist = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
-      if(dist < minD){ minD = dist; nearest = f; }
-    });
+  // 5. Planejamento de orçamento automático
+  const orc = Number(orcamento) || 80;
+  const pTransporte = Math.round(orc * 0.25);
+  const pComida = Math.round(orc * 0.55);
+  const pFrosty = Math.max(12, orc - pTransporte - pComida);
 
-    if(minD <= 500 && nearest){
-      const alert = document.getElementById('alert-frosty');
-      document.getElementById('frosty-dist').textContent = `A unidade ${nearest.name} está a ${minD}m daqui. É uma ótima ideia ir lá hoje!`;
-      alert.classList.add('on');
-      set('cd2_frosty', today);
-      setTimeout(() => alert.classList.remove('on'), 9000);
-    }
-  },
+  return `🐶 AU AU! RELATÓRIO AO VIVO DA NINA PARA ${cidade.toUpperCase()} (${horaFormatada}):
 
-  /* ── RADAR DO CASAL ── */
-  setMyName(v){ set(LS.myname, v.trim()); },
-  toggleShare(){
-    const name = get(LS.myname,'').trim();
-    if(!name){ this.toast('Preencha seu nome antes de compartilhar'); return; }
-    const v = !get(LS.share,false); set(LS.share,v);
-    document.getElementById('sw-share').setAttribute('aria-checked',v);
-    if(v) this.startSharing(); else this.stopSharing();
-  },
-  presenceRef(){ return cloudRef ? cloudRef.collection('presenca') : null; },
-  
-  startSharing(){
-    const name = get(LS.myname,'').trim();
-    if(!name || !navigator.geolocation) return;
-    if(this._watchShareId) navigator.geolocation.clearWatch(this._watchShareId);
-    this._watchShareId = navigator.geolocation.watchPosition(pos=>{
-      const ref = this.presenceRef();
-      if(ref) ref.doc(name).set({lat:pos.coords.latitude, lng:pos.coords.longitude, ts:Date.now(), name}).catch(()=>{});
-    }, ()=>{}, {enableHighAccuracy:true, maximumAge:8000});
+🌤️ CLIMA AGORA (Open-Meteo):
+${climaTexto}. ${parseInt(climaTexto) >= 27 ? "O clima tá bão demais pra um sorvete na Frosty ein! 🍦" : "Climinha agradável para caminhar!"}
 
-    const ref = this.presenceRef();
-    if(ref && !this._presenceSub){
-      this._presenceSub = ref.onSnapshot(snap=>{
-        const others = snap.docs.map(d=>d.data()).filter(d=>d.name!==name);
-        this.renderRadar(others[0]||null);
-      });
-    }
-  },
-  stopSharing(){
-    if(this._watchShareId) navigator.geolocation.clearWatch(this._watchShareId);
-    if(this._presenceSub) this._presenceSub();
-    document.getElementById('radar').hidden = true;
-  },
+⏰ HORÁRIO & MOVIMENTO:
+${statusHorario}
 
-  renderRadar(other){
-    const box = document.getElementById('radar');
-    if(!other || !this.myPos){ box.hidden = true; return; }
-    if(Date.now() - other.ts > 1800000){ box.hidden = true; return; } 
+🚦 TRÂNSITO & DESLOCAMENTO AGORA:
+${statusTransito}
 
-    const [lat1,lng1] = this.myPos, lat2 = other.lat, lng2 = other.lng;
-    const toRad = d => d * Math.PI/180;
-    const dLng = toRad(lng2-lng1);
-    const dist = Math.round(this.distMeters(this.myPos, [lat2,lng2]));
+🎭 DESTAQUES & EVENTOS/CULTURA ENCONTRADOS NA WEB:
+${resumoWiki || "• Programação cultural ativa nos centros culturais, orla e praças locais."}
 
-    const y = Math.sin(dLng) * Math.cos(toRad(lat2));
-    const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
-    const bearing = (Math.atan2(y,x) * 180 / Math.PI + 360) % 360;
-    const dirs = ['Norte','Nordeste','Leste','Sudeste','Sul','Sudoeste','Oeste','Noroeste'];
-    const dir = dirs[Math.round(bearing/45) % 8];
+💰 PLANILHA DO DATE (Orçamento Total: R$ ${orc.toFixed(2)}):
+• 🚗 Transporte / App / Combustível: ~R$ ${pTransporte.toFixed(2)}
+• 🍕 Lanche / Petisco / Entrada para 2: ~R$ ${pComida.toFixed(2)}
+• 🍦 Sobremesa na ${frostyPerto.nome} (${menorKm} km): ~R$ ${pFrosty.toFixed(2)} (dá pra pegar 2 picolés especiais ou 1 pote pra dividir!)`;
+}
 
-    const distTxt = dist < 1000 ? `${dist}m` : `${(dist/1000).toFixed(1)}km`;
-    document.getElementById('radar-compass').style.transform = `rotate(${bearing}deg)`;
-    document.getElementById('radar-text').textContent = `${esc(other.name)} está a ${distTxt} de você`;
-    document.getElementById('radar-sub').textContent = `caminhe em direção ${dir} para encontrá-lo`;
-    box.hidden = false;
-  },
+document.getElementById("btn-nina-buscar-web").onclick = async function() {
+  const sel = document.getElementById("nina-cidade");
+  const opt = sel.options[sel.selectedIndex];
+  const cidade = opt.value;
+  const lat = parseFloat(opt.dataset.lat);
+  const lng = parseFloat(opt.dataset.lng);
+  const orcamento = document.getElementById("nina-orcamento").value;
+  const tipo = document.getElementById("nina-tipo").value;
+  const out = document.getElementById("nina-concierge-resultado");
+  const btnZap = document.getElementById("btn-nina-zap");
 
-  /* ── INTEGRAÇÃO IA (GEMINI) COM GOOGLE SEARCH EM TEMPO REAL ── */
-  // Modelos tentados nesta ordem: o principal atual e um substituto, caso o primeiro
-  // não esteja disponível para a chave/região (isso evita o erro 404 "model not found"
-  // que ocorria com o alias antigo "gemini-flash-latest", já descontinuado).
-  GEMINI_MODELS: ['gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash'],
+  out.style.display = "block";
+  out.textContent = "🐶 Farejando dados ao vivo na internet (clima, horários, trânsito e orçamento)...";
+  this.disabled = true;
 
-  async gemini(prompt){
-    const key = document.getElementById('in-key').value.trim() || get(LS.key,'');
-    if(!key) throw new Error('Coloque a sua chave da API do Gemini nos Ajustes');
+  const texto = await consultarConciergeNinaAoVivo(cidade, lat, lng, orcamento, tipo);
+  out.textContent = texto;
+  btnZap.style.display = "block";
+  btnZap.onclick = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, "_blank");
+  };
+  ninaFalarFlutuante(`Prontinho! Montei o plano ao vivo de ${cidade} pra vocês! 🐶💜`);
+  this.disabled = false;
+};
 
-    let lastErr = null;
-    for(const model of this.GEMINI_MODELS){
-      const ctrl = new AbortController();
-      const timeout = setTimeout(()=>ctrl.abort(), 20000);
-      try{
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,{
-          method:'POST',
-          signal: ctrl.signal,
-          headers:{
-            'Content-Type':'application/json',
-            'x-goog-api-key': key
-          },
-          body:JSON.stringify({
-            contents:[{role:'user',parts:[{text:prompt}]}],
-            tools:[{googleSearch:{}}],
-            generationConfig:{temperature:0.7}
-          })
-        });
-        clearTimeout(timeout);
+document.getElementById("btn-analisar-local-nina").onclick = async function() {
+  if (!lugarAtual) return;
+  const boxTxt = document.getElementById("card-nina-texto");
+  boxTxt.textContent = "🐶 Nina farejando clima, trânsito e Frosty vizinha...";
+  const res = await consultarConciergeNinaAoVivo(lugarAtual.bairro, lugarAtual.lat, lugarAtual.lng, 70, "completo", lugarAtual);
+  const linhas = res.split("\n").filter(l => l.trim().length > 0);
+  boxTxt.textContent = "\n" + linhas.slice(2, 11).join("\n");
+  ninaFalarFlutuante(`Analisei ${lugarAtual.nome.split("&")[0]}! Dá uma olhada no card! 🐾`);
+};
 
-        if(!res.ok){
-          const err = await res.json().catch(()=>({}));
-          const msg = err.error?.message || `Erro HTTP ${res.status}`;
-          // 404 costuma significar "este nome de modelo não existe para esta chave":
-          // tenta o próximo modelo da lista em vez de desistir na hora.
-          if(res.status === 404){ lastErr = new Error(msg); continue; }
-          if(res.status === 400 && /API key/i.test(msg)) throw new Error('Chave da API do Gemini inválida. Confira em Ajustes.');
-          throw new Error(msg);
-        }
-        const d = await res.json();
-        const txt = (d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||'').join('\n');
-        if(!txt) throw new Error('A IA não devolveu nenhuma resposta válida.');
-        return txt;
-      }catch(e){
-        clearTimeout(timeout);
-        if(e.name === 'AbortError'){ lastErr = new Error('A IA demorou demais para responder.'); continue; }
-        if(e.message && !/not found|is not supported/i.test(e.message)) throw e;
-        lastErr = e;
-      }
-    }
-    throw lastErr || new Error('Nenhum modelo do Gemini respondeu.');
-  },
+// Relógio em tempo real Fortaleza (UTC-3)
+setInterval(() => {
+  const agora = new Date().toLocaleTimeString("pt-BR", { timeZone: "America/Fortaleza" });
+  document.getElementById("relogio-vivo").textContent = `🕒 Fortal: ${agora}`;
+}, 1000);
 
-  /* ── ROTEIROS EM TEMPO REAL (SUGERIR DATE) ── */
-  async askPlan(){
-    this.tab('todo', document.querySelectorAll('.nav button')[1]);
-    const b = document.getElementById('plan-body');
-    b.innerHTML = `<p style="font-size:14px; padding:16px; line-height:1.5;"><b>${CATS['date'].emoji} A pesquisar na Web...</b><br><br>A analisar o clima, o trânsito e o que está realmente aberto agora mesmo no Ceará para sugerir o melhor date em tempo real.</p>`;
-    
-    const base = this.myPos || [-3.7319,-38.5267]; 
-    const hoje = new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
-    const hora = new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
-    
-    const prompt = `És um guia local do Ceará. USA A PESQUISA DO GOOGLE OBRIGATORIAMENTE para ver o que existe e está aberto HOJE.
-    Agora é ${hoje}, ${hora}. O casal está nas coordenadas lat ${base[0]}, lng ${base[1]}.
-    Monta um roteiro romântico de 2 a 3 paradas reais, encadeadas e coerentes com a hora atual.
-    Responde EXATAMENTE no formato abaixo, uma linha para cada (sem formatação markdown, sem asteriscos, apenas texto puro):
-    TITULO | (título curto do roteiro)
-    TEXTO | (justificação curta baseada no clima ou hora atual)
-    PARADA | Nome do lugar | Bairro | Cidade | date ou praia ou serra ou cultura ou frosty | horário sugerido | motivo curto`;
+// Clima Ao Vivo
+async function carregarClimaFortaleza() {
+  const el = document.getElementById("clima-widget");
+  try {
+    const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=-3.7172&longitude=-38.5433&current=temperature_2m,weather_code,wind_speed_10m&timezone=America%2FFortaleza");
+    const data = await res.json();
+    const temp = Math.round(data.current.temperature_2m);
+    const vento = Math.round(data.current.wind_speed_10m);
+    climaAtualCache = { temp, vento, desc: "Ao vivo" };
+    el.textContent = `☀️ Fortal Agora: ${temp}°C · Vento ${vento}km/h`;
+    ninaFalarFlutuante(`Faz ${temp}°C em Fortal agora! O clima tá bão pra um sorvete na Frosty ein! 🍦🐶`);
+  } catch (e) {
+    el.textContent = "☀️ Fortaleza, CE · 29°C";
+  }
+}
 
-    const key = document.getElementById('in-key').value.trim() || get(LS.key,'');
+// =========================================================================
+// 7. RÁDIO AO VIVO Y2K + SPOTIFY PLAYLIST
+// =========================================================================
+let audioCtx = null;
+let radioTocando = false;
+let radioTimer = null;
+let estacaoAtual = 0;
 
-    const renderPlan = (titulo, texto, paradas, sourceNote) => {
-      b.innerHTML = `
-        <p class="plan-title">${esc(titulo)}</p>
-        <p class="plan-quote">${esc(texto)}</p>
-        <div class="stops">
-          ${paradas.map(s => `
-            <div class="stop">
-              <b>${esc(s.name)} <em>·${esc(s.hora)}</em></b>
-              <span>${esc(s.area)} · ${esc(s.city)}<br>${esc(s.note)}</span>
-            </div>
-          `).join('')}
-        </div>
-        ${sourceNote ? `<p style="font-size:11px;color:var(--ink-3);margin:0 0 10px">${esc(sourceNote)}</p>` : ''}
-        <button class="btn ghost" onclick="App.askPlan()" style="margin-top:2px">Gerar Outra Ideia</button>
-      `;
-    };
+const estacoesRadio = [
+  { nome: "98.9 FM · Rádio Fluxo Y2K (Nostalgia 2000)", bpm: 112, notas: [261.63, 329.63, 392.00, 493.88, 440.00, 392.00, 329.63, 293.66] },
+  { nome: "104.5 FM · Beira-Mar Lo-Fi & Pôr do Sol", bpm: 84, notas: [220.00, 261.63, 329.63, 392.00, 349.23, 329.63, 293.66, 246.94] },
+  { nome: "101.7 FM · Batidão Romântico de Fortal", bpm: 126, notas: [293.66, 349.23, 440.00, 523.25, 493.88, 440.00, 349.23, 329.63] }
+];
 
-    // Sem chave de IA cadastrada: nem tenta a rede, vai direto para o plano local.
-    if(!key){ return renderPlan(...this.localPlan(base), 'Sugestão local · configure a chave do Gemini em Ajustes para roteiros com IA e pesquisa ao vivo.'); }
+function iniciarSomRadio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  const est = estacoesRadio[estacaoAtual];
+  let step = 0;
+  clearInterval(radioTimer);
 
-    try {
-      const txt = await this.gemini(prompt);
+  const intervaloMs = (60 / est.bpm) * 500;
+  radioTimer = setInterval(() => {
+    if (!radioTocando) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = step % 4 === 0 ? "triangle" : "sine";
+    osc.frequency.setValueAtTime(est.notas[step % est.notas.length], now);
 
-      const cleanTxt = txt.replace(/\*/g, '').split('\n').map(l => l.trim());
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.06, now + 0.04);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.38);
 
-      const getLine = (m) => {
-        const line = cleanTxt.find(l => l.startsWith(m));
-        return line ? line.split('|').slice(1).join('|').trim() : '';
-      };
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 0.4);
+    step++;
+  }, intervaloMs);
+}
 
-      const titulo = getLine('TITULO') || 'Date Perfeito de Hoje';
-      const texto = getLine('TEXTO') || 'Baseado na vossa localização e horário atual.';
-
-      const paradas = cleanTxt.filter(l => l.startsWith('PARADA')).map(l => {
-        const p = l.split('|').map(s=>s.trim());
-        return {name:p[1], area:p[2], city:p[3], cat:p[4], hora:p[5], note:p[6]};
-      }).filter(x=>x.name);
-
-      if(!paradas.length) throw new Error('A IA não respondeu no formato correto ou não encontrou locais.');
-
-      renderPlan(titulo, texto, paradas, null);
-    } catch(e) {
-      // A IA falhou (sem internet, chave inválida, modelo indisponível etc.) —
-      // em vez de travar numa mensagem de erro, sempre entrega um roteiro utilizável.
-      renderPlan(...this.localPlan(base), `Roteiro local (a IA falhou: ${e.message}).`);
-    }
-  },
-
-  /* ── PLANO LOCAL DE RESERVA (sem internet / sem chave / IA fora do ar) ── */
-  localPlan(base){
-    const h = new Date().getHours();
-    const periodo = h<11 ? 'manhã' : h<17 ? 'tarde' : 'noite';
-    const porPeriodo = { manhã:['praia','cultura'], tarde:['serra','cultura','date'], noite:['date','frosty'] };
-    const prefer = porPeriodo[periodo] || ['date'];
-
-    const withDist = this.places.map(p=>({...p, dist:this.distMeters(base,[p.lat,p.lng])}));
-    const candidatos = withDist
-      .filter(p=>!this.visited[p.id])
-      .sort((a,b)=>{
-        const pa = prefer.indexOf(a.cat), pb = prefer.indexOf(b.cat);
-        const wa = pa===-1?99:pa, wb = pb===-1?99:pb;
-        return wa-wb || a.dist-b.dist;
-      });
-    const pool = candidatos.length ? candidatos : withDist.sort((a,b)=>a.dist-b.dist);
-    const paradas = pool.slice(0,3).map((p,i)=>({
-      name:p.name, area:p.area, city:p.city, cat:p.cat,
-      hora: i===0 ? `agora à ${periodo}` : `+${i}h`,
-      note: p.note
-    }));
-
-    const titulo = periodo==='manhã' ? 'Comece o dia por aqui' : periodo==='tarde' ? 'Programa de tarde' : 'Date desta noite';
-    const texto = `Roteiro montado com os lugares que vocês já salvaram, priorizando o que combina com a ${periodo} e o que ainda não foi visitado.`;
-    return [titulo, texto, paradas];
-  },
-
-  distMeters(a,b){
-    const R=6371000, toRad=d=>d*Math.PI/180;
-    const dLat=toRad(b[0]-a[0]), dLng=toRad(b[1]-a[1]);
-    const s = Math.sin(dLat/2)**2 + Math.cos(toRad(a[0]))*Math.cos(toRad(b[0]))*Math.sin(dLng/2)**2;
-    return R*2*Math.atan2(Math.sqrt(s), Math.sqrt(1-s));
-  },
-
-  /* ── PESQUISA DE MAPA AO VIVO (OVERPASS API, com espelho + reserva local) ── */
-  OVERPASS_MIRRORS: [
-    'https://overpass-api.de/api/interpreter',
-    'https://overpass.kumi.systems/api/interpreter',
-    'https://overpass.openstreetmap.ru/api/interpreter'
-  ],
-
-  async fetchOverpass(query, timeoutMs){
-    let lastErr = null;
-    for(const url of this.OVERPASS_MIRRORS){
-      const ctrl = new AbortController();
-      const t = setTimeout(()=>ctrl.abort(), timeoutMs);
-      try{
-        const r = await fetch(url,{
-          method:'POST', signal: ctrl.signal,
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body:'data='+encodeURIComponent(query)
-        });
-        clearTimeout(t);
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        return await r.json();
-      }catch(e){ clearTimeout(t); lastErr = e; }
-    }
-    throw lastErr || new Error('Todos os espelhos do Overpass falharam');
-  },
-
-  async nearbyLive(){
-    if(!this.myPos) return this.toast('A aguardar a sua localização de GPS para pesquisar...');
-    this.toast('A pesquisar locais abertos perto de si (Radar ao Vivo)...');
-
-    const c = this.myPos;
-    const q=`[out:json][timeout:15];(node["amenity"~"^(restaurant|cafe|ice_cream|bar|pub)$"](around:2500,${c[0]},${c[1]}); node["tourism"~"^(attraction|viewpoint|museum|artwork)$"](around:2500,${c[0]},${c[1]}););out body 30;`;
-
-    try{
-      const d = await this.fetchOverpass(q, 12000);
-      const items = (d.elements||[]).filter(e=>e.tags&&e.tags.name).slice(0,30);
-
-      if(!items.length) return this.toast('Não foram encontrados locais num raio de 2,5 km.');
-
-      this.liveLayer.clearLayers();
-      items.forEach(e=>{
-        const t = e.tags, kind = t.amenity || t.tourism;
-        const emoji = kind==='ice_cream'?'🍦':kind==='cafe'?'☕':kind==='bar'||kind==='pub'?'🍸':kind==='restaurant'?'🍽️':'📍';
-        
-        L.marker([e.lat,e.lon],{icon:L.divIcon({className:'',iconSize:[28,28],html:`<div class="pin pulse" style="background:#ff7a2f;">${emoji}</div>`})})
-         .bindPopup(`
-           <div style="padding:10px">
-             <h4 style="margin:0;font-family:'Bricolage Grotesque';font-size:16px">${esc(t.name)}</h4>
-             <p style="margin:4px 0 10px;font-size:12px;color:var(--ink-2)">📍 Ao vivo via Radar</p>
-             <a class="btn warm" href="https://www.google.com/maps/dir/?api=1&destination=${e.lat},${e.lon}" target="_blank">Traçar Rota</a>
-           </div>
-         `)
-         .addTo(this.liveLayer);
-      });
-      this.map.setView(c, 14);
-      this.toast(`${items.length} locais reais encontrados à sua volta!`);
-    }catch(e){
-      // Todos os espelhos do Overpass falharam (fora do ar ou sobrecarregados):
-      // mostra os lugares já salvos mais próximos, para o botão nunca ficar sem resposta.
-      const perto = this.places
-        .map(p=>({...p, dist:this.distMeters(c,[p.lat,p.lng])}))
-        .filter(p=>p.dist<=6000)
-        .sort((a,b)=>a.dist-b.dist)
-        .slice(0,10);
-
-      if(!perto.length){ this.toast('A busca ao vivo falhou e não há lugares salvos por perto.'); return; }
-
-      this.liveLayer.clearLayers();
-      perto.forEach(p=>{
-        L.marker([p.lat,p.lng],{icon:this.icon(p)})
-          .on('click', () => this.openPlace(p.id))
-          .addTo(this.liveLayer);
-      });
-      this.map.setView(c, 14);
-      this.toast(`Busca ao vivo indisponível — mostrando ${perto.length} lugares salvos por perto.`);
-    }
-  },
-
-  /* ── UTILIDADES GERAIS ── */
-  locate(){
-    if(!navigator.geolocation) return;
-    this.toast('Localizando vocês...');
-    navigator.geolocation.getCurrentPosition(pos=>{
-      this.myPos = [pos.coords.latitude,pos.coords.longitude];
-      if(this.meMarker) this.map.removeLayer(this.meMarker);
-      this.meMarker = L.marker(this.myPos,{icon:L.divIcon({className:'',iconSize:[22,22],html:'<div class="pin me" style="width:20px;height:20px"></div>'})}).addTo(this.map);
-      this.map.flyTo(this.myPos,15);
-    });
-  },
-  fitAll(){
-    const pts = this.visibleOnMap?.map(p=>[p.lat,p.lng])||[];
-    if(pts.length) this.map.fitBounds(L.latLngBounds(pts).pad(.12));
-  },
-  toggleVisited(id){
-    if(this.visited[id]) delete this.visited[id]; else { this.visited[id]=true; delete this.todo[id]; }
-    this.save(); this.renderAll(); this.plot();
-  },
-  save(){ set(LS.places,this.places); set(LS.visited,this.visited); set(LS.todo,this.todo); set(LS.ratings,this.ratings); },
-  
-  saveKey(){
-    const k = document.getElementById('in-key').value.trim();
-    set(LS.key, k);
-    this.toast('Chave da API Gemini salva com suceso.');
-  },
-
-  weather(){
-    const c = this.myPos || [-3.7319,-38.5267];
-    const ctrl = new AbortController();
-    const t = setTimeout(()=>ctrl.abort(), 8000);
-    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c[0]}&longitude=${c[1]}&current=temperature_2m,weather_code,is_day&timezone=America%2FFortaleza`,{signal:ctrl.signal})
-      .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-      .then(d=>{
-        clearTimeout(t);
-        const temp = Math.round(d.current.temperature_2m), h = new Date().getHours();
-        document.getElementById('w-temp').textContent=temp+'°';
-        document.getElementById('w-head').textContent = 'Agora em Fortaleza';
-        if(temp>=30) document.getElementById('w-tip').textContent = 'Praia cedo ou um pote de sorvete gelado.';
-        else if(h>=17&&h<=18) document.getElementById('w-tip').textContent = 'Hora do pôr do sol na Beira Mar.';
-        else document.getElementById('w-tip').textContent = 'Tempo agradável. Ótimo pra tudo.';
-      }).catch(()=>{
-        clearTimeout(t);
-        document.getElementById('w-temp').textContent='–';
-        document.getElementById('w-head').textContent = 'Clima indisponível agora';
-        document.getElementById('w-tip').textContent = 'Sem conexão com o serviço de clima. Tente novamente mais tarde.';
-      });
-  },
-  
-  sky(){ 
-    const d=new Date(), t=d.getHours()+d.getMinutes()/60;
-    const phase = t<6?'noite':t<18?'dia':'noite';
-    this.phase = phase;
-  },
-
-  buildChips(el){
-    const box = document.getElementById(el); if(!box) return;
-    box.innerHTML = ['all',...Object.keys(CATS).filter(c=>c!=='perto')].map(c=>{
-      const on = this.filter===c, lbl = c==='all'?'🌍 Tudo':`${CATS[c].emoji} ${CATS[c].label}`;
-      return `<button class="chip" data-c="${c}" aria-pressed="${on}" onclick="App.setFilter('${c}')">${lbl}</button>`;
-    }).join('');
-  },
-  setFilter(c){ this.filter=c; this.buildChips('chips'); this.plot(); },
-  
-  tab(id,btn){
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
-    document.getElementById('view-'+id).classList.add('on');
-    document.querySelectorAll('.nav button').forEach(b=>b.setAttribute('aria-current','false'));
-    btn?.setAttribute('aria-current','true');
-    document.body.classList.toggle('on-map', id==='map');
-    if(id==='map') setTimeout(()=>this.map.invalidateSize(),60);
-  },
-  openSheet(){ document.getElementById('sheet').classList.add('on'); document.getElementById('sheet-bg').classList.add('on'); },
-  closeSheet(){ document.getElementById('sheet').classList.remove('on'); document.getElementById('sheet-bg').classList.remove('on'); },
-  toast(msg){
-    const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('on');
-    clearTimeout(this._tt); this._tt=setTimeout(()=>t.classList.remove('on'),3200);
-  },
-  
-  renderAll(){
-    const listTodo = this.places.filter(p=>this.todo[p.id]);
-    document.getElementById('todo-count').textContent=`${listTodo.length} na fila`;
-    
-    const b = document.getElementById('nav-badge');
-    b.hidden = !listTodo.length; b.textContent = listTodo.length;
-    
-    document.getElementById('list-todo').innerHTML = listTodo.length 
-      ? listTodo.map(p=>`<article class="card">
-                          <div class="card-top">
-                            <div class="card-emoji" style="color:${CATS[p.cat]?.color}">${CATS[p.cat]?.emoji}</div>
-                            <div><h3>${esc(p.name)}</h3><span class="where">${esc(p.area)}</span></div>
-                          </div>
-                         </article>`).join('')
-      : `<div class="card empty"><span class="material-icons-round">bookmark_border</span><b>A fila está vazia</b></div>`;
-      
-    const vis = Object.keys(this.visited).length;
-    document.getElementById('d-visited').textContent = vis;
-    document.getElementById('d-total').textContent = this.places.length;
-    document.getElementById('d-pct').textContent = Math.round(vis/this.places.length*100)+'%';
-    document.getElementById('d-bar').style.width = (vis/this.places.length*100)+'%';
+document.getElementById("btn-radio-toggle").onclick = function() {
+  radioTocando = !radioTocando;
+  const eq = document.getElementById("eq-anim");
+  const st = document.getElementById("radio-status");
+  if (radioTocando) {
+    iniciarSomRadio();
+    eq.classList.add("playing");
+    this.textContent = "⏸️ PAUSAR RÁDIO";
+    st.textContent = `📻 NO AR: ${estacoesRadio[estacaoAtual].nome}`;
+    ninaFalarFlutuante("Aumenta o som! A Rádio Fluxo Y2K tá tocando! 🎶🐶");
+  } else {
+    clearInterval(radioTimer);
+    eq.classList.remove("playing");
+    this.textContent = "▶️ TOCAR RÁDIO";
+    st.textContent = "📻 RÁDIO FLUXO Y2K · PAUSADA";
   }
 };
 
-window.addEventListener('DOMContentLoaded',()=>App.init());
+document.getElementById("btn-radio-estacao").onclick = () => {
+  estacaoAtual = (estacaoAtual + 1) % estacoesRadio.length;
+  document.getElementById("radio-faixa").textContent = `Sintonia: ${estacoesRadio[estacaoAtual].nome}`;
+  if (radioTocando) {
+    iniciarSomRadio();
+    document.getElementById("radio-status").textContent = `📻 NO AR: ${estacoesRadio[estacaoAtual].nome}`;
+  }
+};
+
+document.getElementById("btn-abrir-spotify").onclick = () => {
+  const dr = document.getElementById("spotify-drawer");
+  dr.style.display = dr.style.display === "none" ? "block" : "none";
+};
+
+document.getElementById("btn-carregar-spotify").onclick = () => {
+  const url = document.getElementById("spotify-url-input").value.trim();
+  if (!url) return mostrarToast("⚠️ Cole um link válido do Spotify!");
+  let embedUrl = url;
+  if (url.includes("open.spotify.com/") && !url.includes("/embed/")) {
+    embedUrl = url.replace("open.spotify.com/", "open.spotify.com/embed/");
+  }
+  document.getElementById("spotify-iframe").src = embedUrl;
+  mostrarToast("🎧 Playlist do Spotify carregada!");
+};
+
+// =========================================================================
+// 8. FOTOS REAIS DOS LOCAIS (WIKIMEDIA COMMONS LIVE)
+// =========================================================================
+const cacheFotos = {};
+async function buscarFotoRealOnline(lugar, forcarAlternativa = false) {
+  const imgEl = document.getElementById("lugar-img");
+  const fonteEl = document.getElementById("lugar-fonte");
+  imgEl.style.opacity = "0.45";
+
+  try {
+    if (!cacheFotos[lugar.id]) {
+      const searchUrl = `https://pt.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(lugar.wikiQuery || lugar.nome)}&gsrlimit=5&prop=pageimages&piprop=original|thumbnail&pithumbsize=900&format=json&origin=*`;
+      const resp = await fetch(searchUrl);
+      const json = await resp.json();
+      const pages = json?.query?.pages ? Object.values(json.query.pages) : [];
+      const urls = pages
+        .map(p => p.original?.source || p.thumbnail?.source)
+        .filter(u => u && !u.endsWith(".svg"));
+      cacheFotos[lugar.id] = urls.length ? urls : [lugar.fallbackImg];
+    }
+
+    const lista = cacheFotos[lugar.id];
+    const idx = forcarAlternativa ? Math.floor(Math.random() * lista.length) : 0;
+    const escolhida = lista[idx] || lugar.fallbackImg;
+
+    imgEl.onload = () => { imgEl.style.opacity = "1"; };
+    imgEl.onerror = () => { imgEl.src = lugar.fallbackImg; imgEl.style.opacity = "1"; };
+    imgEl.src = escolhida;
+    fonteEl.textContent = escolhida.includes("wikimedia") ? "📡 Foto Real · Wikimedia Live" : "📸 Curadoria Ceará";
+  } catch (e) {
+    imgEl.src = lugar.fallbackImg;
+    imgEl.style.opacity = "1";
+  }
+}
+
+// =========================================================================
+// 9. GOOGLE MAPS API REAL (CUSTOMIZADO ROXO & VERDE + TRÂNSITO + PINOS)
+// =========================================================================
+let gMap = null;
+let gMarkers = [];
+let gFrostyMarkers = [];
+let gPolyline = null;
+let gTrafficLayer = null;
+let gInfoWindow = null;
+let userCoords = null;
+let userGMarker = null;
+let lugarAtual = null;
+let categoriaFiltro = "todos";
+let transitoAtivo = false;
+let rotaAtiva = true;
+
+const estiloMapaRoxoVerde = [
+  { elementType: "geometry", stylers: [{ color: "#1d083b" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#b8ff00" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#14002e" }] },
+  { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#9d4edd" }] },
+  { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#133b29" }] },
+  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#006633" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#3c1375" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#7b2cbf" }] },
+  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#00e676" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a2e36" }] },
+  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#00e676" }] }
+];
+
+window.initGoogleMap = function() {
+  const centro = { lat: -3.7480, lng: -38.5220 };
+  gMap = new google.maps.Map(document.getElementById("google-map"), {
+    center: centro,
+    zoom: 12,
+    styles: estiloMapaRoxoVerde,
+    mapTypeControl: false,
+    streetViewControl: true,
+    fullscreenControl: true
+  });
+
+  gInfoWindow = new google.maps.InfoWindow();
+  gTrafficLayer = new google.maps.TrafficLayer();
+  gPolyline = new google.maps.Polyline({
+    strokeColor: "#00e676",
+    strokeOpacity: 0.9,
+    strokeWeight: 4,
+    map: gMap
+  });
+
+  renderizarGoogleMap();
+  selecionarLugar(lugaresBase[0], false);
+};
+
+(function carregarScriptGoogleMaps() {
+  const s = document.createElement("script");
+  s.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(GOOGLE_MAPS_API_KEY)}&callback=initGoogleMap&libraries=places`;
+  s.async = true;
+  s.defer = true;
+  s.onerror = () => {
+    document.getElementById("google-map").innerHTML = "<div style='padding:20px;color:#fff;font-weight:700'>⚠️ Falha ao carregar Google Maps API.</div>";
+  };
+  document.head.appendChild(s);
+})();
+
+function renderizarGoogleMap() {
+  if (!gMap) return;
+  gMarkers.forEach(m => m.setMap(null));
+  gFrostyMarkers.forEach(m => m.setMap(null));
+  gMarkers = [];
+  gFrostyMarkers = [];
+
+  const todos = getTodosLugares();
+  const filtrados = todos.filter(l => {
+    if (categoriaFiltro === "todos" || categoriaFiltro === "frosty") return true;
+    if (categoriaFiltro === "gratis") return l.custo === "gratis";
+    return l.cat === categoriaFiltro;
+  });
+
+  const pathCoords = [];
+  filtrados.forEach(l => {
+    const pos = { lat: l.lat, lng: l.lng };
+    pathCoords.push(pos);
+    const isVis = state.visitados.includes(l.id);
+    const isSel = lugarAtual && lugarAtual.id === l.id;
+
+    const marker = new google.maps.Marker({
+      position: pos,
+      map: gMap,
+      title: l.nome,
+      animation: isSel ? google.maps.Animation.BOUNCE : null,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: isSel ? 12 : 9,
+        fillColor: isSel ? "#b8ff00" : (isVis ? "#00e676" : "#9d4edd"),
+        fillOpacity: 1,
+        strokeColor: "#14002e",
+        strokeWeight: 3
+      }
+    });
+
+    marker.addListener("click", () => {
+      selecionarLugar(l, false);
+      gInfoWindow.setContent(`<div style="color:#14002e;font-weight:700">💜 ${l.nome}<br><small>${l.bairro} · ${l.custoLabel}</small></div>`);
+      gInfoWindow.open(gMap, marker);
+    });
+
+    gMarkers.push(marker);
+  });
+
+  gPolyline.setPath(rotaAtiva ? pathCoords : []);
+
+  if (categoriaFiltro === "frosty") {
+    unidadesFrosty.forEach(u => {
+      const fm = new google.maps.Marker({
+        position: { lat: u.lat, lng: u.lng },
+        map: gMap,
+        title: u.nome,
+        icon: {
+          path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
+          scale: 6,
+          fillColor: "#00e676",
+          fillOpacity: 1,
+          strokeColor: "#14002e",
+          strokeWeight: 2
+        }
+      });
+      fm.addListener("click", () => {
+        gInfoWindow.setContent(`<div style="color:#14002e"><strong>🍦 ${u.nome}</strong><br>${u.end}<br>⏰ ${u.horario}</div>`);
+        gInfoWindow.open(gMap, fm);
+      });
+      gFrostyMarkers.push(fm);
+    });
+  }
+
+  renderizarChipsRapidos(filtrados);
+}
+
+document.getElementById("btn-transito").onclick = function() {
+  if (!gMap) return;
+  transitoAtivo = !transitoAtivo;
+  this.classList.toggle("on", transitoAtivo);
+  gTrafficLayer.setMap(transitoAtivo ? gMap : null);
+  mostrarToast(transitoAtivo ? "🚦 Camada de trânsito ao vivo ativada!" : "Trânsito ocultado.");
+};
+
+document.getElementById("btn-rota").onclick = function() {
+  rotaAtiva = !rotaAtiva;
+  this.classList.toggle("on", rotaAtiva);
+  if (gPolyline) gPolyline.setMap(rotaAtiva ? gMap : null);
+};
+
+let sateliteOn = false;
+document.getElementById("btn-maptype").onclick = function() {
+  if (!gMap) return;
+  sateliteOn = !sateliteOn;
+  this.classList.toggle("on", sateliteOn);
+  gMap.setMapTypeId(sateliteOn ? "hybrid" : "roadmap");
+};
+
+document.getElementById("btn-reset").onclick = () => {
+  if (!gMap) return;
+  gMap.panTo({ lat: -3.7480, lng: -38.5220 });
+  gMap.setZoom(12);
+};
+
+document.getElementById("btn-gps").onclick = () => {
+  if (!navigator.geolocation) return mostrarToast("GPS indisponível.");
+  mostrarToast("📡 Localizando vocês via GPS...");
+  navigator.geolocation.getCurrentPosition(pos => {
+    userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    if (gMap) {
+      if (userGMarker) userGMarker.setMap(null);
+      userGMarker = new google.maps.Marker({
+        position: userCoords,
+        map: gMap,
+        title: "Vocês estão aqui!",
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 10,
+          fillColor: "#00e676",
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 3
+        }
+      });
+      gMap.panTo(userCoords);
+      gMap.setZoom(14);
+    }
+    if (lugarAtual) atualizarDistancia(lugarAtual);
+    mostrarToast("📍 GPS conectado!");
+  }, () => mostrarToast("⚠️ Permita o GPS no navegador."));
+};
+
+function calcularKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return (R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1);
+}
+
+function atualizarDistancia(lugar) {
+  const ref = userCoords || { lat: -3.7480, lng: -38.5220 };
+  const km = calcularKm(ref.lat, ref.lng, lugar.lat, lugar.lng);
+  document.getElementById("lugar-dist").textContent = userCoords ? `📏 ${km} km de vocês` : `📏 ${km} km do Centro`;
+}
+
+function renderizarChipsRapidos(lista) {
+  const cont = document.getElementById("lista-rapida");
+  cont.innerHTML = "";
+  lista.forEach(l => {
+    const btn = document.createElement("button");
+    btn.className = "lugar-pill" + (lugarAtual?.id === l.id ? " on" : "") + (state.visitados.includes(l.id) ? " done" : "");
+    btn.textContent = l.nome.split("&")[0].trim();
+    btn.onclick = () => selecionarLugar(l, true);
+    cont.appendChild(btn);
+  });
+}
+
+function selecionarLugar(lugar, voar = true) {
+  lugarAtual = lugar;
+  document.getElementById("lugar-titulo").textContent = lugar.nome;
+  document.getElementById("lugar-bairro").textContent = "📍 " + lugar.bairro;
+  document.getElementById("lugar-custo").textContent = "💰 " + lugar.custoLabel;
+  document.getElementById("lugar-horario").textContent = "⏰ " + lugar.horario;
+  document.getElementById("lugar-desc").textContent = lugar.desc;
+  document.getElementById("lugar-dica").textContent = lugar.dica;
+  document.getElementById("card-nina-texto").textContent = "Clique em 'Nina Analisar Agora' para buscar clima, movimento, trânsito e orçamento ao vivo!";
+  atualizarDistancia(lugar);
+  buscarFotoRealOnline(lugar, false);
+
+  const isVis = state.visitados.includes(lugar.id);
+  const isFav = state.favoritos.includes(lugar.id);
+  document.getElementById("btn-checkin").textContent = isVis ? "✅ JÁ VISITADO!" : "✅ MARCAR VISITADO";
+  document.getElementById("btn-fav").textContent = isFav ? "💚 FAVORITADO" : "💜 FAVORITAR";
+  document.getElementById("btn-uber").href = `https://www.google.com/maps/dir/?api=1&destination=${lugar.lat},${lugar.lng}`;
+
+  document.getElementById("btn-zap").onclick = () => {
+    const txt = `Oi amor! A Nina sugeriu um date em *${lugar.nome}* (${lugar.bairro})! ${lugar.dica} 💜💚`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
+  };
+
+  if (voar && gMap) {
+    gMap.panTo({ lat: lugar.lat, lng: lugar.lng });
+    gMap.setZoom(15);
+  }
+  renderizarGoogleMap();
+}
+
+document.getElementById("btn-trocar-foto").onclick = () => {
+  if (lugarAtual) buscarFotoRealOnline(lugarAtual, true);
+};
+
+document.getElementById("btn-checkin").onclick = () => {
+  if (!lugarAtual) return;
+  const idx = state.visitados.indexOf(lugarAtual.id);
+  if (idx === -1) {
+    state.visitados.push(lugarAtual.id);
+    state.diario.unshift({
+      local: lugarAtual.nome,
+      data: new Date().toLocaleDateString("pt-BR"),
+      nota: "Date concluído com a benção da Nina! 💜💚"
+    });
+    ninaFalarFlutuante(`Uhuul! Check-in feito em ${lugarAtual.nome.split("&")[0]}! 🐾🎉`);
+  } else {
+    state.visitados.splice(idx, 1);
+    mostrarToast("Check-in removido.");
+  }
+  salvarState();
+  selecionarLugar(lugarAtual, false);
+  renderizarDiario();
+};
+
+document.getElementById("btn-fav").onclick = () => {
+  if (!lugarAtual) return;
+  const idx = state.favoritos.indexOf(lugarAtual.id);
+  if (idx === -1) {
+    state.favoritos.push(lugarAtual.id);
+    mostrarToast("💚 Adicionado aos favoritos!");
+  } else {
+    state.favoritos.splice(idx, 1);
+  }
+  salvarState();
+  selecionarLugar(lugarAtual, false);
+};
+
+document.querySelectorAll("#filtros-cat .chip").forEach(chip => {
+  chip.onclick = () => {
+    document.querySelectorAll("#filtros-cat .chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    categoriaFiltro = chip.dataset.cat;
+    renderizarGoogleMap();
+  };
+});
+
+// =========================================================================
+// 10. SORTEADOR DE DATES + COMBO FROSTY
+// =========================================================================
+document.getElementById("btn-rodar-sorteio").onclick = () => {
+  const custo = document.getElementById("f-custo").value;
+  const vibe = document.getElementById("f-vibe").value;
+  const turno = document.getElementById("f-turno").value;
+  const inedito = document.getElementById("f-inedito").value;
+
+  let candidatos = getTodosLugares().filter(l => {
+    if (custo !== "todos" && l.custo !== custo) return false;
+    if (vibe !== "todos" && l.cat !== vibe) return false;
+    if (turno !== "todos" && l.turno !== turno) return false;
+    if (inedito === "nao-visitado" && state.visitados.includes(l.id)) return false;
+    return true;
+  });
+
+  if (!candidatos.length) {
+    candidatos = getTodosLugares();
+    mostrarToast("⚠️ Sorteando entre todos os locais!");
+  }
+
+  const escolhido = candidatos[Math.floor(Math.random() * candidatos.length)];
+  let frostyMaisPerto = unidadesFrosty[0];
+  let menorD = 9999;
+  unidadesFrosty.forEach(f => {
+    const d = parseFloat(calcularKm(escolhido.lat, escolhido.lng, f.lat, f.lng));
+    if (d < menorD) { menorD = d; frostyMaisPerto = f; }
+  });
+
+  const box = document.getElementById("resultado-sorteio-box");
+  box.style.display = "block";
+  document.getElementById("combo-detalhes").innerHTML = `
+    <p><strong>📍 Destino Sorteado:</strong> ${escolhido.nome} (${escolhido.bairro})</p>
+    <p><strong>💰 Custo:</strong> ${escolhido.custoLabel} · <strong>⏰ Horário:</strong> ${escolhido.horario}</p>
+    <p><strong>✨ Detalhes:</strong> ${escolhido.desc}</p>
+    <p style="background:#d8ffea;color:#14002e;padding:10px;border:3px solid #14002e;border-radius:8px">
+      <strong>🍦 Sobremesa Frosty mais próxima:</strong> ${frostyMaisPerto.nome} (${menorD} km · ${frostyMaisPerto.end})
+    </p>
+  `;
+
+  ninaFalarFlutuante(`Farejei um date perfeito: ${escolhido.nome.split("&")[0]} + Frosty! 🐶🍦`);
+
+  document.getElementById("btn-ver-no-mapa").onclick = () => {
+    abrirAba("sec-mapa");
+    selecionarLugar(escolhido, true);
+  };
+  document.getElementById("btn-combo-zap").onclick = () => {
+    const msg = `🐶 *DATE SORTEADO PELA NINA NO MAPA DO FLUXO!*\n\n📍 *Local:* ${escolhido.nome} (${escolhido.bairro})\n💰 *Custo:* ${escolhido.custoLabel}\n🍦 *Frosty:* ${frostyMaisPerto.nome} (${menorD} km)\n\nBora? 💜💚`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank");
+  };
+};
+
+// =========================================================================
+// 11. ABA ESPECIAL FROSTY SORVETES TODO O CEARÁ
+// =========================================================================
+function renderizarFrosty() {
+  const grid = document.getElementById("grid-frosty");
+  grid.innerHTML = "";
+  const termo = document.getElementById("busca-frosty").value.toLowerCase();
+  const cidadeSel = document.getElementById("filtro-cidade-frosty").value;
+
+  const listaFiltrada = unidadesFrosty.filter(u => {
+    const matchCidade = cidadeSel === "todas" || u.cidade === cidadeSel;
+    const matchTexto = u.nome.toLowerCase().includes(termo) ||
+                       u.bairro.toLowerCase().includes(termo) ||
+                       u.cidade.toLowerCase().includes(termo) ||
+                       u.end.toLowerCase().includes(termo);
+    return matchCidade && matchTexto;
+  });
+
+  listaFiltrada.forEach(u => {
+    const vis = state.frostyVisitadas.includes(u.id);
+    const ref = userCoords || { lat: -3.7480, lng: -38.5220 };
+    const dist = calcularKm(ref.lat, ref.lng, u.lat, u.lng);
+
+    const card = document.createElement("div");
+    card.className = "frosty-card" + (vis ? " visitada" : "");
+    card.innerHTML = `
+      <div>
+        <div class="frosty-head">
+          <span class="frosty-bairro">🍦 ${u.cidade} · ${u.bairro}</span>
+          <span style="font-size:11px;font-weight:700">📏 ${dist} km</span>
+        </div>
+        <h3 style="margin:8px 0 4px;font-size:15px">${u.nome}</h3>
+        <p style="margin:0;font-size:13px;opacity:.85">${u.end}</p>
+        <p style="margin:4px 0 0;font-size:12px;font-weight:700">⏰ ${u.horario}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <button class="btn-acao ${vis ? "roxo" : ""}" onclick="toggleFrosty('${u.id}')">
+          ${vis ? "✅ VISITADA" : "☑️ MARCAR"}
+        </button>
+        <a class="btn-acao sec" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(u.nome + " " + u.end + " Ceará")}" target="_blank" rel="noopener">
+          🗺️ GOOGLE MAPS
+        </a>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  const total = unidadesFrosty.length;
+  const feitas = state.frostyVisitadas.length;
+  document.getElementById("frosty-contador").textContent = `${feitas} / ${total} Lojas Frosty do Ceará`;
+  document.getElementById("frosty-progresso").style.width = `${Math.round((feitas / total) * 100)}%`;
+}
+
+window.toggleFrosty = function(id) {
+  const idx = state.frostyVisitadas.indexOf(id);
+  if (idx === -1) {
+    state.frostyVisitadas.push(id);
+    ninaFalarFlutuante("Mais uma Frosty zerada! Tragam um picolé de cajá pra mim! 🍦🐶");
+  } else {
+    state.frostyVisitadas.splice(idx, 1);
+  }
+  salvarState();
+  renderizarFrosty();
+};
+
+document.getElementById("busca-frosty").oninput = renderizarFrosty;
+document.getElementById("filtro-cidade-frosty").onchange = renderizarFrosty;
+
+document.getElementById("btn-sortear-frosty").onclick = () => {
+  const u = unidadesFrosty[Math.floor(Math.random() * unidadesFrosty.length)];
+  mostrarToast(`🍦 Sorteada: ${u.nome} (${u.cidade})!`);
+  document.getElementById("filtro-cidade-frosty").value = u.cidade;
+  renderizarFrosty();
+};
+
+document.getElementById("btn-frosty-perto").onclick = () => {
+  const ref = userCoords || { lat: -3.7480, lng: -38.5220 };
+  let maisPerto = unidadesFrosty[0];
+  let menor = 99999;
+  unidadesFrosty.forEach(u => {
+    const d = parseFloat(calcularKm(ref.lat, ref.lng, u.lat, u.lng));
+    if (d < menor) { menor = d; maisPerto = u; }
+  });
+  mostrarToast(`📍 Mais próxima: ${maisPerto.nome} (${menor} km)`);
+  document.getElementById("filtro-cidade-frosty").value = maisPerto.cidade;
+  renderizarFrosty();
+};
+
+document.getElementById("btn-ver-todas-frosty-mapa").onclick = () => {
+  abrirAba("sec-mapa");
+  document.querySelectorAll("#filtros-cat .chip").forEach(c => c.classList.remove("active"));
+  document.querySelector('[data-cat="frosty"]').classList.add("active");
+  categoriaFiltro = "frosty";
+  renderizarGoogleMap();
+  if (gMap) {
+    gMap.panTo({ lat: -5.20, lng: -39.30 });
+    gMap.setZoom(7);
+  }
+};
+
+// =========================================================================
+// 12. FERRAMENTAS EXTRAS DO CASAL
+// =========================================================================
+const missoesFoto = [
+  "Selfie fazendo careta segurando um picolé da Frosty!",
+  "Foto do reflexo de vocês dois nos óculos escuros ou vitrine.",
+  "Foto de mãos dadas com o pôr do sol do Ceará ao fundo.",
+  "Recriem a cena de um filme romântico no meio do passeio!"
+];
+window.gerarMissaoFoto = () => {
+  document.getElementById("missao-foto-txt").textContent = "📸 " + missoesFoto[Math.floor(Math.random()*missoesFoto.length)];
+};
+
+const perguntasCasal = [
+  "Qual foi o nosso melhor date no Ceará até hoje?",
+  "Qual sabor da Frosty define o nosso namoro?",
+  "Qual cidade do Ceará precisamos viajar juntos em breve?",
+  "Qual música toca na sua cabeça quando pensa na gente?"
+];
+window.gerarPergunta = () => {
+  document.getElementById("pergunta-casal-txt").textContent = "💬 " + perguntasCasal[Math.floor(Math.random()*perguntasCasal.length)];
+};
+
+window.jogarMoeda = () => {
+  document.getElementById("decisor-txt").textContent = Math.random() > 0.5 ? "🪙 CARA: Você escolhe o rolê!" : "🪙 COROA: Seu amor escolhe o rolê!";
+};
+
+window.calcularDate = () => {
+  const total = parseFloat(document.getElementById("calc-total").value) || 0;
+  const pct = parseFloat(document.getElementById("calc-pct").value) || 50;
+  const p1 = (total * (pct / 100)).toFixed(2);
+  const p2 = (total - p1).toFixed(2);
+  document.getElementById("calc-res").textContent = `Você: R$ ${p1} | Amor: R$ ${p2}`;
+};
+
+window.salvarDataNamoro = () => {
+  const val = document.getElementById("data-inicio-namoro").value;
+  if (!val) return;
+  state.dataNamoro = val;
+  salvarState();
+  atualizarContadorNamoro();
+};
+
+function atualizarContadorNamoro() {
+  if (!state.dataNamoro) return;
+  document.getElementById("data-inicio-namoro").value = state.dataNamoro;
+  const inicio = new Date(state.dataNamoro + "T00:00:00");
+  const diff = Math.floor((new Date() - inicio) / (1000 * 60 * 60 * 24));
+  document.getElementById("dias-juntos-res").textContent = `💜 ${diff} dias juntos!`;
+}
+
+window.gerarRoteiroDia = () => {
+  const L = getTodosLugares();
+  const p1 = L[Math.floor(Math.random()*L.length)];
+  const p2 = L[Math.floor(Math.random()*L.length)];
+  const fr = unidadesFrosty[Math.floor(Math.random()*unidadesFrosty.length)];
+  document.getElementById("roteiro-completo-txt").innerHTML =
+    `1️⃣ <strong>Tarde:</strong> ${p1.nome}<br>2️⃣ <strong>Frosty:</strong> ${fr.nome} (${fr.cidade})<br>3️⃣ <strong>Noite:</strong> ${p2.nome}`;
+};
+
+const saboresFrosty = ["Cajá Cremoso", "Tapioca com Coco", "Chocolate Belga", "Morango ao Leite", "Milho Verde", "Ninho Trufado", "Açaí com Banana", "Castanha do Pará"];
+window.sortearSaborFrosty = () => {
+  document.getElementById("sabor-frosty-txt").textContent = `🍧 Provem hoje: ${saboresFrosty[Math.floor(Math.random()*saboresFrosty.length)]}!`;
+};
+
+window.mudarTema = (t) => {
+  state.tema = t;
+  document.documentElement.setAttribute("data-theme", t);
+  salvarState();
+};
+
+window.exportarDados = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "backup_mapa_do_fluxo_nina.json";
+  a.click();
+};
+
+// =========================================================================
+// 13. CADASTRO DE NOVOS LOCAIS & DIÁRIO
+// =========================================================================
+document.getElementById("btn-salvar-local").onclick = () => {
+  const nome = document.getElementById("novo-nome").value.trim();
+  const bairro = document.getElementById("novo-bairro").value.trim() || "Ceará";
+  const lat = parseFloat(document.getElementById("novo-lat").value);
+  const lng = parseFloat(document.getElementById("novo-lng").value);
+  const cat = document.getElementById("novo-cat").value;
+  const desc = document.getElementById("novo-desc").value.trim() || "Ponto cadastrado pelo casal.";
+
+  if (!nome || isNaN(lat) || isNaN(lng)) return mostrarToast("⚠️ Preencha nome e coordenadas!");
+
+  const novo = {
+    id: "custom_" + Date.now(),
+    nome, bairro, lat, lng, cat,
+    custo: "economico",
+    custoLabel: "Personalizado",
+    turno: "tarde",
+    horario: "Livre",
+    wikiQuery: nome,
+    fallbackImg: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=900&q=80",
+    desc,
+    dica: "💡 Local criado por vocês!"
+  };
+
+  state.lugaresExtras.push(novo);
+  salvarState();
+  renderizarGoogleMap();
+  abrirAba("sec-mapa");
+  selecionarLugar(novo, true);
+  mostrarToast("📌 Novo local adicionado!");
+};
+
+function renderizarDiario() {
+  const box = document.getElementById("lista-diario");
+  if (!state.diario.length) {
+    box.innerHTML = "<p style='font-size:13px'>Nenhum check-in ainda. Marque um local como visitado no mapa!</p>";
+    return;
+  }
+  box.innerHTML = state.diario.map(item => `
+    <div style="background:var(--card-bg);border:3px solid #14002e;padding:10px;border-radius:8px">
+      <strong>💜 ${item.local}</strong> <span style="font-size:11px">(${item.data})</span>
+      <p style="margin:4px 0 0;font-size:13px">${item.nota}</p>
+    </div>
+  `).join("");
+}
+
+function atualizarGamificacao() {
+  const total = state.visitados.length + state.frostyVisitadas.length;
+  const nivel = Math.floor(total / 3) + 1;
+  document.getElementById("xp-casal").textContent = `🏆 Nível ${nivel} · ${total} Check-ins`;
+}
+
+// Navegação Tabs & Mobile
+function abrirAba(tabId) {
+  document.querySelectorAll(".view-section").forEach(s => s.classList.remove("active"));
+  document.getElementById(tabId).classList.add("active");
+  document.querySelectorAll(".tab-btn, .mob-item").forEach(b => b.classList.toggle("active", b.dataset.tab === tabId));
+}
+document.querySelectorAll(".tab-btn, .mob-item").forEach(btn => {
+  btn.onclick = () => abrirAba(btn.dataset.tab);
+});
+
+// Título estilizado roxo & verde
+const tit = document.getElementById("tit");
+const txt = tit.textContent;
+const cores = ["#b8ff00", "#00e676", "#c77dff", "#ffffff"];
+tit.textContent = "";
+txt.split("").forEach((ch, i) => {
+  const s = document.createElement("span");
+  s.textContent = ch === " " ? "\u00a0" : ch;
+  s.style.transform = `rotate(${[-5, 3, -3, 5, -4][i % 5]}deg)`;
+  s.style.color = cores[i % 4];
+  tit.appendChild(s);
+});
+
+// Inicialização
+document.documentElement.setAttribute("data-theme", state.tema || "default");
+atualizarSpritesNina("normal");
+atualizarBarrasNina();
+carregarClimaFortaleza();
+renderizarFrosty();
+renderizarDiario();
+atualizarContadorNamoro();
+atualizarGamificacao();
 </script>
 </body>
 </html>
